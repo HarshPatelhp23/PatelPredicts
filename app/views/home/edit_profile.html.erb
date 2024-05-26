@@ -1,0 +1,16 @@
+<div class="container mt-5">
+  <div class="header">
+    <h1 class="text-center mb-4"><%= "#{current_user.username}'s Profile" %></h1>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <form action="<%= update_profile_path %>" method="post" class="edit-profile-form">
+        <div class="form-group">
+          <label for="username" class="form-label">Username:</label>
+          <input type="text" id="username" name="username" value="<%= current_user.username %>" class="form-control username-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary update-profile-btn">Update Profile</button>
+      </form>
+    </div>
+  </div>
+</div>

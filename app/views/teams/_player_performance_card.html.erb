@@ -1,0 +1,31 @@
+<div class="card player-performance-card mb-3 mx-auto" style="max-width: 600px;">
+  <div class="card-header theme-light-color text-white py-2"> 
+    <%= "#{data[:player][:name]}'s Performance" %>
+  </div>
+  <div class="card-body py-2">
+    <div class="row">
+      <div class="col-md-4 col-12 text-center mb-3 mb-md-0">
+        <%= image_tag data[:player][:image], alt: 'Player Image', class: 'player-image img-fluid rounded-circle' %>
+        <div class="mt-2">
+          <p><span class="summary-label">Owner:</span> <%= data[:owner] %></p>
+          <p><span class="summary-label">Total Matches:</span> <%= data[:total_matches] %></p>
+        </div>
+      </div>
+      <div class="col-md-8 col-12">
+        <div class="player-summary">
+          <ul class="list-unstyled">
+            <% data[:matches].each do |match| %>
+              <li class="mb-1">
+                <span class="match-name"><%= match[:name] %>:</span>
+                <span class="match-points"><%= "#{match[:points]} points" %></span>
+              </li>
+            <% end %>
+          </ul>
+          <hr>
+          <p><span class="summary-label">Total Points:</span> <%= "#{data[:total_points]} points" %></p>
+          <p><span class="summary-label">AVG Points/Match:</span> <%= "#{data[:average_points].round(2)} points" %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

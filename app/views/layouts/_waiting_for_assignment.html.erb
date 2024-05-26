@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waiting for Assignment</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 2rem;
+      background-color: #f8f9fa;
+    }
+    .starter-template {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100vh;
+    }
+    .logo img {
+      max-width: 100%;
+      height: auto;
+    }
+    .registration-message {
+      font-size: 1.2rem;
+      color: #6c757d;
+      margin-bottom: 2rem;
+    }
+    .greeting-message {
+      font-size: 1.5rem;
+      color: #343a40;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="starter-template">
+      <h1 class="mb-3">Waiting for Assignment</h1>
+      <div class="logo mb-4">
+        <%= image_tag("meme_1.jpeg", alt: "Your Logo") %>
+      </div>
+      <div class="logo mb-4">
+        <%= image_tag("meme_2.jpeg", alt: "Your Logo") %>
+      </div>
+      <p class="greeting-message">Gher Jata ro NAGDAO kasu nai dekhay</p>
+      <p class="registration-message">Please paytm 150rs to admin to see points table before anyone else.</p>
+      <div class="d-flex justify-content-center">
+        <%= button_to "Log out", destroy_user_session_path, class: "btn btn-outline-danger text-white px-4 py-2 mt-2", style: "background: red;", method: :delete, data: { turbo: false } %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

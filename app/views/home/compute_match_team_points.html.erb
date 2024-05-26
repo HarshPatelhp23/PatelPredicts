@@ -1,0 +1,38 @@
+<!-- app/views/scorecards/show.html.erb -->
+
+<div class="container mt-5">
+  <div class="header">
+    <h1 class="text-center mb-4">Team: <%= @user.team.team_name.truncate(15) %></h1>
+    <h2 class="text-center mb-4">Match: <%= params['match_name'] %></h2>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th class="text-center">NO</th>
+          <th class="text-center">Players</th>
+          <th class="text-center">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @players.each_with_index do |player, index| %>
+          <tr>
+            <td class="text-center"><%= index + 1 %></td>
+            <td class="player-info">
+              <%= image_tag "#{player.name}.jpeg", class: "player-image", alt: "Default Image" %>
+              <div class="player-details">
+                <h4 class="player-name"><%= player.name %></h4>
+              </div>
+            </td>
+            <td class="text-center"><h4 class="player-name"><%= @players_hash[player.name] %></h4></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="text-center mt-3">
+  <%= link_to 'Back', one_match_scorecard_path(params[:match_name]), class: "btn btn-primary back-button theme-btn-back" %>
+</div>
+

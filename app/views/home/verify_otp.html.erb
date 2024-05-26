@@ -1,0 +1,98 @@
+<section class="h-100 bg-light">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-xl-10">
+        <div class="card rounded-3 text-dark">
+          <div class="row g-0">
+            <!-- Left Side (Login Form) -->
+            <div class="col-lg-6">
+              <div class="card-body p-md-5 mx-md-4">
+                <div class="text-center">
+                  <%= image_tag('pp_logo.png', style: 'width: 105px;', alt: 'logo') %>
+                  <h4 class="mt-1 mb-5 pb-1 header mt-3">We are The Patel-Predicts Team</h4>
+                </div>
+
+                <%= form_with(url: verify_otp_path, method: :post, class: "row g-3 align-items-center py-md-3") do |f| %>
+                  <div class="mb-4">
+                    <p class="mt-1 mb-5 pb-1 header2">Please enter your 6-digit OTP</p>
+                    <div class="otp-input">
+                      <%= f.text_field :digit1, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
+                      <div class="otp-gap"></div>
+                      <%= f.text_field :digit2, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
+                      <div class="otp-gap"></div>
+                      <%= f.text_field :digit3, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
+                      <div class="otp-gap"></div>
+                      <%= f.text_field :digit4, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
+                      <div class="otp-gap"></div>
+                      <%= f.text_field :digit5, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
+                      <div class="otp-gap"></div>
+                      <%= f.text_field :digit6, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
+                    </div>
+                  </div>
+
+                  <div class="text-center pt-1 mb-5 pb-1">
+                    <%= f.submit "Log in", class: "btn btn-primary btn-block fs-lg bg-gradient mb-3 res-login", style: "width: 150px; height: 40px; border-radius: 5px; background-color: #9932CC; color: white; margin-right: 20px; margin-top: 20px;" %>
+                  </div>
+
+                  <div class="text-center">
+                    <%= link_to "Resend OTP", resend_otp_path, class: "btn btn-warning res-login", style: "width: 150px; height: 40px; border-radius: 5px; text-decoration: none; margin-bottom: 4px; color: black; margin-right: 22px;" %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Vertical Line -->
+            <div class="col-lg-1 vertical-line"></div>
+
+            <!-- Right Side (Additional Content) -->
+            <div class="col-lg-5 d-flex align-items-center bg-gradient res-right-hide">
+              <div class="px-3 py-4 p-md-5 mx-md-4">
+                <h4 class="mb-4">Experience the Thrill of Live Cricket Auctions</h4>
+                <p class="small mb-0">Welcome to Patel-Predicts, your gateway to the exciting world of live cricket auctions. Immerse yourself in the pulse-pounding action as teams bid for top cricket talent, strategize their lineups, and build championship-winning squads. With our platform, you can witness the drama and intensity of the auction room from the comfort of your own space.</p><br />
+                <p class="small mb-0">Get ready to cheer for your favorite players and teams as they go under the hammer. Whether it's the thrill of securing a star player or the excitement of outbidding your rivals, LiveAuction brings you closer to the heart of the game. Join us for an unforgettable journey through the world of cricket auctions!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .vertical-line {
+    border-left: 5px solid #9932CC;
+    height: 100%;
+    position: absolute;
+    margin-left: 50%;
+  }
+
+  .otp-input {
+    display: flex;
+    justify-content: center;
+  }
+
+  .otp-digit {
+    text-align: center;
+  }
+
+  .otp-gap {
+    width: 50px; /* Adjust the gap width as needed */
+  }
+
+  .header2{
+    margin-left: 83px;
+  }
+
+
+  @media (max-width: 550px) and (min-width: 0px) {
+
+    .res-login {
+      width:100% !important;
+    }
+
+    .vertical-line, .res-right-hide{
+      display:none !important;
+    }
+  }
+</style>

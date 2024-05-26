@@ -1,0 +1,74 @@
+<link rel="stylesheet" type="text/css" href="authentication.css">
+<section class="h-100 bg-light">
+  <div class="container py-5 h-100 mt-5">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-xl-6">
+        <div class="card rounded-3 text-dark">
+          <div class="row g-0">
+            <div class="col-lg-12">
+              <div class="card-body p-md-5 mx-md-4">
+
+                <div class="text-center">
+                  <%= image_tag('pp_logo.png', style: 'width: 125px;', alt: 'logo') %>
+                  <h4 class="mt-1 mb-5 pb-1">Forgot Your Password?</h4>
+                </div>
+
+                <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put }) do |f| %>
+                  <%= render "confirmables/shared/error_messages", resource: resource %>
+                  <%= f.hidden_field :reset_password_token %>
+
+                  <div class="mb-4">
+                    <%= f.label :password, class: "form-label" %>
+                    <% if @minimum_password_length %>
+                    <em>(<%= @minimum_password_length %> characters minimum)</em>
+                    <% end %>
+                    <%= f.password_field :password, class: "form-control res-full-width", autofocus: true, autocomplete: "new-password", placeholder: 'Enter your new password here' %>
+                  </div>
+
+                  <div class="mb-4">
+                    <%= f.label :password_confirmation, class: "form-label" %>
+                    <%= f.password_field :password_confirmation, class: "form-control res-full-width", autocomplete: "new-password", placeholder: 'Repeat your new password here' %>
+                  </div>
+
+                  <div class="text-center pt-1 mb-5 pb-1">
+                    <%= f.submit "Change my password", class: "btn btn-primary btn-block fs-lg bg-gradient mb-3 res-signup", style: 'background-color: #0d6efd;' %>
+                  </div>
+
+                <% end %>
+
+                <div class="text-center d-flex align-items-center justify-content-center pb-4">
+                  <%= link_to "Back to Login", new_session_path(resource_name), class: "mb-1" %>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (max-width: 767px) {
+    .card-body {
+      padding: 2rem;
+    }
+
+    .col-lg-12 {
+      order: 2;
+    }
+  }
+
+  @media (max-width: 550px) and (min-width: 0px) {
+    .res-full-width {
+      width:100% !important;
+    }
+
+    .res-signup{
+      width: 100% !important;
+      padding: 17px 0px !important;
+      border-radius: 10px !important;
+    }
+  }
+</style>

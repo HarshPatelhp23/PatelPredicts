@@ -1,0 +1,69 @@
+<!-- app/views/welcome/index.html.erb -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patel Predicts</title>
+  <%= stylesheet_link_tag 'custom', media: 'all', 'data-turbolinks-track': 'reload' %>
+  <style>
+    /* Move the styles to your stylesheet for better organization */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    .hero-section {
+      background-image: url(<%= asset_path('wp-6.jpg') %>);
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      text-align: center;
+      color: white; /* Change text color to white for better contrast */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* Set minimum height to viewport height */
+    }
+
+    .hero-text {
+      max-width: 600px; /* Limit text width for better readability */
+      margin: 0 auto; /* Center align the text */
+      padding: 50px; /* Add padding for better spacing */
+      background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+      border-radius: 10px; /* Add border radius for a rounded section */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    }
+
+    .hero-text h1 {
+      font-size: 3rem; /* Increase the font size for impact */
+      margin-bottom: 20px; /* Add some space below the heading */
+    }
+
+    .hero-text h5 {
+      font-size: 1.5rem; /* Increase the font size for subheading */
+      margin-bottom: 30px; /* Add more space below the subheading */
+    }
+
+    /* CSS for the placeholder */
+    .placeholder-for-navbar {
+      height: 35px; /* Adjust height as needed */
+    }
+  </style>
+</head>
+<body>
+  <%= render 'navbar' %>
+  <div class="placeholder-for-navbar"></div>
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-text">
+        <h1>Welcome to PatelPredicts</h1>
+        <h5>Register as an owner if you don't have an account.</h5>
+        <!-- Update your existing code for the signup button -->
+        <%= link_to 'Sign Up!', new_user_registration_path, class: 'btn btn-success btn-lg text-white', style: 'text-decoration: none;' %>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

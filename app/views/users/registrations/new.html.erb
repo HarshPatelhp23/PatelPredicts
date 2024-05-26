@@ -1,0 +1,123 @@
+<link rel="stylesheet" type="text/css" href="authentication.css">
+<section class="h-100 bg-light">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-xl-10">
+        <div class="card rounded-3 text-dark">
+          <div class="row g-0">
+            <div class="col-lg-6">
+              <div class="card-body p-md-5 mx-md-4">
+
+                <div class="text-center">
+                  <%= image_tag('pp_logo.png', style: 'width: 125px;', alt: 'logo') %>
+                  <h4 class="mt-1 mb-5 pb-1">Welcome to Patel-Predicts!</h4>
+                </div>
+
+                <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+                  <%= render "devise/shared/error_messages", resource: resource %>
+                  
+                  <div class="mb-4">
+                    <%= f.label :email, class: "form-label" %>
+                    <%= f.email_field :email, class: "form-control res-full-width", placeholder: "Enter your Email here" %>
+                  </div>
+
+                  <div class="mb-4">
+                    <%= f.label :username, class: "form-label" %>
+                    <%= f.text_field :username, class: "form-control res-full-width", placeholder: "Enter your Email here", require: true %>
+                  </div>
+
+                  <div class="mb-4">
+                    <%= f.label :password, class: "form-label" %>
+                    <% if @minimum_password_length %>
+                    <em>(<%= @minimum_password_length %> characters minimum)</em>
+                    <% end %>
+                    <%= f.password_field :password, class: "form-control res-full-width", autocomplete: "new-password", placeholder: 'Enter your password here' %>
+                  </div>
+
+                  <div class="mb-4">
+                    <%= f.label :password_confirmation, class: "form-label" %>
+                    <%= f.password_field :password_confirmation, class: "form-control res-full-width", autocomplete: "new-password", placeholder: 'Repeat your above password here' %>
+                  </div>
+
+                  <div class="text-center pt-1 mb-5 pb-1 d-lg-flex">
+                    <%= f.submit "Sign up", class: "btn btn-primary btn-block fs-lg bg-gradient mb-3 res-signup", style: 'margin-right: 200px; background-color: #0d6efd;' %>
+                  </div>
+
+                <% end %>
+
+                <div class="text-center d-flex align-items-center justify-content-center pb-4">
+                  <p class="mb-0 me-2">Already have an account?</p>
+                  <%= link_to "Log in", new_session_path(resource_name), class: "mb-1" %>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="col-lg-1 vertical-line"></div>
+            <div class="col-lg-5 d-flex align-items-center bg-gradient res-right-hide">
+              <div class="px-3 py-4 p-md-5 mx-md-4">
+                <div class="text-center">
+                  <%= image_tag('default_player_image.jpeg', style: 'width: 185px;', alt: 'logo') %>
+                  <h4 class="mb-4">We are more than just a company</h4>
+                  <p class="small mb-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .vertical-line {
+    border-left: 5px solid #9932CC;
+    height: 100%;
+    position: absolute;
+    margin-left: 50%;
+  }
+
+  @media (max-width: 767px) {
+    .vertical-line {
+      display: none;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .col-lg-6 {
+      order: 2;
+    }
+
+    .col-lg-5 {
+      order: 1;
+    }
+
+    .text-center.d-lg-flex.justify-content-center {
+      flex-direction: column;
+      align-items: center;
+      margin-right: 150px;
+    }
+  }
+
+  @media (max-width: 550px) and (min-width: 0px) {
+    .res-full-width {
+      width:100% !important;
+    }
+    
+
+    .res-signup{
+      width: 100% !important;
+      padding: 17px 0px !important;
+      border-radius: 10px !important;
+    }
+
+    .res-right-hide{
+      display:none !important;
+    }
+  }
+</style>

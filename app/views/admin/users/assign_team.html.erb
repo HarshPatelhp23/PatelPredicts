@@ -1,0 +1,41 @@
+<%= form_for [:admin, @user], url: assign_team_admin_user_path(@user), method: :post do |f| %>
+  <div class="input-wrapper form-control-sm">
+    <%= f.label :team, 'Team' %>
+    <%= f.text_field :team, value: @user.team.team_name, readonly: true, class: 'select-input mb-4 team' %>
+  </div>
+  <div class="input-wrapper data">
+    <%= f.label :data, 'Data' %>
+    <%= f.text_area :data, rows: 4, placeholder: 'Enter data here', class: 'text-area-input' %>
+  </div>
+  <%= f.submit 'Assign Team', class: 'submit-button' %>
+<% end %>
+
+<style>
+  .input-wrapper {
+    margin-bottom: 10px;
+  }
+
+  .input-wrapper label {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+    margin-right: 10px;
+    margin-bottom: 30px;
+  }
+
+  .select-input,
+  .text-area-input {
+    width: 300px;
+    margin-top: 20px;
+    margin-bottom: -30px;
+  }
+
+  .submit-button {
+    margin-top: 20px;
+    margin-left: 50px;
+  }
+
+  .team {
+    width: 15% !important;
+  }
+</style>

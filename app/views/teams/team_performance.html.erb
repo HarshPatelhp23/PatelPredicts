@@ -1,0 +1,73 @@
+<!-- app/views/teams/team_performance.html.erb-->
+<div class="container mt-5 team-performance">
+  <div class="header">
+    <h1 class="text-center mb-4">Search Player</h1>
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <input type="text" id="player-search" class="form-control" placeholder="Type player name...">
+        <div id="suggestions-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="player-card-container" class="mt-4">
+    <!-- Player card will be rendered here -->
+  </div>
+</div>
+<script>
+  $(document).ready(function () {
+    const playerSearchInput = document.getElementById("player-search");
+    const suggestionsContainer = document.getElementById("suggestions-container");
+    const playerCardContainer = document.getElementById("player-card-container");
+
+    // Function to fetch player performance data
+    function fetchPlayerPerformance(playerId) {
+      fetch(`/${playerId}/player_performance`)
+        .then(response => response.json())
+        .then(data => {
+          playerCardContainer.innerHTML = data.player_performance_card_html;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    // Function to fetch suggestions based on input
+    function fetchSuggestions(input) {
+      fetch(`/search_players?name=${input}`)
+        .then(response => response.json())
+        .then(data => {
+          displaySuggestions(data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    // Function to display suggestions
+    function displaySuggestions(players) {
+      suggestionsContainer.innerHTML = "";
+      players.forEach(player => {
+        const suggestionElement = document.createElement("div");
+        suggestionElement.classList.add("suggestion");
+        suggestionElement.textContent = player.name;
+        suggestionElement.addEventListener("click", function () {
+          playerSearchInput.value = player.name;
+          suggestionsContainer.innerHTML = "";
+          fetchPlayerPerformance(player.id);
+        });
+        suggestionsContainer.appendChild(suggestionElement);
+      });
+    }
+
+    // Event listener for input field
+    playerSearchInput.addEventListener("input", function () {
+      const playerName = playerSearchInput.value;
+      if (playerName.trim() !== "") {
+        fetchSuggestions(playerName);
+      } else {
+        suggestionsContainer.innerHTML = "";
+      }
+    });
+  });
+</script>

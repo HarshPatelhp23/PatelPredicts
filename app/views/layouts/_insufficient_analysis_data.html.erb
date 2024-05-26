@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insufficient Data</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 2rem;
+      background-color: #f0f6ff; /* Updated background color */
+      font-family: 'Arial', sans-serif; /* Updated font */
+      color: #333; /* Updated text color */
+    }
+    .starter-template {
+      padding: 2rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh; /* Changed to min-height for full viewport height */
+    }
+    .logo img {
+      max-width: 100%;
+      height: auto;
+    }
+    .greeting-message {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+    .registration-message {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .back-button {
+      padding: 0.75rem 2rem;
+      font-size: 1.2rem;
+      background-color: #007bff; /* Button color */
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    .back-button:hover {
+      background-color: #0056b3; /* Hover color */
+    }
+
+    /* Media Query for Small Devices */
+    @media (max-width: 768px) {
+      .starter-template {
+        padding: 1rem;
+      }
+      .back-button {
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="starter-template">
+      <h1 class="mb-3">Insufficient Data</h1>
+      <div class="logo mb-4">
+        <%= image_tag("pp_logo.png", alt: "Your Logo") %> <!-- Replace with your logo -->
+      </div>
+      <p class="greeting-message">OOPS, we don't have enough data!</p>
+      <p class="registration-message">Visit here after 5 matches, when we have required data!</p>
+      <div class="back-button-container">
+        <%= link_to 'Back', after_login_path, class: "btn btn-primary back-button theme-btn-back" %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

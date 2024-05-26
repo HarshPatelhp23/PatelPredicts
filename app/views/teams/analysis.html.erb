@@ -1,0 +1,122 @@
+<div class="container mt-5 res-bar_chart">
+  <!-- Alert Notice -->
+  <div class="alert alert-primary alert-dismissible fade show notice" role="alert">
+    <strong>Charts refreshed successfully!</strong> Keep playing, keep predicting!
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1 class="text-center mb-4">Player Performance Analysis</h1>
+  </div>
+
+  <!-- Column Chart -->
+  <%= column_chart @player_perfomance, height: '400px', xtitle: 'Players', ytitle: 'Points' %>
+
+  <!-- Team Breakdown Pie Chart -->
+  <div class="header">
+    <h2 class="text-center mb-4"> Your Team Breakdown </h2>
+  </div>
+  <%= pie_chart @player_team_breakdown %>
+
+  <!-- Compare Your Journey Section -->
+  <div class="header">
+    <h3 class="text-center mb-4"> Compare Your Journey </h3>
+    <!-- Comparison Dropdown and Form -->
+    <div class="row justify-content-center">
+      <div class="col-auto">
+        <div class="btn-group">
+          <%= link_to "Compare with", "#", style: 'background-color: #3D5B59;text-decoration:none!important;', class: "btn btn-lg text-white dropdown-toggle", "data-bs-toggle": "dropdown", "aria-expanded": "false" %>
+          <ul class="dropdown-menu">
+            <%= form_tag(team_analysis_path, method: :get, id: 'userSelectionForm') do %>
+              <li>
+                <div class="form-check">
+                  <%= check_box_tag 'selected_users[]', 'all_users', @selected_user.present? && @selected_user.include?('all_users'), class: 'form-check-input', id: 'check-all' %>
+                  <%= label_tag 'selected_users[]', 'All', class: 'form-check-label', for: 'check-all' %>
+                </div>
+              </li>
+              <% @display_users.each do |user| %>
+                <li>
+                  <div class="form-check">
+                    <%= check_box_tag 'selected_users[]', user.id, @selected_user.present? && @selected_user.map(&:to_i).include?(user.id), class: 'form-check-input user-checkbox', id: "user-#{user.id}" %>
+                    <%= label_tag "user-#{user.id}", user.username, class: 'form-check-label' %>
+                  </div>
+                </li>
+              <% end %>
+              <li>
+                <%= submit_tag "Refresh Chart", class: "applySelectionBtn btn theme-btn-color text-white mt-3", style: "text-decoration: none; color: blue;", disabled: !@selected_user.present? %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loader -->
+  <div class="loader-container">
+    <div class="loader spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <% if @users.present? %>
+    <%= line_chart @comparison_data %>
+  <% elsif @all_users.present? %>
+    <%= line_chart @all_users %>   
+  <% else %>
+    <%= line_chart @user_rankings_data %>
+  <% end %>
+</div>
+
+<style>
+  /* Custom Styles */
+  .loader-container {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+
+<script>
+  $(document).ready(function() {
+    const checkAllCheckbox = document.getElementById('check-all');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    const refreshBtn = document.querySelector('.applySelectionBtn');
+
+    // Check all users if "All" is checked
+    checkAllCheckbox.addEventListener('change', function() {
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+      });
+      refreshBtn.disabled = !this.checked && !Array.from(checkboxes).some(checkbox => checkbox.checked);
+    });
+
+    // Enable refresh button if any user is checked
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        refreshBtn.disabled = !Array.from(checkboxes).some(checkbox => checkbox.checked);
+        checkAllCheckbox.checked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+      });
+    });
+
+    $('.applySelectionBtn').click(function(event) {
+      // Show the loader
+      $('.loader-container').fadeIn();
+
+      // Prevent the form from submitting immediately
+      event.preventDefault();
+
+      // Set a timeout to simulate loading (3 seconds)
+      setTimeout(() => {
+        // Hide the loader
+        $('.loader-container').fadeOut();
+
+        // Show the notice after the form submission
+        $('.notice').show();
+      }, 3000); // 3 seconds delay
+    });
+  });
+</script>

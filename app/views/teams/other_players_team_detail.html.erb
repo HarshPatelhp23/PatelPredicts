@@ -1,0 +1,122 @@
+<div class="container mt-5 team-details">
+  <% start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y') %>
+  <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
+  <% weeks_count = [weeks_count, 1].max %>
+  <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
+  <% set_week = params[:week].present? ? params[:week] : weeks_count %>
+  <div class="header">
+    <h1 class="text-center mb-4">Players of Team - <%= @user.username %></h1>
+  </div>
+  <div class="dropdown text-center">
+    <%= link_to "#", class: "btn theme-btn-color dropdown-toggle mb-4 mt-3 text-white", style: 'text-decoration: none;', id: "dropdownMenuButton", "data-bs-toggle" => "dropdown", "aria-expanded" => "false" do %>
+      Select Week
+    <% end %>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <% (0..weeks_count).map do |week_number| %>
+        <% next if week_number == 0 %>
+        <% week = week_number %>
+        <% active_week = set_week.to_i == week_number %>
+        <li class="<%= active_week ? 'theme-active-link-color' : ''%>"><%= link_to "Week #{week}", team_deatails_path(@user, week: week), class: "dropdown-item" %></li>
+      <% end %>
+    </ul>
+  </div>
+  <!-- Playing 11 Section -->
+  <div class="header">
+    <h2 class="text-center mb-4">Playing 11 of Week- <%= set_week %></h2>
+  </div>
+  <div class="table-responsive">
+    <table id="playing11-table" class="table table-striped table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th class="text-center">NO</th>
+          <th class="text-center">Player Name</th>
+          <th class="text-center">Role</th>
+          <th class="text-center">IPL Team</th>
+          <th class="text-center">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% sort_players_by_role(@playing11_players).each_with_index do |player, index| %>
+          <% row_class = @playing_11_changed_player_ids.include?(player.id) ? 'table-success' : '' %>
+          <tr class = "<%= row_class %>" >
+            <td class="text-center"><%= index+1 %></th>
+            <td class="res-profile text-center">
+              <div class="player-info">
+                <span class="player-name"><%= player.name %></span>
+                <% if player.foreigner %>
+                  <%= image_tag "overseas.png", class: "rounded img-fluid overseas res-overseas mx-2", alt: "Default Image" %>
+                <% end %>
+              </div>
+            </td>
+            <td>
+              <% if player.role == 'wicket_keeper' %>
+                <% set_image = 'WK.jpeg' %>
+              <% elsif player.role == 'batsman' %>
+                <% set_image = 'bat.png' %>
+              <% elsif player.role == 'all_rounder' %>
+                <% set_image = 'all_rounder.png' %>
+              <% elsif player.role == 'bowler' %>
+                <% set_image = 'bowler.png' %>
+              <% end %>
+              <center><%= image_tag set_image, class: 'mx-4 res-icons', alt: "Player Image" %></center>
+            </td>
+            <td class="text-center"><%= player.team_name %></td>
+            <td class="text-center"><%= player.points %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bench Players Section -->
+  <div class="header">
+    <h3 class="text-center mb-4">Bench Players</h3>
+  </div>
+  <div class="table-responsive">
+    <table id="bench-table" class="table table-striped table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th class="text-center">NO</th>
+          <th class="text-center">Player Name</th>
+          <th class="text-center">Role</th>
+          <th class="text-center">IPL Team</th>
+          <th class="text-center">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% sort_players_by_role(@bench_players).each_with_index do |player, index| %>
+          <% row_class = @bench_changed_player_ids.include?(player.id) ? 'table-danger' : '' %>
+          <tr class = "<%= row_class %>" >
+            <td class="text-center"><%= index+1 %></th>
+            <td class="res-profile text-center">
+              <div class="player-info">
+                <span class="player-name"><%= player.name %></span>
+                <% if player.foreigner %>
+                  <%= image_tag "overseas.png", class: "rounded img-fluid overseas res-overseas mx-2", style: "max-height: 8%; max-width: 8%;", alt: "Default Image" %>
+                <% end %>
+              </div>
+            </td>
+            <td>
+              <% if player.role == 'wicket_keeper' %>
+                <% set_image = 'WK.jpeg' %>
+              <% elsif player.role == 'batsman' %>
+                <% set_image = 'bat.png' %>
+              <% elsif player.role == 'all_rounder' %>
+                <% set_image = 'all_rounder.png' %>
+              <% elsif player.role == 'bowler' %>
+                <% set_image = 'bowler.png' %>
+              <% end %>
+              <center><%= image_tag set_image, class: 'mx-4 res-icons', alt: "Player Image" %></center>
+            </td>
+            <td class="text-center"><%= player.team_name %></td>
+            <td class="text-center"><%= player.points %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="text-center mt-3">
+  <%= link_to 'Back', other_players_team_path, class: "btn btn-primary back-button theme-btn-back" %>
+</div>

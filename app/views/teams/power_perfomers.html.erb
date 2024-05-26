@@ -1,0 +1,111 @@
+<div class="container mt-5 power-performance">
+  <div class="header">
+    <h1 class="text-center mb-4">POWER-PERFORMERS XI</h1>
+  </div>
+  <div id="player-stats">
+    <!-- Player cards will be dynamically added here -->
+  </div>
+</div>
+
+<script>
+  // Assuming @sorted_players is an array of player objects in your Rails view
+  var sortedPlayers = <%= raw @sorted_players.to_json %>;
+  var owners = <%= raw @owners.to_json %>;
+
+  function setTeamBackgroundColor(teamName) {
+    switch (teamName.toLowerCase()) {
+      case 'csk': return 'bg-csk';
+      case 'dc': return 'bg-dc';
+      case 'kkr': return 'bg-kkr';
+      case 'mi': return 'bg-mi';
+      case 'pbks': return 'bg-pbks';
+      case 'rr': return 'bg-rr';
+      case 'rcb': return 'bg-rcb';
+      case 'srh': return 'bg-srh';
+      case 'gt': return 'bg-gt';
+      case 'lsg': return 'bg-lsg';
+      default: return '';
+    }
+  }
+
+  // Function to create player cards dynamically
+  function createPlayerCard(player, owner, ranking) {
+    var playerCard = document.createElement('div');
+    playerCard.classList.add('player-card');
+
+    var bgColorClass = setTeamBackgroundColor(player.team_name);
+    if (bgColorClass) {
+      playerCard.classList.add(bgColorClass);
+    }
+
+    var playerImg = document.createElement('img');
+    playerImg.src = "/assets/" + player.name + '.jpeg';
+    playerImg.classList.add('player-img');
+    playerCard.appendChild(playerImg);
+
+    var playerDetails = document.createElement('div');
+    playerDetails.classList.add('player-details');
+
+    var playerName = document.createElement('div');
+    playerName.classList.add('player-name');
+    playerName.textContent = player.name;
+    playerDetails.appendChild(playerName);
+
+    var playerStats = document.createElement('div');
+    playerStats.classList.add('player-stats');
+
+    var rankingDiv = document.createElement('div');
+    rankingDiv.textContent = 'Ranking: ' + ranking;
+    playerStats.appendChild(rankingDiv);
+
+    // var teamRole = document.createElement('div');
+    // teamRole.textContent = 'Role: ' + player.role.toString().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+    // playerStats.appendChild(teamRole);
+
+    var playerRole = document.createElement('div');
+    playerRole.classList.add('player-role');
+
+    // Add images based on player roles
+    var roleImage = document.createElement('img');
+    switch (player.role) {
+      case 'wicket_keeper':
+        roleImage.src = "/assets/WK.jpeg";
+        break;
+      case 'batsman':
+        roleImage.src = "/assets/bat.png";
+        break;
+      case 'all_rounder':
+        roleImage.src = "/assets/all_rounder.png";
+        break;
+      case 'bowler':
+        roleImage.src = "/assets/bowler.png";
+        break;
+      default:
+        roleImage.src = "/assets/default_role_image.png"; // Default image if role not recognized
+    }
+    roleImage.alt = "Role Image";
+    roleImage.style.width = "40px";
+    roleImage.style.height = "40px";
+    playerRole.appendChild(roleImage);
+
+    playerDetails.appendChild(playerRole);
+
+    var teamOwner = document.createElement('div');
+    teamOwner.textContent = 'Owner: ' + owner;
+    playerStats.appendChild(teamOwner);
+
+    var playerPoints = document.createElement('div');
+    playerPoints.textContent = 'Points: ' + player.points;
+    playerStats.appendChild(playerPoints);
+
+    playerDetails.appendChild(playerStats);
+    playerCard.appendChild(playerDetails);
+
+    document.getElementById('player-stats').appendChild(playerCard);
+  }
+
+  // Render player cards
+  sortedPlayers.forEach(function(player, index) {
+    createPlayerCard(player, owners[index], index + 1);
+  });
+</script>

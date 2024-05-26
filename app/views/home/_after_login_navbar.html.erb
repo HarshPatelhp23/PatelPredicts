@@ -1,0 +1,51 @@
+<nav class="navbar navbar-expand-lg navbar-dark theme-dark-color after-login-navbar fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white" href="#">
+       <%= image_tag('pp_logo.png', alt: 'PatelPredicts Logo', class: 'logo img-fluid') %>
+      <%= link_to'PatelPredicts', after_login_path, class: 'text-white', style: 'text-decoration: none; font-weight: bold; font-size: 20px;' %>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <%= link_to 'Points Table', points_table_path, class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item">
+          <%= link_to 'Team Submission', team_new_team_path(current_user.team.slug), class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "This Week Schedule", current_week_schedule_path, class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "All teams", other_players_team_path, class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Team Analysis", team_analysis_path, class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Player Performance", team_performance_path, class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Pate-Predict Power Performers", power_perfomers_path, class: 'nav-link text-white' %>
+        </li>
+        <li class="nav-item dropdown">
+          <div class="d-flex align-items-center">
+            <div class="avatar-container">
+              <span class="avatar-text"><%= current_user.username[0] %></span>
+            </div>
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Welcome, <%= current_user.username %>
+            </a>
+            <div class="dropdown-menu theme-dark-color text-white" aria-labelledby="userDropdown">
+              <%= link_to "Edit Profile", edit_profile_path(current_user.id), method: :get, data: {turbo: false}, class: "dropdown-item"%>
+              <div class="dropdown-divider"></div>
+              <%= link_to "Logout", destroy_user_session_url, method: :delete, data: { turbo_method: :delete }, class: "dropdown-item"%>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

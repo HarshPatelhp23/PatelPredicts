@@ -1,0 +1,62 @@
+require:
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'test/fixtures/**/*'
+    - 'db/**/*'
+    - 'bin/**/*'
+    - 'log/**/*'
+    - 'tmp/**/*'
+    - 'app/views/**/*'
+    - 'config/environments/*'
+    - 'config/initializers/devise.rb'
+    - 'node_modules/**/*'
+    - 'spec/**/*'
+    - 'config/routes.rb'
+    - 'lib/tasks/one_time.rake'
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/MethodLength:
+  Max: 11
+
+Metrics/PerceivedComplexity:
+  Max: 10
+
+Metrics/AbcSize:
+  Max: 25
+
+Metrics/ClassLength:
+  Max: 150
+
+Rails/HasAndBelongsToMany:
+  Enabled: false
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+Style/FetchEnvVar:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - /**/*.rake
+
+Rails/SkipsModelValidations:
+  Exclude:
+    - /**/*.rake
+
+Naming/VariableNumber:
+  AllowedPatterns:
+    - '_\d+\z'
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false

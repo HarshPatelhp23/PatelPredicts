@@ -1,0 +1,16 @@
+<!-- app/views/auction_rooms/show.html.erb -->
+<h1><%= @auction.name %></h1>
+
+<div id="user-list">
+  <h2>Users in the Auction Room:</h2>
+  <ul id="user-list-ul">
+    <!-- Users will be dynamically added here via JavaScript -->
+  </ul>
+</div>
+
+<!-- Your auction-related content goes here -->
+
+<%= form_tag join_auction_path(@auction_room), method: :post, remote: true do %>
+  <%= hidden_field_tag :user_id, current_user.id %>
+  <%= submit_tag "Join Auction Room" %>
+<% end %>

@@ -1,0 +1,682 @@
+/* Custom CSS Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  background-color: #343a40;
+}
+
+.navbar-brand, .navbar-nav .nav-link {
+  color: #fff;
+}
+
+.hero-text {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/*.btn-primary {
+  background-color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.btn-primary:hover {
+  background-color: #c0392b;
+  border-color: #c0392b;
+}*/
+
+.footer {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.navbar-nav .nav-link {
+  text-decoration: none; /* Remove underline */
+  color: #fff; /* Set the link color to white */
+}
+
+.navbar-brand {
+  text-decoration: none !important; /* Remove underline and use !important to override other styles */
+}
+
+/* Remove underline from dropdown options */
+.dropdown-menu a.dropdown-item {
+  text-decoration: none !important; /* Remove underline and use !important to override other styles */
+  color: #000; /* Set the link color to your desired color */
+}
+
+/* Remove the default focus outline and provide a custom style */
+.dropdown-menu a.dropdown-item:focus {
+  outline: none;
+}
+
+#login {
+  border: 10px solid black;
+  background-color: yellow;
+}
+
+/* Move the notice to the top and style it */
+.notice {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #4caf50; /* Set your desired background color */
+  color: #fff; /* Set the text color */
+  text-align: center;
+  padding: 10px 0;
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.scorecard{
+  margin-left: 60%;
+}
+
+/* Latest Design Css */
+
+/* Updated styles for better design */
+
+.placeholder-for-navbar {
+  height: 35px; /* Adjust height as needed */
+}
+
+.theme-dark-color {
+  background-color: #0033cc !important;
+  color: #0033cc !important;
+}
+
+.theme-light-color {
+  background-color: #4c70db !important;
+  color: #4c70db !important;
+}
+
+.theme-btn-color {
+  background-color: #E45F36 !important;
+  color: #E45F36 !important;
+}
+
+.theme-active-link-color {
+  background-color: #e97e5e !important;
+  color: #e97e5e !important;
+}
+
+.theme-btn-back {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.header {
+  background-color: #4c70db;
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+}
+
+.player-image {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.player-details {
+  flex-grow: 1;
+}
+
+.player-name {
+  color: #343a40;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.btn-primary {
+  background-color: #4c70db;
+  border-color: #4c70db;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Additional styling for the table */
+.table-responsive .table {
+  margin-bottom: 20px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table-responsive  .table th,
+.table-responsive .table td {
+  padding: 3px;
+  text-align: center;
+}
+
+.one_match_scorecard_table .table td {
+  padding: 12px;
+}
+
+.table-responsive .table th {
+  background-color: #4c70db;
+  color: white;
+}
+
+.table-responsive .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+
+.table-responsive .table-bordered th,
+.table-responsive .table-bordered td {
+  border: 1px solid #dee2e6;
+}
+
+.table-responsive .table-hover tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+/* Additional styles for Top-3 cards */
+.card {
+  border-radius: 10px; /* Adjust as needed */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Hover effect to lift the card */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow on hover */
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-brand img {
+  max-height: 30px;
+  margin-right: 5px;
+}
+
+.after-login-navbar .avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 5px;
+  object-fit: cover;
+}
+
+.after-login-navbar .dropdown-menu {
+  background-color: #343a40;
+}
+
+.after-login-navbar .dropdown-menu a.dropdown-item {
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.after-login-navbar .dropdown-menu a.dropdown-item:hover {
+  background-color: #495057;
+}
+
+.after-login-navbar .avatar-container {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #fff; /* Background color for avatar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.after-login-navbar .avatar-text {
+  color: #1877f2; /* Text color for avatar */
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.back-btn {
+  text-decoration: none;
+}
+
+/* Form styles */
+.edit-profile-form {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.edit-profile-form .form-group {
+  margin-bottom: 15px;
+}
+
+.edit-profile-form label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.edit-profile-form input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  margin-top: 5px;
+}
+
+.edit-profile-form input[type="submit"] {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.edit-profile-form input[type="submit"]:hover {
+  background-color: #218838;
+}
+
+.back-link {
+  display: inline-block;
+  color: #4c70db;
+  text-decoration: none;
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.players-of-match .player-card {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  border-radius: 10px;
+  border: 1px solid #ccc; /* Optional: Add a border for separation */
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.players-of-match .player-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.players-of-match .player-photo {
+  flex: 0 0 auto;
+  padding: 20px;
+}
+
+.players-of-match .player-photo img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.players-of-match .player-photo img:hover {
+  transform: scale(1.1);
+}
+
+.players-of-match .player-details {
+  flex: 1;
+  padding: 20px;
+}
+
+.players-of-match .player-name {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem; /* Larger font size for player name */
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Limit width to prevent overflow */
+}
+
+.players-of-match .player-role img {
+  height: 20px;
+  width: 20px;
+  margin-right: 5px;
+}
+
+.players-of-match .player-team {
+  margin-top: 10px;
+  color: #666;
+}
+
+.players-of-match .no-players-available {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.overflow-wrap {
+  overflow-wrap: break-word;
+}
+
+.team-details .res-icons{
+  max-height: 8% !important;
+  max-width: 8% !important;
+}
+
+.team-details .player-info {
+  display: flex;
+  align-items: center; /* Center items vertically */
+}
+
+.team-details .player-name {
+  flex-grow: 1; /* Allow the player name to take up remaining space */
+  margin-right: 0.5rem; /* Adjust margin between name and image */
+}
+
+.team-details .res-overseas{
+  max-height: 5% !important;
+  max-width: 5% !important;
+}
+
+
+@media (max-width: 550px) and (min-width: 0px) {
+
+  .team-details .res-icons {
+    max-height: 21% !important;
+    max-width: 30.5% !important;
+  }
+
+  .team-details .res-overseas{
+    max-height: 18% !important;
+    max-width: 17.5% !important;
+  }
+}
+
+/* Team Performance Design Css */
+
+/* For search input and suggestions */
+.team-performance #player-search {
+  border: 2px solid #4e54c8;
+  border-radius: 20px;
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.team-performance #suggestions-container {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.team-performance .suggestion {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.team-performance .suggestion:hover {
+  background-color: #E45F36; /* Adjust the color as needed */
+}
+
+/* For player performance card */
+.team-performance .player-performance-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.team-performance .card-header {
+  background-color: #4e54c8;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px 8px 0 0;
+}
+
+.team-performance .card-body {
+  padding: 20px;
+}
+
+.team-performance .card-title {
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.team-performance .list-unstyled li {
+  margin-bottom: 8px;
+}
+
+.team-performance .list-unstyled li span {
+  font-weight: bold;
+}
+
+.team-performance .player-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.team-performance .match-name {
+  font-weight: bold;
+  color: #333; /* Dark text color for match names */
+}
+
+.team-performance .match-points {
+  color: #6c757d; /* Gray text color for match points */
+}
+
+.team-performance .summary-label {
+  font-weight: bold;
+  color: #555; /* Darker text color for summary labels */
+}
+
+/* Power Performance Design Css */
+.power-performance .player-card {
+  display: flex;
+  flex-wrap: wrap; /* Allow cards to wrap to the next line on smaller screens */
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.power-performance .player-img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 20px;
+  border: 4px solid #fff; /* Add a border around the image */
+}
+
+.power-performance .player-details {
+  flex-grow: 1;
+  padding: 15px;
+}
+
+.power-performance .player-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-align: center;
+  margin-top: 5px;
+  color: #fff;
+}
+
+.power-performance .player-stats {
+  display: flex;
+  flex-wrap: wrap; /* Allow stats to wrap to the next line on smaller screens */
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.power-performance .player-stats div {
+  flex-grow: 1;
+  text-align: center;
+  padding: 5px;
+  font-size: 16px;
+}
+
+/* Team colors */
+.power-performance .bg-csk { background-color: #FFFF3C; }
+.power-performance .bg-dc { background-color: #318CE7; color: white; }
+.power-performance .bg-kkr { background-color: #2E0854; color: white; }
+.power-performance .bg-mi { background-color: rgb(0,75,141); color: white; }
+.power-performance .bg-pbks { background-color: #FF033E; color: white; }
+.power-performance .bg-rr { background-color: #EA2659; color: white; }
+.power-performance .bg-rcb { background-color: #D2042D; color: white; }
+.power-performance .bg-srh { background-color: #E95420; color: white; }
+.power-performance .bg-gt { background-color: #36454F; color: white; }
+.power-performance .bg-lsg { background-color: #89CFF0; color: white; }
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .power-performance .player-card {
+    flex-direction: column; /* Stack cards vertically on smaller screens */
+    text-align: center;
+  }
+
+  .power-performance .player-img {
+    margin-right: 0;
+    margin-top: 20px !important;
+    margin-bottom: 10px; /* Add space between image and details on smaller screens */
+  }
+}
+
+/* Playing11 - Bench View Design Css */
+
+.playing11-bench-view .card {
+  border-radius: 10px;
+}
+
+.playing11-bench-view .card-title {
+  font-size: 1.2rem;
+}
+
+.playing11-bench-view .card-footer {
+  background-color: #f8f9fa;
+}
+
+.playing11-bench-view .nav-tabs {
+  margin-top: 20px;
+}
+
+.playing11-bench-view .nav-link.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.playing11-bench-view .player-name {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.playing11-bench-view .back-button {
+  margin-top: 20px;
+}
+
+.playing11-bench-view  .player-image {
+  height: 120px;
+  width: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.playing11-bench-view  .player-image:hover {
+  border-color: #007bff; /* Change border color on hover */
+}
+
+.playing11-bench-view .player-card-footer {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.playing11-bench-view .player-image {
+  height: 120px;
+  width: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.playing11-bench-view .role-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.playing11-bench-view .role-image {
+  max-width: 30px;
+  height: auto;
+  margin-left: 10px;
+}
+
+@media (max-width: 576px) {
+  .playing11-bench-view .role-image {
+    max-width: 20px;
+  }
+}
+
+.playing11-bench-view .bg-csk {
+  background-color: #FFFF3C;
+}
+
+.playing11-bench-view .bg-dc {
+  background-color: #318CE7;
+}
+
+.playing11-bench-view .bg-kkr {
+  background-color: #2E0854;
+}
+
+.playing11-bench-view .bg-mi {
+  background-color: rgb(0,75,141)
+}
+
+.playing11-bench-view .bg-pbks {
+  background-color: #FF033E;
+}
+
+.playing11-bench-view .bg-rr {
+  background-color: #EA2659;
+}
+
+.playing11-bench-view .bg-rcb {
+  background-color: #D2042D;
+}
+
+.playing11-bench-view .bg-srh {
+  background-color: #E95420;
+}
+
+.playing11-bench-view .bg-gt {
+  background-color: #36454F  ;
+}
+
+.playing11-bench-view .bg-lsg {
+  background-color: #89CFF0;
+}

@@ -1,0 +1,253 @@
+<!-- /app/views/teams/_form.html.erb -->
+<div class="container mt-5 playing11-bench-view">
+  <!-- Alert Notice -->
+  <div id="alertDiv" class="alert alert-primary alert-dismissible fade show notice" role="alert" style="display:none;">
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div class="header text-center">
+    <h1 class="mb-4">Playing-11 Breakdown</h1>
+    <h4 class="mb-4">Total Players in XI: <%= @playing_11_players.count %></h4>
+    <h4 class="mb-4">Indian: <%= @playing_11_players.where(foreigner: false).count %>, Overseas: <%= @playing_11_players.where(foreigner: true).count %></h4>
+    <%= link_to 'Verify Team', '#', class: 'vf btn theme-btn-color text-white', data: { bs_toggle: 'modal', bs_target: '#staticBackdrop' }, style: "text-decoration: none;" %>
+  </div>
+  
+  <div class="row justify-content-center">
+    <% player_counts = { "WK": @wicket_keeper.count, "Batsman": @batsman.count, "All-Rounder": @all_rounder.count, "Bowler": @bowler.count } %>
+    <% role = { 'WK' => 0, 'Batsman' => 1, 'All-Rounder' => 2, 'Bowler' => 3 } %>
+    <% player_counts.each do |title, count| %>
+      <% set_image = case title.to_s
+                   when 'WK' then 'WK.jpeg'
+                   when 'Batsman' then 'bat.png'
+                   when 'All-Rounder' then 'all_rounder.png'
+                   when 'Bowler' then 'bowler.png'
+                   else 'default_image.png'
+                 end %>
+      <div class="col-md-6 col-lg-3 mb-4 ctitle">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center justify-content-center mb-3">
+              <%= image_tag(set_image, class: 'role-image mx-2', alt: "Role Image") %>
+              <h4 class="card-title mb-0"><%= title %></h4>
+            </div>
+            <p class="card-text display-4"><%= count %></p>
+          </div>
+          <div class="card-footer player-name">
+            <%= link_to 'View Players', '#', class: 'btn btn-primary text-white', data: { bs_toggle: 'modal', bs_target: "##{title.downcase}Modal" }, style: "text-decoration: none;" %>
+          </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="<%= title.downcase %>Modal" tabindex="-1" aria-labelledby="<%= title.downcase %>ModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <%= image_tag(set_image, class: 'role-image mx-2', alt: "Role Image") %>
+                <h1 class="modal-title fs-5" id="<%= title.downcase %>ModalLabel"><%= title %></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="card-deck">
+                    <% @playing_11_players.where(role: role[title.to_s]).each_with_index do |player, index| %>
+                      <div class="card mb-4">
+                        <div class="card-body text-center">
+                          <h5 class="card-title"><%= index + 1 %>.  <%= player.name %> <% if player.foreigner %><%= image_tag "overseas.png", class: "rounded-circle", style: "max-height: 5%; max-width: 5%;", alt: "Default Image" %></i><% end %></h5>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Tabbed Interface for Playing 11 and Bench -->
+  <ul class="nav nav-tabs justify-content-center" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button id="playing-11-tab" class="nav-link active" data-bs-toggle="tab" data-bs-target="#playing-11-content" type="button" role="tab" aria-controls="playing-11-content" aria-selected="true">Playing 11</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button id="remaining-players-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#remaining-players-content" type="button" role="tab" aria-controls="remaining-players-content" aria-selected="false">Bench</button>
+    </li>
+  </ul>
+
+  <!-- Playing 11 and Bench Content -->
+  <div class="tab-content">
+    <div class="text-center mt-3">
+      <%= link_to "Move to Bench", "#", id: "moveSelectedPlayersBtn", class: "btn btn-primary theme-btn-color text-white", style: 'display:none;' %>
+    </div>
+    <div id="playing-11-content" class="tab-pane fade show active" role="tabpanel">
+      <!-- Playing 11 Cards -->
+      <div class="row gx-3 mt-3">
+        <% sort_players_by_role(@squad).each do |player| %>
+          <% unless player.bench? %>
+            <div class="col-lg-4 col-md-6 col-sm-12 player-card">
+              <%= render 'player_card', player: player %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <div id="remaining-players-content" class="tab-pane fade" role="tabpanel">
+      <!-- Bench Cards -->
+      <div class="row gx-3 mt-3">
+        <% sort_players_by_role(@squad).each do |player| %>
+          <% if player.bench? %>
+            <div class="col-lg-4 col-md-6 col-sm-12 player-card inactive">
+              <%= render 'player_card', player: player %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="text-center"> Your Playing 11 </h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="card-deck">
+              <% sort_players_by_role(@playing_11_players).each_with_index do |player, index| %>
+                <div class="card mb-4">
+                  <div class="card-body text-center">
+                    <h5 class="card-title"><%= index + 1 %>.  <%= player.name %> <% if player.foreigner %><%= image_tag "overseas.png", class: "rounded-circle", style: "max-height: 5%; max-width: 5%;", alt: "Default Image" %></i><% end %></h5>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <%= link_to 'Submit Team', submit_team_path, data: { turbo_method: :post }, class: 'btn btn-success text-white', style: 'text-decoration: none;' %>
+           <%= link_to 'View Bench Players', '#', class: 'btn btn-primary text-white', data: { bs_toggle: 'modal', bs_target: '#exampleModalToggle2' }, style: "text-decoration: none;" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="exampleModalToggle2" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"  aria-labelledby="exampleModalToggleLabel2" aria-hidden="true" >
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="text-center"> Your Bench Players </h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="card-deck">
+              <% sort_players_by_role(@bench_players).each_with_index do |player, index| %>
+                <div class="card mb-4">
+                  <div class="card-body text-center">
+                    <h5 class="card-title"><%= index + 1 %>.  <%= player.name %>  <% if player.foreigner %><%= image_tag "overseas.png", class: "rounded-circle", style: "max-height: 5%; max-width: 5%;", alt: "Default Image" %></i><% end %></h5>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-bs-target="#staticBackdrop" data-bs-toggle="modal">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="text-center mt-3">
+  <%= link_to 'Back', after_login_path, class: "btn btn-primary back-button theme-btn-back" %>
+</div>
+<script src=
+"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+    </script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Function to update button text based on the active tab
+    function updateButtonText() {
+      const activeTabId = $('.nav-link.active').attr('id'); // Get the ID of the active tab link
+      const buttonText = activeTabId === 'playing-11-tab' ? 'Move to Bench' : 'Move to Playing 11';
+      $('#moveSelectedPlayersBtn').text(buttonText); // Update the button text
+    }
+
+    // Call the function initially
+    updateButtonText();
+
+    // Event listener for tab change
+    $('.nav-link').on('click', function() {
+      updateButtonText(); // Update button text on tab change
+    });
+  });
+  
+  $(document).ready(function() {
+    // Function to update button visibility based on checkbox selection
+    function updateButtonVisibility() {
+      const selectedPlayersCount = $('.player-checkbox:checked').length;
+      $('#moveSelectedPlayersBtn').toggle(selectedPlayersCount > 0); // Show button if at least one checkbox is checked
+    }
+
+    // Call the function initially
+    updateButtonVisibility();
+
+    // Event listener for checkbox change
+    $('.player-checkbox').on('change', function() {
+      updateButtonVisibility(); // Update button visibility on checkbox change
+    });
+
+    // Function to get the active tab name
+    function getActiveTabName() {
+      const activeTab = document.querySelector('.nav-link.active');
+      if (activeTab) {
+        return activeTab.textContent.trim();
+      }
+      return null;
+    }
+
+    $('#moveSelectedPlayersBtn').click(function() {
+      var selectedPlayers = [];
+      $('.player-checkbox:checked').each(function() {
+        selectedPlayers.push($(this).val());
+      });
+      const activeTabName = getActiveTabName();
+      const actionName = activeTabName === 'Playing 11' ? 'bench' : 'playing_11';
+
+      if (selectedPlayers.length > 0) {
+        $.ajax({
+          url: '/teams/move_players',
+          method: 'POST',
+          headers: {
+            'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+          },
+          data: { move_action: actionName, player_ids: selectedPlayers },
+          dataType: 'json',
+          success: function(response) {
+            if (response.success) {
+              location.reload();
+              $('#alertDiv').removeClass('alert-danger').addClass('alert-primary').text(response.notice).show();
+            } else {
+              $('#alertDiv').removeClass('alert-primary').addClass('alert-danger').text(response.error).show();
+            }
+          },
+          error: function() {
+            $('#alertDiv').removeClass('alert-primary').addClass('alert-danger').text('An error occurred.').show();
+          }
+        });
+      } else {
+        alert('Select at least one player.');
+      }
+    });
+  });
+
+</script>

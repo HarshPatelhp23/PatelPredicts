@@ -1,0 +1,63 @@
+<div class="container mt-5">
+  <div class="header">
+    <h1 class="text-center mb-4"><%= "#{current_user&.auction&.name} Updates" %></h1>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th class="text-center">Match Name</th>
+          <th class="text-center">Top Scorer</th>
+          <th class="text-center">Your Score</th>
+          <th class="text-center">Your Position</th>
+          <th class="text-center">All Team's Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @match_points.each do |match| %>
+          <% user_data = @user_data[match.match_name][0] %>
+          <% is_top_3 = (1..3).include?(user_data) %>
+          <% is_bottom_3 = (7..10).include?(user_data) %>
+          <% text_css = 'text-light'%>
+          <% tr_css = 'table-light'%>
+          <% display_text = ''%>
+          <% if is_top_3 %>
+            <% text_css = 'text-success' %>
+            <% tr_css = 'table-success' %>
+            <% display_text = 'Top-3'%>
+          <% elsif is_bottom_3 %> 
+            <% text_css = 'text-danger' %>
+            <% tr_css = 'table-danger'%>
+            <% display_text = 'Last-3'%>
+          <% else %>
+            <% text_css = 'text-dark' %>
+          <% end %>
+          <tr class="<%= tr_css %>">
+            <td class="text-center"><%= match.match_name %></td>
+            <td class="text-center"><%= MatchPoint.leader_of_match(match.match_name).truncate(11) %>.. <%= MatchPoint.leader_points_of_match(match.match_name) %></td>
+            <td class="text-center"><%= @user_data[match.match_name][1] %></td>
+            <td class="text-center">
+              <% if user_data&. <= 9 %>
+                <h4><i class="bi bi-<%= user_data %>-circle <%= text_css %>"></i></h4>
+              <% else %>
+                <h4><i class="bi bi-1-circle <%= text_css %>"></i><i class="bi bi-0-circle <%= text_css %>"></i></h4>
+              <% end %>
+              <p class="<%= text_css %>"><%= display_text %></p>
+            </td>
+            <td class="text-center">
+              <%= link_to 'Open', one_match_scorecard_path(match.match_name), class: 'btn theme-btn-color text-white', style: "text-decoration: none; margin-top: 13px;" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <div class="row">
+    <div class="col-12 d-flex justify-content-center mt-4">
+        <ul class="pagination">
+          <center><%== pagy_bootstrap_nav(@pagy) %></center>
+        </ul>
+    </div>
+  </div>
+</div>
+<% if current_user.present? %> <%= render 'shared/footer' %> <% end %>

@@ -1,0 +1,30 @@
+<div class="container mt-5 player-teams">
+  <div class="header">
+    <h1 class="text-center mb-4">Players of Your POOL</h1>
+  </div>
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    <% @other_players.each do |player| %>
+      <div class="col">
+        <div class="card h-100 shadow">
+          <div class="card-header theme-light-color text-white">
+            <%= player&.team&.team_name %>
+          </div>
+          <div class="card-body d-flex flex-column justify-content-center">
+            <h5 class="card-title mb-3">Total Points</h5>
+            <span class="badge bg-light text-black" style='margin:auto;width:30%;border:1px solid gray;border-radius:10px;'><h5><%= player.grand_total %></h5></span>
+          </div>
+          <div class="card-footer text-center">
+            <% start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y') %>
+            <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
+            <% weeks_count = [weeks_count, 1].max %>
+            <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
+            <%= link_to "View Team", team_deatails_path(player.slug), params: { week: weeks_count }, method: :get, class: "btn theme-btn-color btn-sm text-white rounded-pill fw-bold", style: 'text-decoration: none;' %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+<div class="text-center mt-3">
+  <%= link_to 'Back', after_login_path, class: "btn btn-primary back-button theme-btn-back" %>
+</div>

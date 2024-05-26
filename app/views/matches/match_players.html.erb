@@ -1,0 +1,55 @@
+<div class="container mt-5 players-of-match">
+  <div class="header">
+    <h1 class="text-center mb-4">Team:- <%= @selected_user.username %> </h1>
+    <h2 class="text-center mb-4"> Players For Match:-<%= params[:match_name] %> </h2>
+  </div>
+  <div class="row">
+    <% if @players.any? %>
+      <% @players.each do |player| %>
+        <div class="col-md-4">
+          <div class="player-card">
+            <div class="player-photo">
+              <%= image_tag "#{player.name}.jpeg", class: "mb-3 player-image", alt: "Default Image" %>
+              <h6 class="text-center player-name" title="<%= player.name %>">
+                <% player_name_parts = player.name.split(' ') %>
+                <% if player_name_parts.length > 1 %>
+                  <%= player_name_parts.first %> <br> <%= player_name_parts.drop(1).join(' ') %>
+                <% else %>
+                  <%= player.name %>
+                <% end %>
+              </h6>
+            </div>
+            <div class="player-details">
+              <div class="player-stats">
+                <h4 class="player-points"><strong>Points:</strong> <%= player.points %></h4>
+                <% role = {'wicket_keeper' => 'WK', 'batsman' => 'Batsman', 'all_rounder'=>'All-Rounder', 'bowler'=>'Bowler'} %>
+                <% set_role = role[player.role] %>
+                <% if player.role == 'wicket_keeper' %>
+                    <% set_image = 'WK.jpeg' %>
+                  <% elsif player.role == 'batsman' %>
+                     <% set_image = 'bat.png' %>
+                  <% elsif player.role == 'all_rounder' %>
+                     <% set_image = 'all_rounder.png' %>
+                  <% elsif player.role == 'bowler' %>
+                    <% set_image = 'bowler.png' %>
+                  <% end %>
+                <h4 class="player-role"><strong>Role:</strong> <%= image_tag set_image, alt: "Player Image", style: 'height: 60px; width: 60px;' %></h4>
+                <h4 class="player-team"><strong>Team:</strong> <%= player.team_name %></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="col-md-12 text-center">
+        <div class="no-players-available">
+          <i class="fas fa-users-slash fa-5x mb-3" style="color: #999;"></i>
+          <p class="mb-0">OOPS! No players are playing.</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+<div class="text-center mt-3">
+  <%= link_to 'Back', current_week_schedule_path, class: "btn btn-primary back-button theme-btn-back" %>
+</div>
