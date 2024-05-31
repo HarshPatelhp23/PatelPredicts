@@ -177,7 +177,6 @@ class HomeController < ApplicationController
     current_date - days_to_monday
   end
 
-  # rubocop:disable Metrics/MethodLength
   # def find_leader_for_match
   #   all_users = User.where(auction_id: current_user.auction_id)
   #   highest_scorers = {}
@@ -194,5 +193,4 @@ class HomeController < ApplicationController
   #   end
   #   highest_scorers
   # end
-  # rubocop:enable Metrics/MethodLength
 end

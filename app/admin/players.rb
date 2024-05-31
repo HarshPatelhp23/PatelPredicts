@@ -32,16 +32,26 @@ ActiveAdmin.register Player do
       f.input :points
       f.input :role, as: :select, include_blank: 'Select Role'
       f.input :team_name, as: :select, collection: [
-        ['Mumbai Indians', 'MI'],
-        ['Chennai Super Kings', 'CSK'],
-        ['Delhi Capitals', 'DC'],
-        ['Royal Challengers Bangalore', 'RCB'],
-        ['Kolkata Knight Rider', 'KKR'],
-        ['Punjab Kings', 'PBKS'],
-        ['Gujarat Titans', 'GT'],
-        ['Lucknow Super Giants', 'LSG'],
-        ['Sunrisers Hyderabad', 'SRH'],
-        ['Rajasthan Royals', 'RR']
+        ['India', 'IND'],
+        ['Australia', 'AUS'],
+        ['Bangladesh', 'BANG'],
+        ['England', 'ENG'],
+        ['New Zealand', 'NZ'],
+        ['Pakistan', 'PAK'],
+        ['South Africa', 'SA'],
+        ['Sri Lanka', 'SL'],
+        ['West Indies', 'WI'],
+        ['AFGANISTAN', 'AFG'],
+        ['Canada', 'CA'],
+        ['Ireland', 'IRE'],
+        ['Namibia', 'NAM'],
+        ['Nepal', 'NEP'],
+        ['Netherlands', 'NETH'],
+        ['Oman', 'OMN'],
+        ['Papua New Guinea', 'PNG'],
+        ['Scotland', 'SCOT'],
+        ['Uganda', 'UG'],
+        [' United States', 'USA']
       ], include_blank: 'Select Team'
       f.input :team_id, as: :select, collection: Team.all.map { |t|
                                                    [t.team_name, t.id]

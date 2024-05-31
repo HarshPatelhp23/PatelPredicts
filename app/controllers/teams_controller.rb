@@ -179,12 +179,12 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
 
   def allowed_to_change_team?
     today = Time.zone.now.in_time_zone('Mumbai')
-    today.saturday? || today.sunday? || current_user.id == 1
+    today.sunday? || today.thursday? || Date.current == Date.new(2024, 6, 1) || current_user.id == 1
   end
 
   # rubocop:disable Rails/SkipsModelValidations, Metrics/AbcSize
   def upsert_weekly_team
-    week_start_date = next_monday_date(Time.zone.today)
+    week_start_date = Date.current.saturday? ? Date.current + 2.days : Date.current + 1.day
     user_weekly_team_record = current_user.weekly_user_teams.where(week_start_date:).first
     playing11_player_ids = current_user.team.players.where(bench: false).pluck(:id)
     bench_player_ids = current_user.team.players.where(bench: true).pluck(:id)
@@ -195,11 +195,17 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
                                             playing11: playing11_player_ids, bench: bench_player_ids)
     end
   end
-  # rubocop:enable Rails/SkipsModelValidations, Metrics/AbcSize
+  # rubocop:enable Rails/SkipsModelValidations
 
-  def next_monday_date(current_date)
-    days_until_next_monday = (1 - current_date.wday) % 7
-    current_date + days_until_next_monday
+  def week_end_date
+    case Date.current.wday
+    when 0
+      Date.current + 4.days
+    when 4
+      Date.current + 3.days
+    when 6
+      Date.current + 5.days
+    end
   end
 
   def next_sunday_date(date)
@@ -254,7 +260,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     errors['message']
   end
 
-  # rubocop:disable Layout/LineLength, Metrics/AbcSize
+  # rubocop:disable Layout/LineLength
   def check_team_format
     playing11_players = current_user.team.players.where(bench: false)
     overseas_players = current_user.team.players.where(bench: false, foreigner: true)

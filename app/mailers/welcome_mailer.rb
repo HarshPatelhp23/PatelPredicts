@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class WelcomeMailer < ApplicationMailer
-
   def verify_otp
     @username = params[:username]
     @otp = params[:otp]
