@@ -38,14 +38,9 @@
   <main class="container">
     <div class="starter-template">
       <h1 class="mb-3">Waiting for Assignment</h1>
-      <div class="logo mb-4">
-        <%= image_tag("meme_1.jpeg", alt: "Your Logo") %>
-      </div>
-      <div class="logo mb-4">
-        <%= image_tag("meme_2.jpeg", alt: "Your Logo") %>
-      </div>
-      <p class="greeting-message">Gher Jata ro NAGDAO kasu nai dekhay</p>
-      <p class="registration-message">Please paytm 150rs to admin to see points table before anyone else.</p>
+        <center><%= image_tag("pp_logo.png", alt: "Your Logo", style: "width: 175px;") %></center>
+      <p class="greeting-message">Welcome to PatelPredicts!</p>
+      <p class="registration-message">Please wait until Admin assigns you to pool!.</p>
       <div class="d-flex justify-content-center">
         <%= button_to "Log out", destroy_user_session_path, class: "btn btn-outline-danger text-white px-4 py-2 mt-2", style: "background: red;", method: :delete, data: { turbo: false } %>
       </div>

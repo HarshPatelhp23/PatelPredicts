@@ -26,7 +26,7 @@ class HomeController < ApplicationController
 
   def after_login # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     if current_user.present?
-      render partial: 'layouts/waiting_for_assignment' unless current_user.id == 1
+      render partial: 'layouts/waiting_for_assignment' if current_user.auction_id.blank?
       @players = current_user&.team&.players
       @matches = Match.where(auction_id: current_user.auction_id).order(created_at: :asc).uniq
       @pagy, @match_points = pagy(current_user.team.match_points.order(created_at: :desc))
