@@ -44,7 +44,8 @@ ActiveAdmin.register User do
             team_id: @user&.team&.id,
             role: d[1][1],
             team_name: d[1][2],
-            foreigner: d[1][3],
+            sold_price: d[1][3],
+            foreigner: false,
             bench: true
           )
         end

@@ -12,21 +12,48 @@
   var sortedPlayers = <%= raw @sorted_players.to_json %>;
   var owners = <%= raw @owners.to_json %>;
 
+  // function setTeamBackgroundColor(teamName) {
+  //   switch (teamName.toLowerCase()) {
+  //     case 'csk': return 'bg-csk';
+  //     case 'dc': return 'bg-dc';
+  //     case 'kkr': return 'bg-kkr';
+  //     case 'mi': return 'bg-mi';
+  //     case 'pbks': return 'bg-pbks';
+  //     case 'rr': return 'bg-rr';
+  //     case 'rcb': return 'bg-rcb';
+  //     case 'srh': return 'bg-srh';
+  //     case 'gt': return 'bg-gt';
+  //     case 'lsg': return 'bg-lsg';
+  //     default: return '';
+  //   }
+  // }
+
   function setTeamBackgroundColor(teamName) {
     switch (teamName.toLowerCase()) {
-      case 'csk': return 'bg-csk';
-      case 'dc': return 'bg-dc';
-      case 'kkr': return 'bg-kkr';
-      case 'mi': return 'bg-mi';
-      case 'pbks': return 'bg-pbks';
-      case 'rr': return 'bg-rr';
-      case 'rcb': return 'bg-rcb';
-      case 'srh': return 'bg-srh';
-      case 'gt': return 'bg-gt';
-      case 'lsg': return 'bg-lsg';
+      case 'afg': return 'bg-afg';
+      case 'aus': return 'bg-aus';
+      case 'bang': return 'bg-bang';
+      case 'eng': return 'bg-eng';
+      case 'ind': return 'bg-ind';
+      case 'nz': return 'bg-nz';
+      case 'pak': return 'bg-pak';
+      case 'sa': return 'bg-sa';
+      case 'sl': return 'bg-sl';
+      case 'wi': return 'bg-wi';
+      case 'usa': return 'bg-usa';
+      case 'ca': return 'bg-ca';
+      case 'ire': return 'bg-ire';
+      case 'nam': return 'bg-nam';
+      case 'nep': return 'bg-nep';
+      case 'neth': return 'bg-neth';
+      case 'omn': return 'bg-omn';
+      case 'png': return 'bg-png';
+      case 'scot': return 'bg-scot';
+      case 'ug': return 'bg-ug';
       default: return '';
     }
   }
+
 
   // Function to create player cards dynamically
   function createPlayerCard(player, owner, ranking) {

@@ -22,7 +22,8 @@ ActiveAdmin.register Player do
     end
     column :IPL_Team, &:team_name
     column :role
-    column :foreigner
+    column :sold_price
+    # column :foreigner
     actions
   end
 
