@@ -81,7 +81,7 @@
   <!-- Playing 11 and Bench Content -->
   <div class="tab-content">
     <div class="text-center mt-3">
-      <%= link_to "Move to Bench", "#", id: "moveSelectedPlayersBtn", class: "btn btn-primary theme-btn-color text-white", style: 'display:none; text-decoration: none;' %>
+      <%= link_to "#", "#", id: "moveSelectedPlayersBtn", class: "btn btn-primary theme-btn-color text-white", style: 'display:none; text-decoration: none;' %>
     </div>
     <div id="playing-11-content" class="tab-pane fade show active" role="tabpanel">
       <!-- Playing 11 Cards -->
@@ -174,7 +174,7 @@
 "https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
     </script>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  $(document).ready(function() {
     // Function to update button text based on the active tab
     function updateButtonText() {
       const activeTabId = $('.nav-link.active').attr('id'); // Get the ID of the active tab link
@@ -189,9 +189,7 @@
     $('.nav-link').on('click', function() {
       updateButtonText(); // Update button text on tab change
     });
-  });
-  
-  $(document).ready(function() {
+
     // Function to update button visibility based on checkbox selection
     function updateButtonVisibility() {
       const selectedPlayersCount = $('.player-checkbox:checked').length;
@@ -249,5 +247,4 @@
       }
     });
   });
-
 </script>
