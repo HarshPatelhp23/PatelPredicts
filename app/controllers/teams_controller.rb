@@ -109,7 +109,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   def team_performance
-    # render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 2
+    render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 2
     @players = current_user.team.players
   end
 
