@@ -39,7 +39,7 @@ class MatchesController < ApplicationController
     team_name = []
     @selected_user = User.find(params[:user_id])
     @selected_teams = params[:match_name].split(' vs ').select { |team| team_name << match_country_code[team] }
-    current_week_player_ids = @selected_user.weekly_user_teams.order(created_at: :desc).first.playing11
+    current_week_player_ids = @selected_user.weekly_user_teams.order(created_at: :desc).first&.playing11
     @players = @selected_user.team.players.where(id: current_week_player_ids, team_name:)
   end
 
