@@ -81,4 +81,35 @@ module ApplicationHelper
       ''
     end
   end
+
+  def convert_country_code(match)
+    countries = match.split(' vs ')
+    updated_match_name = countries.map { |country| match_country_code[country] || country }
+    updated_match_name.join(' vs ')
+  end
+
+  def match_country_code
+    {
+      'Afghanistan' => 'AFG',
+      'Australia' => 'AUS',
+      'Bangladesh' => 'BANG',
+      'England' => 'ENG',
+      'India' => 'IND',
+      'New Zealand' => 'NZ',
+      'Pakistan' => 'PAK',
+      'South Africa' => 'SA',
+      'Sri Lanka' => 'SL',
+      'West Indies' => 'WI',
+      'USA' => 'USA',
+      'Canada' => 'CA',
+      'Ireland' => 'IRE',
+      'Namibia' => 'NAM',
+      'Nepal' => 'NEP',
+      'Netherlands' => 'NETH',
+      'Oman' => 'OMN',
+      'Papua New Guinea' => 'PNG',
+      'Scotland' => 'SCOT',
+      'Uganda' => 'UG'
+    }
+  end
 end

@@ -18,7 +18,7 @@
         <% @first_half_matches.each do |match| %>
           <tr class="<%= match.match_date == Date.current ? 'table-warning' : '' %>">
             <td class="text-center"><%= match.match_date.strftime('%d/%m') %></td>
-            <td class="text-center"><%= match.match_name %></td>
+            <td class="text-center"><%= convert_country_code(match.match_name) %></td>
             <td class="text-center"><%= match.time %></td>
             <td class="text-center"><%= match.stadium %></td>
             <td class="text-center">
@@ -57,7 +57,7 @@
         <% @second_half_matches.each do |match| %>
           <tr class="<%= match.match_date == Date.current ? 'table-warning' : '' %>">
             <td class="text-center"><%= match.match_date.strftime('%d/%m') %></td>
-            <td class="text-center"><%= match.match_name %></td>
+            <td class="text-center"><%= convert_country_code(match.match_name) %></td>
             <td class="text-center"><%= match.time %></td>
             <td class="text-center"><%= match.stadium %></td>
             <td class="text-center">
