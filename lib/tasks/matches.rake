@@ -48,6 +48,16 @@ namespace :matches do
     MatchSchedule.find(35).update_columns(match_name: 'DC vs SRH')
   end
 
+  task rushabh_team_update: :environment do
+    updated_playing11 = WeeklyUserTeam.last.playing11 - [92]
+    updated_playing11.push(71)
+
+    updated_bench = WeeklyUserTeam.last.bench - [71]
+    updated_bench.push(92)
+
+    WeeklyUserTeam.last.update_columns(playing11: updated_playing11, bench: updated_bench)
+  end
+
   task assign_last_week_team: :environment do
     user_ids = [1, 2, 3, 6, 9]
     user_ids.each do |id|
