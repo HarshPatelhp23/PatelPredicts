@@ -551,6 +551,88 @@ body {
 .power-performance .bg-gt { background-color: #36454F; color: white; }
 .power-performance .bg-lsg { background-color: #89CFF0; color: white; }
 
+
+.power-performance .bg-afg {
+  background-color: #1f2241;
+}
+
+.power-performance .bg-aus {
+  background-color: #FFFF00;
+}
+
+.power-performance .bg-ug {
+  background-color: #F0E68C;
+}
+
+.power-performance .bg-eng {
+  background-color: #191970;
+}
+
+.power-performance .bg-ind {
+  background-color: #0000FF;
+}
+
+.power-performance .bg-nz {
+  background-color: #000000;
+}
+
+.power-performance .bg-pak {
+  background-color: #008000;
+}
+
+.power-performance .bg-bang {
+  background-color: #32CD32;
+}
+
+.power-performance .bg-sa {
+  background-color: #3CB371;
+}
+
+.power-performance .bg-sl {
+  background-color: #87CEEB;
+}
+
+.power-performance .bg-wi {
+  background-color: #800080;
+}
+
+.power-performance .bg-usa {
+  background-color: #483D8B;
+}
+
+.power-performance .bg-ca {
+  background-color: #8B0000;
+}
+
+.power-performance .bg-ire {
+  background-color: #00FF00;
+}
+
+.power-performance .bg-nam {
+  background-color: #2F4F4F;
+}
+
+.power-performance .bg-nep {
+  background-color: #708090;
+}
+
+.power-performance .bg-neth {
+  background-color: #F4A460;
+}
+
+.power-performance .bg-omn {
+  background-color: #FF0000;
+}
+
+.power-performance .bg-png {
+  background-color: #BDB76B;
+}
+
+.power-performance .bg-scot {
+  background-color: #4B0082;
+}
+
+
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
   .power-performance .player-card {
@@ -677,6 +759,84 @@ body {
   background-color: #36454F  ;
 }
 
-.playing11-bench-view .bg-lsg {
-  background-color: #89CFF0;
+/*WORLDCUP TEAMS*/
+
+.playing11-bench-view .bg-afg {
+  background-color: #1f2241;
+}
+
+.playing11-bench-view .bg-aus {
+  background-color: #FFFF00;
+}
+
+.playing11-bench-view .bg-ug {
+  background-color: #F0E68C;
+}
+
+.playing11-bench-view .bg-eng {
+  background-color: #191970;
+}
+
+.playing11-bench-view .bg-ind {
+  background-color: #0000FF;
+}
+
+.playing11-bench-view .bg-nz {
+  background-color: #000000;
+}
+
+.playing11-bench-view .bg-pak {
+  background-color: #008000;
+}
+
+.playing11-bench-view .bg-bang {
+  background-color: #32CD32;
+}
+
+.playing11-bench-view .bg-sa {
+  background-color: #3CB371;
+}
+
+.playing11-bench-view .bg-sl {
+  background-color: #87CEEB;
+}
+
+.playing11-bench-view .bg-wi {
+  background-color: #800080;
+}
+
+.playing11-bench-view .bg-usa {
+  background-color: #483D8B;
+}
+
+.playing11-bench-view .bg-ca {
+  background-color: #8B0000;
+}
+
+.playing11-bench-view .bg-ire {
+  background-color: #00FF00;
+}
+
+.playing11-bench-view .bg-nam {
+  background-color: #2F4F4F;
+}
+
+.playing11-bench-view .bg-nep {
+  background-color: #708090;
+}
+
+.playing11-bench-view .bg-neth {
+  background-color: #F4A460;
+}
+
+.playing11-bench-view .bg-omn {
+  background-color: #FF0000;
+}
+
+.playing11-bench-view .bg-png {
+  background-color: #BDB76B;
+}
+
+.playing11-bench-view .bg-scot {
+  background-color: #4B0082;
 }

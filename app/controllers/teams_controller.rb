@@ -30,7 +30,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   def analysis # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-    render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 5
+    render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 2
     @player_perfomance = current_user.team.players
                                      .order(points: :desc)
                                      .where(bench: false)
@@ -60,23 +60,24 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     @other_players = User.where(auction_id: current_user.auction_id).order(created_at: :desc)
   end
 
-  def other_players_team_detail # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+  def other_players_team_detail
     @user = User.friendly.find(params['user_slug'])
     if @user.weekly_user_teams.blank?
       redirect_to other_players_team_path, alert: 'User has not created his team yet!'
       return
     end
-    playing11_ids = @user.weekly_user_teams.last.playing11
-    @playing11_players = @user&.team&.players&.where(id: playing11_ids)
+    playing11_ids = @user.weekly_user_teams.order(week_start_date: :asc).last.playing11
+    @playing11_players = @user.team&.players&.where(id: playing11_ids)
 
-    bench_ids = @user.weekly_user_teams.last.bench
+    bench_ids = @user.weekly_user_teams.order(week_start_date: :asc).last.bench
     @bench_players = @user&.team&.players&.where(id: bench_ids)
-    week = params[:week] || 1
-    change_week = params[:week].present?
-    @playing_11_changed_player_ids, @bench_changed_player_ids = WeeklyUserTeam.current_week_changes(@user.id, week,
-                                                                                                    change_week)
+    # week = params[:week] || 1
+    # change_week = params[:week].present?
+    @playing_11_changed_player_ids, @bench_changed_player_ids = WeeklyUserTeam.track_changes(@user)
+    # @playing_11_changed_player_ids, @bench_changed_player_ids = WeeklyUserTeam.current_week_changes(@user.id, week,
+    #                                                                                                 change_week)
 
-    update_players if params['week'].present?
+    # update_players if params['week'].present?
   end
 
   def update_players # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
@@ -100,7 +101,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   def power_perfomers
-    render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 5
+    render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 2
     users = current_user.auction.users
     players = users.map { |user| user.team.players }.flatten
     @sorted_players = players.sort_by { |player| -player.points }.first(11)
@@ -108,7 +109,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   def team_performance
-    render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 5
+    # render partial: 'layouts/insufficient_analysis_data' if current_user.team.match_points.count <= 2
     @players = current_user.team.players
   end
 
@@ -142,6 +143,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     total_points = @player.points || 0
     average_points = total_matches.zero? ? 0 : (total_points.to_f / total_matches)
     highest_score =  matches.pluck(:points).max || 0
+    price = @player.sold_price
 
     data = {
       player:,
@@ -150,7 +152,8 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
       total_matches:,
       total_points:,
       average_points:,
-      highest_score:
+      highest_score:,
+      price:
     }
     # Render the partial as a string
     player_performance_card_html = render_to_string(partial: 'player_performance_card', locals: { data: })
@@ -184,14 +187,19 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
 
   # rubocop:disable Rails/SkipsModelValidations, Metrics/AbcSize
   def upsert_weekly_team
-    week_start_date = Date.current.saturday? ? Date.current + 2.days : Date.current + 1.day
+    week_start_date = Date.current + 1.day
     user_weekly_team_record = current_user.weekly_user_teams.where(week_start_date:).first
     playing11_player_ids = current_user.team.players.where(bench: false).pluck(:id)
     bench_player_ids = current_user.team.players.where(bench: true).pluck(:id)
     if user_weekly_team_record.present?
       user_weekly_team_record.update_columns(playing11: playing11_player_ids, bench: bench_player_ids)
     else
-      current_user.weekly_user_teams.create(week_start_date:, week_end_date: next_sunday_date(Time.zone.today),
+      # IPL
+      # current_user.weekly_user_teams.create(week_start_date:, week_end_date: next_sunday_date(Time.zone.today),
+      #                                       playing11: playing11_player_ids, bench: bench_player_ids)
+
+      # WC
+      current_user.weekly_user_teams.create(week_start_date:, week_end_date:,
                                             playing11: playing11_player_ids, bench: bench_player_ids)
     end
   end

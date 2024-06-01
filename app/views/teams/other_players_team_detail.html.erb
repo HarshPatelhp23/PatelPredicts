@@ -1,5 +1,5 @@
 <div class="container mt-5 team-details">
-  <% start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y') %>
+  <% start_date = Date.strptime(Auction::T20_WC_FIRST_WEEK_DATE, '%d/%m/%Y') %>
   <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
   <% weeks_count = [weeks_count, 1].max %>
   <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
@@ -7,22 +7,23 @@
   <div class="header">
     <h1 class="text-center mb-4">Players of Team - <%= @user.username %></h1>
   </div>
-  <div class="dropdown text-center">
-    <%= link_to "#", class: "btn theme-btn-color dropdown-toggle mb-4 mt-3 text-white", style: 'text-decoration: none;', id: "dropdownMenuButton", "data-bs-toggle" => "dropdown", "aria-expanded" => "false" do %>
+  <!-- <div class="dropdown text-center">
+    <#%= link_to "#", class: "btn theme-btn-color dropdown-toggle mb-4 mt-3 text-white", style: 'text-decoration: none;', id: "dropdownMenuButton", "data-bs-toggle" => "dropdown", "aria-expanded" => "false" do %>
       Select Week
-    <% end %>
+    <#% end %>
     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-      <% (0..weeks_count).map do |week_number| %>
-        <% next if week_number == 0 %>
-        <% week = week_number %>
-        <% active_week = set_week.to_i == week_number %>
-        <li class="<%= active_week ? 'theme-active-link-color' : ''%>"><%= link_to "Week #{week}", team_deatails_path(@user, week: week), class: "dropdown-item" %></li>
-      <% end %>
+      <#% (0..weeks_count).map do |week_number| %>
+        <#% next if week_number == 0 %>
+        <#% week = week_number %>
+        <#% active_week = set_week.to_i == week_number %>
+        <li class="<#%= active_week ? 'theme-active-link-color' : ''%>"><#%= link_to "Week #{week}", team_deatails_path(@user, week: week), class: "dropdown-item" %></li>
+      <#% end %>
     </ul>
-  </div>
+  </div> -->
   <!-- Playing 11 Section -->
   <div class="header">
-    <h2 class="text-center mb-4">Playing 11 of Week- <%= set_week %></h2>
+    <!-- <h2 class="text-center mb-4">Playing 11 of Week- <#%= set_week %></h2> -->
+    <h2 class="text-center mb-4">Current Half Playing-11</h2>
   </div>
   <div class="table-responsive">
     <table id="playing11-table" class="table table-striped table-bordered table-hover">

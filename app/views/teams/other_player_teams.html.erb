@@ -14,11 +14,12 @@
             <span class="badge bg-light text-black" style='margin:auto;width:30%;border:1px solid gray;border-radius:10px;'><h5><%= player.grand_total %></h5></span>
           </div>
           <div class="card-footer text-center">
-            <% start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y') %>
-            <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
-            <% weeks_count = [weeks_count, 1].max %>
-            <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
-            <%= link_to "View Team", team_deatails_path(player.slug), params: { week: weeks_count }, method: :get, class: "btn theme-btn-color btn-sm text-white rounded-pill fw-bold", style: 'text-decoration: none;' %>
+            <!-- <#% start_date = Date.strptime(Auction::T20_WC_FIRST_WEEK_DATE, '%d/%m/%Y') %>
+            <#% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
+            <#% weeks_count = [weeks_count, 1].max %>
+            <#% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %> -->
+            <%= link_to "View Team", team_deatails_path(player.slug), method: :get, class: "btn theme-btn-color btn-sm text-white rounded-pill fw-bold", style: 'text-decoration: none;' %>
+            <%#= link_to "View Team", team_deatails_path(player.slug), params: { week: weeks_count }, method: :get, class: "btn theme-btn-color btn-sm text-white rounded-pill fw-bold", style: 'text-decoration: none;' %>
           </div>
         </div>
       </div>

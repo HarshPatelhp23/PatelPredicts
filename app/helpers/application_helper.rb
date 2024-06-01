@@ -7,8 +7,8 @@ module ApplicationHelper
     players.sort_by { |player| Player.roles[player.role] }
   end
 
-  #IPL
-  # def set_background_color(team_name) # rubocop:disable Metrics/CyclomaticComplexity, Naming/AccessorMethodName, Metrics/MethodLength
+  # IPL
+  # def set_background_color(team_name)
   #   case team_name.downcase
   #   when 'csk'
   #     'bg-csk'

@@ -1,6 +1,7 @@
 <div class="container mt-5">
+    <h1 class="text-center mb-5">Week: <%= @current_week_start_date.strftime('%d/%m/%Y') %> To <%= @second_half_end_date.strftime('%d/%m/%Y') %></h1>
   <div class="header">
-    <h1 class="text-center mb-4">Matches Between: <%= @current_week_start_date.strftime('%d/%m/%Y') %> To <%= @current_week_end_date.strftime('%d/%m/%Y') %></h1>
+    <h2 class="text-center mb-4">First Half Matches:- <%= @current_week_start_date.strftime('%d/%m/%Y') %> To <%= @first_half_end_date.strftime('%d/%m/%Y') %></h1>
   </div>
   <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover">
@@ -8,15 +9,56 @@
         <tr>
           <th class="text-center">Date</th>
           <th class="text-center">Match</th>
+          <th class="text-center">Time</th>
           <th class="text-center">Stadium</th>
           <th class="text-center">Select Owner</th>
         </tr>
       </thead>
       <tbody>
-        <% @current_week_matches.each do |match| %>
+        <% @first_half_matches.each do |match| %>
           <tr class="<%= match.match_date == Date.current ? 'table-warning' : '' %>">
             <td class="text-center"><%= match.match_date.strftime('%d/%m') %></td>
             <td class="text-center"><%= match.match_name %></td>
+            <td class="text-center"><%= match.time %></td>
+            <td class="text-center"><%= match.stadium %></td>
+            <td class="text-center">
+              <div class="btn-group">
+                <%= link_to 'Open', '#', class: 'btn theme-btn-color dropdown-toggle text-white', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', style: "text-decoration: none;" %>
+                <ul class="dropdown-menu">
+                  <% @pool_users.each do |user| %>
+                    <li><%= link_to user.username, match_players_path(match_name: match.match_name, user_id: user.id), class: "dropdown-item" %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <div class="header">
+    <h2 class="text-center mb-4">Second Half Matches:- <%= @second_half_start_date.strftime('%d/%m/%Y') %> To <%= @second_half_end_date.strftime('%d/%m/%Y') %></h1>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th class="text-center">Date</th>
+          <th class="text-center">Match</th>
+          <th class="text-center">Time</th>
+          <th class="text-center">Stadium</th>
+          <th class="text-center">Select Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @second_half_matches.each do |match| %>
+          <tr class="<%= match.match_date == Date.current ? 'table-warning' : '' %>">
+            <td class="text-center"><%= match.match_date.strftime('%d/%m') %></td>
+            <td class="text-center"><%= match.match_name %></td>
+            <td class="text-center"><%= match.time %></td>
             <td class="text-center"><%= match.stadium %></td>
             <td class="text-center">
               <div class="btn-group">

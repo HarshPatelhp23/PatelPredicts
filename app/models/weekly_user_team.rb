@@ -29,4 +29,21 @@ class WeeklyUserTeam < ApplicationRecord
     bench_changed_player_id = current_week_record.bench - last_week_record.bench
     [playing_11_changed_player_id, bench_changed_player_id]
   end
+
+  def self.track_changes(user)
+    return unless user.weekly_user_teams.count == 1
+
+    playing_11_changed_player_id = user.weekly_user_teams.first.playing11
+    bench_changed_player_id = user.weekly_user_teams.first.bench
+
+    return [playing_11_changed_player_id, bench_changed_player_id]
+    all_records = user.weekly_user_teams.order(week_start_date: :asc)
+    current_week_record = user.weekly_user_teams.order(week_start_date: :asc).last
+    record_before_current_week_index = all_records.find_index(user) - 1
+    record_before_current_week = all_records[record_before_current_week_index]
+
+    playing_11_changed_player_id = current_week_record.playing11 - record_before_current_week.playing11
+    bench_changed_player_id = current_week_record.bench - record_before_current_week.bench
+    [playing_11_changed_player_id, bench_changed_player_id]
+  end
 end

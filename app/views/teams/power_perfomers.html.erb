@@ -29,30 +29,30 @@
   // }
 
   function setTeamBackgroundColor(teamName) {
-    switch (teamName.toLowerCase()) {
-      case 'afg': return 'bg-afg';
-      case 'aus': return 'bg-aus';
-      case 'bang': return 'bg-bang';
-      case 'eng': return 'bg-eng';
-      case 'ind': return 'bg-ind';
-      case 'nz': return 'bg-nz';
-      case 'pak': return 'bg-pak';
-      case 'sa': return 'bg-sa';
-      case 'sl': return 'bg-sl';
-      case 'wi': return 'bg-wi';
-      case 'usa': return 'bg-usa';
-      case 'ca': return 'bg-ca';
-      case 'ire': return 'bg-ire';
-      case 'nam': return 'bg-nam';
-      case 'nep': return 'bg-nep';
-      case 'neth': return 'bg-neth';
-      case 'omn': return 'bg-omn';
-      case 'png': return 'bg-png';
-      case 'scot': return 'bg-scot';
-      case 'ug': return 'bg-ug';
-      default: return '';
+      switch (teamName.toLowerCase()) {
+        case 'afg': return 'bg-afg';
+        case 'aus': return 'bg-aus';
+        case 'bang': return 'bg-bang';
+        case 'eng': return 'bg-eng';
+        case 'ind': return 'bg-ind';
+        case 'nz': return 'bg-nz';
+        case 'pak': return 'bg-pak';
+        case 'sa': return 'bg-sa';
+        case 'sl': return 'bg-sl';
+        case 'wi': return 'bg-wi';
+        case 'usa': return 'bg-usa';
+        case 'ca': return 'bg-ca';
+        case 'ire': return 'bg-ire';
+        case 'nam': return 'bg-nam';
+        case 'nep': return 'bg-nep';
+        case 'neth': return 'bg-neth';
+        case 'omn': return 'bg-omn';
+        case 'png': return 'bg-png';
+        case 'scot': return 'bg-scot';
+        case 'ug': return 'bg-ug';
+        default: return '';
+      }
     }
-  }
 
 
   // Function to create player cards dynamically
@@ -78,11 +78,18 @@
     playerName.textContent = player.name;
     playerDetails.appendChild(playerName);
 
+    var playerSoldPrice = document.createElement('div');
+    playerSoldPrice.classList.add('sold-price');
+    playerSoldPrice.textContent = player.sold_price;
+    playerSoldPrice.style.color = 'white'
+    playerDetails.appendChild(playerSoldPrice);
+
     var playerStats = document.createElement('div');
     playerStats.classList.add('player-stats');
 
     var rankingDiv = document.createElement('div');
     rankingDiv.textContent = 'Ranking: ' + ranking;
+    rankingDiv.style.color = 'white'
     playerStats.appendChild(rankingDiv);
 
     // var teamRole = document.createElement('div');
@@ -113,16 +120,19 @@
     roleImage.alt = "Role Image";
     roleImage.style.width = "40px";
     roleImage.style.height = "40px";
+    roleImage.style.border = 'white'
     playerRole.appendChild(roleImage);
 
     playerDetails.appendChild(playerRole);
 
     var teamOwner = document.createElement('div');
     teamOwner.textContent = 'Owner: ' + owner;
+    teamOwner.style.color = 'white'
     playerStats.appendChild(teamOwner);
 
     var playerPoints = document.createElement('div');
     playerPoints.textContent = 'Points: ' + player.points;
+    playerPoints.style.color = 'white'
     playerStats.appendChild(playerPoints);
 
     playerDetails.appendChild(playerStats);

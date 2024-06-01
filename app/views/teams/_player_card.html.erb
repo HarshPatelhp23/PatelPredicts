@@ -10,7 +10,7 @@
 <div class="card mb-4 shadow-lg rounded <%= set_background_color(player.team_name) %>">
   <% text_colour = set_background_color(player.team_name) == 'bg-csk' ? 'text-dark' : 'text-white' %>
   <div class="card-body d-flex flex-column align-items-center justify-content-center" style="height: 300px; position: relative;">
-    <%= image_tag "#{player.name}.jpeg", class: "player-image mb-3", alt: "Player Image" %>
+    <%= image_tag "#{player.name}.jpeg", class: "player-image mb-3", alt: "default_player_image.jpeg" %>
     <h5 class="<%= text_colour %> card-title mb-2"><%= player.name %></h5>
     <p class="card-text mb-3">
       <strong class="<%= text_colour %>">Points:</strong>

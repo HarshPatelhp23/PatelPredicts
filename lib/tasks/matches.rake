@@ -22,6 +22,28 @@ namespace :matches do
     puts "Today's match:- #{MatchSchedule.where(match_date: Date.current).pluck(:match_name)}"
   end
 
+  task insert_wc_scehdule: :environment do
+    require Rails.root.join('lib/match_schedule')
+    T20_WORLDCUP_SCHEDULE.each do |match|
+      MatchSchedule.create!(
+        match_number: match[:match_number],
+        match_name: match[:match_name],
+        stadium: match[:stadium],
+        match_date: match[:match_date],
+        time: match[:time]
+      )
+    end
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '+++++  DONE +++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts "TOTAL:- #{MatchSchedule.count} records inserted"
+    puts "Today's match:- #{MatchSchedule.where(match_date: Date.current).pluck(:match_name)}"
+  end
+
   task update_typo: :environment do
     MatchSchedule.find(35).update_columns(match_name: 'DC vs SRH')
   end
@@ -45,18 +67,18 @@ namespace :matches do
 
     rushabh.weekly_user_teams.order(week_start_date: :desc).first.update_columns(playing11: updated_playing11,
                                                                                  bench: updated_bench)
-    puts "+++++++++++++++++++++++++++++++++++"
-    puts "+++++++++++++++++++++++++++++++++++"
-    puts "+++++++++++++++++++++++++++++++++++"
+    puts '+++++++++++++++++++++++++++++++++++'
+    puts '+++++++++++++++++++++++++++++++++++'
+    puts '+++++++++++++++++++++++++++++++++++'
     puts 'DONEEEEE'
   end
 
   task update_pbks_vs_rcb_match_point: :environment do
-    Match.where(id: (1285..1307)).each do |match|
+    Match.where(id: (1285..1307)).find_each do |match|
       match.update_columns(match_name: 'RCB vs PBKS')
     end
 
-    puts "DOOOOONE+++++++++++++++++++++++++"
-    puts "DOOOOONE+++++++++++++++++++++++++"
+    puts 'DOOOOONE+++++++++++++++++++++++++'
+    puts 'DOOOOONE+++++++++++++++++++++++++'
   end
 end
