@@ -14,7 +14,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
       @all_rounder = @playing_11_players.where(role: 'all_rounder')
       @bowler = @playing_11_players.where(role: 'bowler')
     else
-      flash[:notice] = 'You can only change your playing 11 on Saturday and Sunday.'
+      flash[:notice] = 'OOPS!, Team submission for this week had been closed!'
       redirect_to after_login_path
     end
   end
@@ -182,10 +182,11 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
 
   def allowed_to_change_team?
     today = Time.zone.now.in_time_zone('Mumbai')
-    today.sunday? || today.thursday? || Date.current == Date.new(2024, 6, 1) || current_user.id == 1
+    today.thursday? || current_user.id == 1
+    # today.sunday? || today.thursday? || current_user.id == 1
   end
 
-  # rubocop:disable Rails/SkipsModelValidations, Metrics/AbcSize
+  # rubocop:disable Rails/SkipsModelValidations
   def upsert_weekly_team
     week_start_date = Date.current + 1.day
     user_weekly_team_record = current_user.weekly_user_teams.where(week_start_date:).first
@@ -242,14 +243,14 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     all_user_data
   end
 
-  def playing_11_errors # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+  def playing_11_errors # rubocop:disable Metrics/MethodLength
     errors = {}
     playing11_players = current_user.team.players.where(bench: false)
     player_counts = playing11_players.group(:role).count
-    player_teams = playing11_players.pluck(:team_name)
-    player_counts_by_team = player_teams.group_by do |element|
-      player_teams.count(element)
-    end.transform_values(&:uniq)
+    # player_teams = playing11_players.pluck(:team_name)
+    # player_counts_by_team = player_teams.group_by do |element|
+    #   player_teams.count(element)
+    # end.transform_values(&:uniq)
 
     if playing11_players.length != 11
       errors['message'] = 'Please select 11 players'
@@ -261,26 +262,24 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
       errors['message'] = 'You have to select atleast 3 bowlers'
     elsif playing11_players.where(foreigner: true).count > 4
       errors['message'] = 'You can only select 4 overseas-players'
-    elsif player_counts_by_team.keys.any? { |k| k > 3 }
-      team = player_counts_by_team.select { |key, _| key > 3 }.values.flatten.first
-      errors['message'] = "You can only select max-3 players of team - #{team}"
+      # elsif player_counts_by_team.keys.any? { |k| k > 3 }
+      #   team = player_counts_by_team.select { |key, _| key > 3 }.values.flatten.first
+      #   errors['message'] = "You can only select max-3 players of team - #{team}"
     end
     errors['message']
   end
 
-  # rubocop:disable Layout/LineLength
   def check_team_format
     playing11_players = current_user.team.players.where(bench: false)
-    overseas_players = current_user.team.players.where(bench: false, foreigner: true)
+    current_user.team.players.where(bench: false, foreigner: true)
     batsman = playing11_players.where(role: 'batsman')
     wk = playing11_players.where(role: 'wicket_keeper')
     bowler = playing11_players.where(role: 'bowler')
-    player_teams = playing11_players.pluck(:team_name)
-    player_counts_by_team = player_teams.group_by do |element|
-      player_teams.count(element)
-    end.transform_values(&:uniq)
+    # player_teams = playing11_players.pluck(:team_name)
+    # player_counts_by_team = player_teams.group_by do |element|
+    #   player_teams.count(element)
+    # end.transform_values(&:uniq)
 
-    playing11_players.length == 11 && overseas_players.length <= 4 && batsman.length >= 2 && wk.length >= 1 && bowler.length >= 3 && player_counts_by_team.keys.none? { |k| k > 3 }
+    playing11_players.length == 11 && batsman.length >= 2 && wk.length >= 1 && bowler.length >= 3
   end
-  # rubocop:enable Layout/LineLength, Metrics/AbcSize
 end
