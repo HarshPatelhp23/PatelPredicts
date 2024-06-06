@@ -86,8 +86,13 @@ class HomeController < ApplicationController
     if team_id
       team = Team.find(team_id)
       current_match_teams = match_name.split(' vs ') if match_name.present?
-      current_week_monday_date = find_current_week_start_date(Time.zone.today)
-      player_ids = team.user.weekly_user_teams.where(week_start_date: current_week_monday_date).pluck(:playing11)
+      current_week_monday_date = find_current_week_start_date
+      find_week_start_date = if current_week_monday_date == Date.new(2024, 6, 3)
+                               Date.new(2024, 6, 2)
+                             else
+                               find_current_week_start_date
+                             end
+      player_ids = team.user.weekly_user_teams.where(week_start_date: find_week_start_date).pluck(:playing11)
       player_ids = team.user.weekly_user_teams.last.playing11 if player_ids.blank?
       teams = current_match_teams.map { |name| name.split(' (')[0].upcase }
       players = team.players.where(id: player_ids, team_name: teams)
@@ -171,10 +176,26 @@ class HomeController < ApplicationController
   #   MatchPoint.where(match_name:, team: current_user&.team).first&.total_points
   # end
 
-  def find_current_week_start_date(current_date)
-    days_to_monday = current_date.wday - 1
+  # wc
+  def find_current_week_start_date
+    if %w[monday tuesday wednesday thursday].include?(Time.zone.now.strftime('%A').downcase)
+      find_current_week_monday
+    else
+      find_current_week_friday
+    end
+  end
+
+  def find_current_week_friday
+    current_day_of_week = Time.zone.today.wday
+    days_until_friday = (5 - current_day_of_week) % 7
+    Date.current + days_until_friday
+  end
+
+  # IPL
+  def find_current_week_monday
+    days_to_monday = Date.current.wday - 1
     days_to_monday += 7 if days_to_monday.negative?
-    current_date - days_to_monday
+    Date.current - days_to_monday
   end
 
   # def find_leader_for_match

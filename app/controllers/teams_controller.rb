@@ -136,7 +136,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
                                           .group(:id)
                                           .order('COUNT(matches.id) DESC')
                                           .first.matches
-      matches = player_with_highest_matches.map { |_match| { name: '-', points: 0 } }
+      matches = player_with_highest_matches&.map { |_match| { name: '-', points: 0 } }
       total_matches = 0
     end
 
@@ -182,8 +182,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
 
   def allowed_to_change_team?
     today = Time.zone.now.in_time_zone('Mumbai')
-    today.thursday? || current_user.id == 1
-    # today.sunday? || today.thursday? || current_user.id == 1
+    today.sunday? || today.thursday? || current_user.id == 1
   end
 
   # rubocop:disable Rails/SkipsModelValidations
