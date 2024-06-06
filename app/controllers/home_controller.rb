@@ -86,13 +86,15 @@ class HomeController < ApplicationController
     if team_id
       team = Team.find(team_id)
       current_match_teams = match_name.split(' vs ') if match_name.present?
-      current_week_monday_date = find_current_week_start_date
-      find_week_start_date = if current_week_monday_date == Date.new(2024, 6, 3)
-                               Date.new(2024, 6, 2)
-                             else
-                               find_current_week_start_date
-                             end
-      player_ids = team.user.weekly_user_teams.where(week_start_date: find_week_start_date).pluck(:playing11)
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      puts "value of week_start_date:- #{find_current_week_start_date}"
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      puts "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      player_ids = team.user.weekly_user_teams.where(week_start_date: find_current_week_start_date).pluck(:playing11)
       player_ids = team.user.weekly_user_teams.last.playing11 if player_ids.blank?
       teams = current_match_teams.map { |name| name.split(' (')[0].upcase }
       players = team.players.where(id: player_ids, team_name: teams)
@@ -187,8 +189,14 @@ class HomeController < ApplicationController
 
   def find_current_week_friday
     current_day_of_week = Time.zone.today.wday
-    days_until_friday = (5 - current_day_of_week) % 7
-    Date.current + days_until_friday
+    case current_day_of_week
+    when 5 # Friday
+      Date.current
+    when 6 # saturday
+      Date.current - 1.day
+    when 0 # sunday
+      Date.current - 2.days
+    end
   end
 
   # IPL
