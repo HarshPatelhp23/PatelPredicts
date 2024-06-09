@@ -1,5 +1,8 @@
 <div class="container mt-5">
-    <h1 class="text-center mb-5">Week: <%= @current_week_start_date.strftime('%d/%m/%Y') %> To <%= @second_half_end_date.strftime('%d/%m/%Y') %></h1>
+    <h1 class="text-center mb-4">Week: <%= @current_week_start_date.strftime('%d/%m/%Y') %> To <%= @second_half_end_date.strftime('%d/%m/%Y') %></h1>
+    <% set_button_name = params[:move_to_next_week] == 'true' ? 'Back to Current-Week' : 'Move to Next-Week Schedule' %>
+    <% set_flag = params[:move_to_next_week] == 'true' ? 'false' : 'true' %>
+    <center><%= link_to set_button_name, current_week_schedule_path(move_to_next_week: set_flag), class: 'btn theme-btn-color text-white mb-5', style: "text-decoration: none;" %></center>
   <div class="header">
     <h2 class="text-center mb-4">First Half Matches:- <%= @current_week_start_date.strftime('%d/%m/%Y') %> To <%= @first_half_end_date.strftime('%d/%m/%Y') %></h1>
   </div>

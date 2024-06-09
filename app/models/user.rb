@@ -16,6 +16,7 @@ class User < ApplicationRecord
 
   before_save :update_final_total_points, if: -> { penalty_points_changed? && !new_record? }
   before_save :update_team_name, if: -> { username_changed? }
+  scope :pool_users, ->(user) { where(auction_id: user.auction_id) }
 
   def to_param
     slug

@@ -21,18 +21,15 @@ class MatchesController < ApplicationController
   # end
 
   def current_week_schedule
-    @pool_users = User.where(auction_id: current_user.auction_id)
-    @current_week_start_date = if Date.current.beginning_of_week < Auction::T20_WC_FIRST_WEEK_DATE.to_date
-                                 Auction::T20_WC_FIRST_WEEK_DATE.to_date # also first_week_start_date
-                               else
-                                 Date.current.beginning_of_week - 1.day
-                               end
+    if params[:move_to_next_week] == 'true'
+      move_to_next_week
+      return nil
+    end
+
+    @pool_users = User.pool_users(current_user)
+    @current_week_start_date = [Date.current.beginning_of_week, Auction::T20_WC_FIRST_WEEK_DATE.to_date].max
     @current_week_end_date = Date.current.end_of_week
-    @first_half_end_date = @current_week_start_date + 4.days
-    @second_half_start_date = @first_half_end_date + 1.day
-    @second_half_end_date = @second_half_start_date + 2.days
-    @first_half_matches = MatchSchedule.where(match_date: @current_week_start_date..@first_half_end_date).order(match_date: :asc)
-    @second_half_matches = MatchSchedule.where(match_date: @second_half_start_date..@second_half_end_date).order(match_date: :asc)
+    set_match_dates
   end
 
   def match_players
@@ -68,5 +65,28 @@ class MatchesController < ApplicationController
       'Scotland' => 'SCOT',
       'Uganda' => 'UG'
     }
+  end
+
+  def move_to_next_week
+    @pool_users = User.pool_users(current_user)
+    @current_week_start_date = Date.current.next_week(:monday)
+    @current_week_end_date = @current_week_start_date.end_of_week
+    set_match_dates
+  end
+
+  def set_match_dates
+    @first_half_end_date = @current_week_start_date + 3.days
+    @second_half_start_date = @first_half_end_date + 1.day
+    @second_half_end_date = @second_half_start_date + 2.days
+    @first_half_matches = MatchSchedule.where(match_date: @current_week_start_date..@first_half_end_date).order(match_date: :asc)
+    @second_half_matches = MatchSchedule.where(match_date: @second_half_start_date..@second_half_end_date).order(match_date: :asc)
+  end
+
+  def next_week_monday
+    if Date.current.wday.zero?
+      Date.current + 1.day
+    else
+      Date.current + ((1 - Date.current.wday) % 7) + 7
+    end
   end
 end
