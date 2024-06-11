@@ -45,6 +45,11 @@
               </div>
               <div class="card-body">
                 <h5 class="card-title"><%= @filtered_users[i].username %></h5>
+                <% if current_user %>
+                  <p class="points-difference">
+                    <%= diff = show_point_difference(@filtered_users[i], current_user) %>
+                  </p>
+                <% end %>
               </div>
             </div>
           </div>
@@ -60,4 +65,3 @@
 <div class="text-center mt-3">
   <%= link_to 'Back', after_login_path, class: "btn btn-primary back-button theme-btn-back" %>
 </div>
-

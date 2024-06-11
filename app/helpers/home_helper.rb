@@ -9,4 +9,13 @@ module HomeHelper
     else 'th'
     end
   end
+
+  def show_point_difference(top_user, current_user)
+    diff = top_user.final_total_points - current_user.final_total_points
+    if diff.zero?
+      'Tied!!'
+    else
+      "is leading by #{diff} points"
+    end
+  end
 end

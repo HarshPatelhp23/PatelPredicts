@@ -840,3 +840,11 @@ body {
 .playing11-bench-view .bg-scot {
   background-color: #4B0082;
 }
+
+.points-difference {
+  color: #28a745;
+  font-size: 16px;
+  font-weight: bold;
+  font-style: italic;
+  margin-top: 10px;
+}
