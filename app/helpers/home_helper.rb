@@ -12,7 +12,11 @@ module HomeHelper
 
   def show_point_difference(top_user, current_user)
     diff = top_user.final_total_points - current_user.final_total_points
-    if diff.zero?
+    if top_user == current_user
+      'Congratulations!!!, you are in winning zone!'
+    elsif top_user != current_user && top_user.final_total_points < current_user.final_total_points
+      "is trailing by #{diff * -1} points "
+    elsif diff.zero?
       'Tied!!'
     else
       "is leading by #{diff} points"
