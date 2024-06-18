@@ -93,13 +93,16 @@ namespace :matches do
   end
 
   task update_weekly_team_record: :environment do
-    weekly_user_team = WeeklyUserTeam.find(24)
-
-    updated_playing11 = weekly_user_team.playing11 - [5]
-    updated_playing11.push(7)
-    updated_bench = weekly_user_team.bench - [7]
-    updated_bench.push(5)
-
-    weekly_user_team.update_columns(playing11: updated_playing11, bench: updated_bench)
+    weekly_user_team = WeeklyUserTeam.find(46)
+    weekly_user_team.update_columns(week_start_date: Date.new(2024, 6, 17), week_end_date: Date.new(2024, 6, 20))
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++ DONE  ++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++++++++'
   end
 end

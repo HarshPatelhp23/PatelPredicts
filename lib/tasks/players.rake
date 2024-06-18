@@ -71,17 +71,18 @@ namespace :players do
     end
   end
 
-  task reupdate_rushabh_team: :environment do
-    rushabh = User.find(2)
-    this_week_team = rushabh.weekly_user_teams.where(id: 73).first
-    # 43 -> ferguson
-    # 36 -> Gurbaz
-
-    updated_playing11 = this_week_team.playing11 - [43]
-    updated_playing11.push(36)
-    updated_bench = rushabh.weekly_user_teams.order(week_start_date: :desc).first.bench - [36]
-    updated_bench.push(43)
-
-    this_week_team.update_columns(playing11: updated_playing11, bench: updated_bench)
+  task reupdate_nt_vp_team: :environment do
+    WeeklyUserTeam.where(id: [44, 45]).update_all(week_start_date: Date.new(2024, 6, 17),
+                                                  week_end_date: Date.new(
+                                                    2024, 6, 20
+                                                  ))
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "++++++++++++++++++++  DONE  ++++++++++++++++++++++++++++++"
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
+    puts "+++++++++++++++++++++++++++++++++++++++++++++++++++"
   end
 end
