@@ -24,6 +24,7 @@ namespace :matches do
 
   task insert_wc_scehdule: :environment do
     require Rails.root.join('lib/match_schedule')
+    MatchSchedule.destroy_all
     T20_WORLDCUP_SCHEDULE.each do |match|
       MatchSchedule.create!(
         match_number: match[:match_number],

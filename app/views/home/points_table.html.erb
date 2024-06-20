@@ -32,12 +32,12 @@
       </table>
     </div>
 
-    <% if @filtered_users.length >= 3 %>
+    <% if @filtered_users.length >= 4 %>
       <div class="header">
         <h2 class="text-center mb-4">Top-3</h2>
       </div>
       <div class="row mt-3">
-        <% (0..2).each do |i| %>
+        <% (0..3).each do |i| %>
           <div class="col-md-4 mt-4">
             <div class="card rounded text-center shadow">
               <div class="card-header theme-light-color text-white">
