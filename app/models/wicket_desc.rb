@@ -1,0 +1,2 @@
+class WicketDesc < ApplicationRecord
+end

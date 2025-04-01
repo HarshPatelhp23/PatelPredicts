@@ -1,0 +1,65 @@
+<div class="modal-dialog modal-dialog-centered">
+  <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Enter Access Code</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <%= form_with url: validate_code_path, method: :post, remote: true, id: "code-form" do |f| %>
+            <div class="mb-3">
+              <%= label_tag :code, "Code:" %>
+              <%= text_field_tag :code, nil, class: 'form-control', id: 'code-input', placeholder: 'Enter your code' %>
+            </div>
+            <div id="error-message" class="text-danger d-none">Invalid code. Please try again.</div>
+        </div>
+        <div class="modal-footer">
+           <%= f.submit 'Join', class: 'btn btn-primary', style: "width: 75px; height: 40px; border-radius: 5px; color: white; text-decoration: none; background-color: green !important;" %>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('code-form');
+  const errorMessage = document.getElementById('error-message');
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault(); // Prevent default form submission
+
+    const codeInput = document.getElementById('code-input').value.trim();
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken
+      },
+      body: JSON.stringify({ code: codeInput })
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Invalid code');
+        }
+      })
+      .then((data) => {
+        if (data.redirect_url) {
+          window.location.href = data.redirect_url;
+        }
+      })
+      .catch((error) => {
+        errorMessage.textContent = error.message;
+        errorMessage.classList.remove('d-none');
+      });
+  });
+});
+
+</script>

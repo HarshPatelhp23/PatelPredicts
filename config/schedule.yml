@@ -1,0 +1,5 @@
+update_points_job:
+  cron: "55 23 * * * Asia/Kolkata"  # Runs daily at 16:18
+  class: "UpdatePointsJob"
+  queue: "default"
+  description: "Updates user points daily"

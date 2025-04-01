@@ -84,6 +84,14 @@ gem 'friendly_id'
 gem 'groupdate'
 gem 'pagy', '~> 7.0', '>= 7.0.11'
 # gem 'noticed', '~> 2.1', '>= 2.1.3'
+gem 'httparty'
+gem 'pdf-reader'
 gem 'rubocop', require: false
 gem 'rubocop-rails', require: false
 gem 'rubocop-rspec', require: false
+gem 'sidekiq'
+gem 'sidekiq-cron'
+gem 'fuzzy_match'
+gem 'levenshtein'
+gem 'amatch'
+gem 'rails_performance'

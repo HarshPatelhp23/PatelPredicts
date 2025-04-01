@@ -1,0 +1,232 @@
+<!-- app/views/fantasy_points/index.html.erb -->
+<div class="text-center mt-3 mb-4">
+  <%= link_to 'Back', root_path, class:'btn btn-primary back-button theme-btn-back' %>
+</div>
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <!-- Header Section -->
+      <div class="text-center mb-4">
+        <h1 class="display-4 text-primary", style="font-size: 1.5rem;">PATEL-PREDICTS Points System 🏏</h1>
+        <p class="lead text-muted">Learn how to score points and win big! 🏆</p>
+      </div>
+
+      <!-- Main Points Categories -->
+      <div class="row g-4">
+        <!-- Batting Points -->
+        <div class="col-12 col-md-6">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h3 class="card-title mb-0">
+                🏏 Batting Points
+              </h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🏃 Run Scored</span>
+                  <span class="badge bg-primary"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:runs] %> point</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>4️⃣ Boundary Bonus</span>
+                  <span class="badge bg-primary"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:fours] %> point</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>6️⃣ Six Bonus</span>
+                  <span class="badge bg-primary"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:sixes] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🌟 30+ runs Bonus</span>
+                  <span class="badge bg-success"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_30] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🌟 Half Century Bonus</span>
+                  <span class="badge bg-success"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_50] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>⭐ Century Bonus</span>
+                  <span class="badge bg-success"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_100] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🦆Duck</span>
+                  <span class="badge bg-danger"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:duck] %> points</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bowling Points -->
+        <div class="col-12 col-md-6">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-success text-white">
+              <h3 class="card-title mb-0">
+                🎯 Bowling Points
+              </h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🎪 Wicket</span>
+                  <span class="badge bg-success"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:wickets] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🎳 LBW/Bowled Bonus</span>
+                  <span class="badge bg-success"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:lbw_bonus] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🔥 3 Wicket Bonus</span>
+                  <span class="badge bg-warning"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_3w] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🔥 4 Wicket Bonus</span>
+                  <span class="badge bg-warning"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_4w] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>💫 5 Wicket Bonus</span>
+                  <span class="badge bg-warning"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_5w] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🎯 Maiden Over</span>
+                  <span class="badge bg-info"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:maidens] %> points</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fielding Points -->
+        <div class="col-12 col-md-6">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-info text-white">
+              <h3 class="card-title mb-0">
+                🧤 Fielding Points
+              </h3>
+            </div>
+            <div class="card-body">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>👐 Catch</span>
+                  <span class="badge bg-info"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:catches] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🥅 Stumping</span>
+                  <span class="badge bg-info"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:stumping] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🎯 Run Out (Direct Hit)</span>
+                  <span class="badge bg-info"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:run_outs] %> points</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>🎱 Run Out (Thrower)</span>
+                  <span class="badge bg-info"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:run_outs] %> points</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Other Points -->
+        <div class="col-12 col-md-6">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-warning text-dark">
+              <h3 class="card-title mb-0">
+                ⭐ Special Bonus Points
+              </h3>
+            </div>
+            <div class="card-body">
+              <div class="mb-4">
+                <!-- <h5 class="text-primary mb-3">👐 Catch Bonus Points</h5> -->
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🏆 Man of the Match</span>
+                    <span class="badge bg-info"><%= PlayerPerfomacePoint::POINTS_EVALUATION[:bonus_mom] %> points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🎯 3 Catches</span>
+                    <span class="badge bg-warning text-dark">5 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🎯🎯 4 Catches</span>
+                    <span class="badge bg-info text-dark">8 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🎯💫 5-10 Catches</span>
+                    <span class="badge bg-success text-dark">10 points</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <p class="text-muted small mb-2">*Applicable only if batsman faced more than 15 balls</p>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>⚠️ SR < 100</span>
+                    <span class="badge bg-success">-6 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 135-150 SR</span>
+                    <span class="badge bg-info">4 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 150-170 SR</span>
+                    <span class="badge bg-info">2 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 170-200 SR</span>
+                    <span class="badge bg-info">4 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 200+ SR</span>
+                    <span class="badge bg-danger">8 points</span>
+                  </li>
+                <!-- <h5 class="text-primary mb-3">🎯 Economy Rate Bonus Points</h5> -->
+                <p class="text-muted small mb-2 mt-4">*Applicable only if bowled more than 2 overs</p>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>✨ 0-3 Economy</span>
+                    <span class="badge bg-success">8 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 3-5 Economy</span>
+                    <span class="badge bg-info">4 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 5-6 Economy</span>
+                    <span class="badge bg-info">2 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>🌟 9-12 Economy</span>
+                    <span class="badge bg-info">-4 points</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>⚠️ 12+ Economy</span>
+                    <span class="badge bg-danger">-8 points</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- Important Notes -->
+      <div class="mt-4">
+        <div class="card shadow-sm">
+          <div class="card-header bg-dark text-white">
+            <h3 class="card-title mb-0">📝 Important Notes</h3>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                ⚡ Points are calculated in real-time as the match progresses
+              </li>
+              <li>
+                ⚠️ Negative points may be applied for dismissals and economy rate penalties
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

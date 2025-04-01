@@ -1,0 +1,24 @@
+<div id="hiddenContent" class="mt-4" style="display: none;">
+  <table class="table table-sm table-hover">
+    <thead class="table-primary">
+      <tr>
+        <th>NO</th>
+        <th>Player</th>
+        <th>Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @players.each_with_index do |player, i| %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= player.name %></td>
+          <td><%= @points_data[player.name] %></td>
+        </tr>
+      <% end %>
+      <tr>
+        <td><b>Total Points</b></td>
+        <td colspan="2"><%= @points_data.values.sum %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -4,10 +4,17 @@ class Team < ApplicationRecord
   extend FriendlyId
   friendly_id :team_name, use: :slugged
   validates :team_name, presence: true, uniqueness: true
-  has_many :players, dependent: :destroy
+  # has_many :players, dependent: :destroy
+  # has_and_belongs_to_many :players
+  has_many :players_teams
+  has_many :players, through: :players_teams
   has_many :matches, dependent: :destroy
   has_many :match_points, dependent: :destroy
+  has_many :weekly_user_teams
+  has_many :player_perfomace_points, dependent: :destroy
   belongs_to :user, optional: true
+  belongs_to :auction, optional: true
+
 
   validates :team_name, presence: true, uniqueness: true
 

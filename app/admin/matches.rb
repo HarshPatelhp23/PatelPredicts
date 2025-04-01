@@ -27,4 +27,5 @@ ActiveAdmin.register Match, as: 'Match' do
     end
     f.actions
   end
+  filter :team, as: :select, collection: -> { Team.pluck(:team_name, :id) }, include_blank: 'Select Team'
 end

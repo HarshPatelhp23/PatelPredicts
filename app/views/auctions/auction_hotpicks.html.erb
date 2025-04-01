@@ -1,0 +1,85 @@
+<div class="text-center mt-3">
+  <%= link_to 'Back', auction_table_path, class:'btn btn-success back-button theme-btn-back' %>
+</div>
+<div class="container mt-4">
+  <h1 class="text-center mb-4">Auction Hotpicks</h1>
+
+  <div class="row justify-content-center">
+    <% @hotpicks_players.sort_by { |player| -player.total_skill }.each_with_index do |player, index| %>
+      <div class="col-md-6 col-lg-4 col-sm-12 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header text-center bg-primary text-white">
+            <h5 class="card-title mb-0"><%= "#{index + 1}. #{player.name}" %></h5>
+          </div>
+          <div class="card-body text-center">
+            <p class="fw-bold mb-2">Total Skill: <%= player.total_skill %>/200</p>
+            <div class="d-flex justify-content-around mb-3">
+              <div class="text-center">
+                <p class="mb-1"><strong>Batting Skill</strong></p>
+                <div class="progress" style="height: 15px; width: 80px;">
+                  <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    style="width: <%= player.batting %>%"
+                    aria-valuenow="<%= player.batting %>"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  >
+                    <%= player.batting %>%
+                  </div>
+                </div>
+              </div>
+              <div class="text-center">
+                <p class="mb-1"><strong>Bowling Skill</strong></p>
+                <div class="progress" style="height: 15px; width: 80px;">
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
+                    style="width: <%= player.bowling %>%"
+                    aria-valuenow="<%= player.bowling %>"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  >
+                    <%= player.bowling %>%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+            <h6>Why Should You Pick Him?</h6>
+            <p class="note-section"><%= player.note %></p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  .card {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .note-section {
+    font-size: 19px;
+    font-style: italic;
+    color: #555;
+  }
+
+  @media (max-width: 768px) {
+    .card-header {
+      font-size: 16px;
+    }
+
+    .progress-bar {
+      font-size: 10px;
+    }
+  }
+</style>

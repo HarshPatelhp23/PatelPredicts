@@ -10,16 +10,30 @@ module HomeHelper
     end
   end
 
-  def show_point_difference(top_user, current_user)
-    diff = top_user.final_total_points - current_user.final_total_points
-    if top_user == current_user
-      'Congratulations!!!, you are in winning zone!'
-    elsif top_user != current_user && top_user.final_total_points < current_user.final_total_points
-      "is trailing by #{diff * -1} points "
+  def show_point_difference(top_user_team, current_user_team)
+    diff = (top_user_team.grand_total - top_user_team.penalty_points) - (current_user_team.grand_total - current_user_team.penalty_points)
+    
+    if top_user_team == current_user_team
+      '' 
+    elsif top_user_team != current_user_team && (top_user_team.grand_total - top_user_team.penalty_points) < (current_user_team.grand_total - current_user_team.penalty_points)
+      " - #{diff * -1} points"
     elsif diff.zero?
       'Tied!!'
     else
-      "is leading by #{diff} points"
+      "+ #{diff} points"
     end
   end
+
+  # def show_point_difference(top_user_team, current_user_team)
+  #   diff = (top_user_team.grand_total - top_user_team.penalty_points) - (current_user_team.grand_total - current_user_team.penalty_points)
+  #   if top_user_team == current_user_team
+  #     'Congratulations!!!, you are in winning zone!'
+  #   elsif top_user_team != current_user_team && top_user_team.grand_total < current_user_team.grand_total
+  #     "is trailing by #{diff * -1} points "
+  #   elsif diff.zero?
+  #     'Tied!!'
+  #   else
+  #     "is leading by #{diff} points"
+  #   end
+  # end
 end

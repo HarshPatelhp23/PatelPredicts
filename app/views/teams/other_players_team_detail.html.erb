@@ -1,123 +1,649 @@
-<div class="container mt-5 team-details">
-  <% start_date = Date.strptime(Auction::T20_WC_FIRST_WEEK_DATE, '%d/%m/%Y') %>
-  <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
-  <% weeks_count = [weeks_count, 1].max %>
-  <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
-  <% set_week = params[:week].present? ? params[:week] : weeks_count %>
-  <div class="header">
-    <h1 class="text-center mb-4">Players of Team - <%= @user.username %></h1>
-  </div>
-  <!-- <div class="dropdown text-center">
-    <#%= link_to "#", class: "btn theme-btn-color dropdown-toggle mb-4 mt-3 text-white", style: 'text-decoration: none;', id: "dropdownMenuButton", "data-bs-toggle" => "dropdown", "aria-expanded" => "false" do %>
-      Select Week
-    <#% end %>
-    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-      <#% (0..weeks_count).map do |week_number| %>
-        <#% next if week_number == 0 %>
-        <#% week = week_number %>
-        <#% active_week = set_week.to_i == week_number %>
-        <li class="<#%= active_week ? 'theme-active-link-color' : ''%>"><#%= link_to "Week #{week}", team_deatails_path(@user, week: week), class: "dropdown-item" %></li>
-      <#% end %>
-    </ul>
-  </div> -->
-  <!-- Playing 11 Section -->
-  <div class="header">
-    <!-- <h2 class="text-center mb-4">Playing 11 of Week- <#%= set_week %></h2> -->
-    <h2 class="text-center mb-4">Latest Playing-11</h2>
-  </div>
-  <div class="table-responsive">
-    <table id="playing11-table" class="table table-striped table-bordered table-hover">
-      <thead class="thead-dark">
-        <tr>
-          <th class="text-center">NO</th>
-          <th class="text-center">Player Name</th>
-          <th class="text-center">Role</th>
-          <th class="text-center">IPL Team</th>
-          <th class="text-center">Points</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% sort_players_by_role(@playing11_players).each_with_index do |player, index| %>
-          <% row_class = @playing_11_changed_player_ids.include?(player.id) ? 'table-success' : '' %>
-          <tr class = "<%= row_class %>" >
-            <td class="text-center"><%= index+1 %></th>
-            <td class="res-profile text-center">
-              <div class="player-info">
-                <span class="player-name"><%= player.name %></span>
-                <% if player.foreigner %>
-                  <%= image_tag "overseas.png", class: "rounded img-fluid overseas res-overseas mx-2", alt: "Default Image" %>
-                <% end %>
-              </div>
-            </td>
-            <td>
-              <% if player.role == 'wicket_keeper' %>
-                <% set_image = 'WK.jpeg' %>
-              <% elsif player.role == 'batsman' %>
-                <% set_image = 'bat.png' %>
-              <% elsif player.role == 'all_rounder' %>
-                <% set_image = 'all_rounder.png' %>
-              <% elsif player.role == 'bowler' %>
-                <% set_image = 'bowler.png' %>
-              <% end %>
-              <center><%= image_tag set_image, class: 'mx-4 res-icons', alt: "Player Image" %></center>
-            </td>
-            <td class="text-center"><%= player.team_name %></td>
-            <td class="text-center"><%= player.points %></td>
-          </tr>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantasy Cricket Team</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #1e40af;
+      --secondary-color: #3b82f6;
+      --accent-color: #60a5fa;
+      --light-bg: #f0f9ff;
+      --dark-text: #1e293b;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8fafc;
+      color: var(--dark-text);
+    }
+
+    /* Add these CSS styles to fix dropdown positioning */
+    /* Update CSS styles for right-aligned dropdown */
+    .week-selector {
+      position: relative;
+      display: inline-block;
+      z-index: 1000;
+      margin-bottom: 20px;
+    }
+
+    #weekDropdown {
+      position: fixed; /* Using fixed positioning for more reliable placement */
+      display: none;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1001;
+      width: auto;
+      min-width: 120px;
+      transform: none; /* Remove centering transform */
+    }
+
+    #weekSelectorButton {
+      min-width: 120px;
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .team-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .team-header {
+      position: relative;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .team-name {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .points-badge {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: inline-block;
+    }
+
+    .points-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .week-selector {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 20px;
+    }
+
+    .week-selector .btn {
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .week-selector .dropdown-menu {
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .week-selector .dropdown-item {
+      border-radius: 8px;
+      padding: 8px 16px;
+      margin: 4px 0;
+    }
+
+    .week-selector .dropdown-item:hover {
+      background-color: var(--light-bg);
+      color: var(--primary-color);
+    }
+
+    .squad-section {
+      background-color: white;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .section-header {
+      padding: 16px 20px;
+      background-color: var(--light-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin: 0;
+    }
+
+    .section-count {
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      padding: 20px;
+    }
+
+    .player-card {
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+
+    .player-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .player-card.changed-in {
+      border-left: 4px solid var(--success-color);
+    }
+
+    .player-card.changed-out {
+      border-left: 4px solid var(--danger-color);
+    }
+
+    .player-header {
+      display: flex;
+      padding: 12px;
+      background-color: var(--light-bg);
+      align-items: center;
+    }
+
+    .player-img-container {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid white;
+      margin-right: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+      background-color: #e5e7eb;
+    }
+
+    .player-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .player-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .player-role-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+    }
+
+    .role-badge-wk {
+      background-color: #10b981;
+    }
+
+    .role-badge-bat {
+      background-color: #ef4444;
+    }
+
+    .role-badge-bowl {
+      background-color: #3b82f6;
+    }
+
+    .role-badge-ar {
+      background-color: #8b5cf6;
+    }
+
+    .player-role-badge i {
+      color: white;
+      font-size: 0.7rem;
+    }
+
+    .player-header-details {
+      flex-grow: 1;
+    }
+
+    .player-name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .overseas-badge {
+      display: inline-flex;
+      align-items: center;
+      background-color: #7c3aed;
+      color: white;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .overseas-badge i {
+      font-size: 0.7rem;
+      margin-right: 3px;
+    }
+
+    .player-team {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .team-flag {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .player-stats {
+      display: flex;
+      padding: 12px;
+      justify-content: space-around;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin: 16px 0 32px;
+      padding: 10px 24px;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s;
+    }
+
+    .back-link:hover {
+      background-color: #153e75;
+      color: white;
+    }
+
+    /* Add these styles to your existing <style> section */
+    .player-card.changed-in {
+      border-left: 4px solid var(--success-color);
+      position: relative;
+      overflow: visible;
+    }
+
+    .player-card.changed-in::after {
+      content: "Added";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-color: var(--success-color);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .player-card.changed-out {
+      border-left: 4px solid var(--danger-color);
+      position: relative;
+      overflow: visible;
+    }
+
+    .player-card.changed-out::after {
+      content: "Removed";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-color: var(--danger-color);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    /* Add animation for added players */
+    @keyframes highlight-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .player-card.changed-in {
+      animation: highlight-pulse 2s infinite;
+    }
+
+    /* Ensure mobile responsiveness */
+    @media (max-width: 768px) {
+      .player-card.changed-in::after,
+      .player-card.changed-out::after {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        right: -5px;
+        top: -8px;
+      }
+      
+      .player-card.changed-in,
+      .player-card.changed-out {
+        margin-top: 15px;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .team-header {
+        padding: 16px;
+      }
+      
+      .team-name {
+        font-size: 1.4rem;
+      }
+      
+      .player-grid {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+      
+      .points-badge {
+        font-size: 1rem;
+        padding: 6px 12px;
+      }
+      
+      .player-card {
+        margin-bottom: 12px;
+      }
+      
+      .section-header {
+        padding: 12px 16px;
+      }
+      
+      .section-title {
+        font-size: 1.1rem;
+      }
+
+      .team-container {
+        padding: 8px;
+      }
+
+      .back-link {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="team-container">
+    <% start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y') %>
+    <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
+    <% weeks_count = [weeks_count, 1].max %>
+    <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
+    <% set_week = params[:week].present? ? params[:week] : weeks_count %>
+    <!-- <#% set_week = 2 %> -->
+    <!-- Team Header -->
+    <div class="team-header">
+      <div class="team-name"><%= @user.username %>'s Team</div>
+      <div class="points-badge">
+        Total Points: <span class="points-value"><%= @user_team.is_a?(ActiveRecord::Relation) ? @user_team&.first.grand_total : @user_team.grand_total %></span>
+      </div>
+    </div>
+
+    <!-- Week Selector -->
+    <!-- Week Selector -->
+    <!-- Week Selector -->
+    <div class="week-selector text-center">
+      <button class="btn btn-primary" id="weekSelectorButton" data-no-loader="true">
+        <i class="fas fa-calendar-week me-2"></i> Week <%= set_week %>
+        <i class="fas fa-caret-down ms-1"></i>
+      </button>
+      <div id="weekDropdown" class="dropdown-menu">
+        <% (1..3).map do |week_number| %>
+          <% active_week = set_week.to_i == week_number %>
+          <a href="<%= team_deatails_path(@user, week: week_number) %>" class="dropdown-item <%= 'active' if active_week %>">Week <%= week_number %></a>
         <% end %>
-      </tbody>
-    </table>
+      </div>
+    </div>
+    <!-- Playing 11 Section -->
+    <div class="squad-section" id="playing11-section">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fas fa-users me-2"></i> Playing XI</h2>
+        <span class="section-count"><%= @playing11_players.count %>/11</span>
+      </div>
+      <div class="player-grid">
+        <% sort_players_by_role(@playing11_players).each do |player| %>
+          <% changed_class = @playing_11_changed_player_ids&.include?(player.id) ? 'changed-in' : '' %>
+          <div class="player-card <%= changed_class %>">
+            <div class="player-header">
+              <div class="player-img-container">
+                <!-- Assuming you have a player.image_url method or attribute -->
+                <%= player_team_detail_image(player) %>
+                <!-- Role badge -->
+                
+              </div>
+              
+              <div class="player-header-details">
+                <div class="player-name">
+                  <%= player.name %>
+                  <% if player.foreigner %>
+                    <span class="overseas-badge"><i class="fas fa-plane"></i> OS</span>
+                  <% end %>
+                </div>
+                <div class="player-team">
+                  <% if display_team_flags(player.team_name).present? %>
+                    <%= display_team_flags(player.team_name) %>
+                  <% else %>
+                    <i class="fas fa-shield-alt me-1"></i>
+                    <span><%= player.team_name %></span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            <div class="player-stats">
+              <div class="stat-item">
+                <div class="stat-value"><%= player.players_teams.where(team_id: @user.teams.pluck(:id))&.first&.points || 0 %></div>
+                <div class="stat-label">Points</div>
+              </div>
+              
+              <!-- You can add more stats here if available -->
+              <div class="stat-item">
+                <div class="stat-value">
+                  <%= set_role(player) %>
+                </div>
+                <div class="stat-label">Role</div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Bench Players Section -->
+    <div class="squad-section" id="bench-section">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fas fa-chair me-2"></i> Bench Players</h2>
+        <span class="section-count"><%= @bench_players.count %></span>
+      </div>
+      <div class="player-grid">
+        <% sort_players_by_role(@bench_players).each do |player| %>
+          <% changed_class = @bench_changed_player_ids&.include?(player.id) ? 'changed-out' : '' %>
+          <div class="player-card <%= changed_class %>">
+            <div class="player-header">
+              <div class="player-img-container">
+                <!-- Assuming you have a player.image_url method or attribute -->
+                <%= player_team_detail_image(player) %>
+              </div>
+              
+              <div class="player-header-details">
+                <div class="player-name">
+                  <%= player.name %>
+                  <% if player.foreigner %>
+                    <span class="overseas-badge"><i class="fas fa-plane"></i> OS</span>
+                  <% end %>
+                </div>
+                <div class="player-team">
+                  <% if display_team_flags(player.team_name).present? %>
+                    <%= display_team_flags(player.team_name) %>
+                  <% else %>
+                    <i class="fas fa-shield-alt me-1"></i>
+                    <span><%= player.team_name %></span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+            <div class="player-stats">
+              <div class="stat-item">
+                <div class="stat-value"><%= player.players_teams.where(team_id: @user.teams.pluck(:id))&.first&.points || 0 %></div>
+                <div class="stat-label">Points</div>
+              </div>
+              
+              <!-- You can add more stats here if available -->
+              <div class="stat-item">
+                <div class="stat-value">
+                  <%= set_role(player) %>
+                </div>
+                <div class="stat-label">Role</div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center">
+      <%= link_to other_players_team_path, class: "back-link", style: 'text-decoration: none;' do %>
+        <i class="fas fa-arrow-left me-2"></i> Back to Teams
+      <% end %>
+    </div>
   </div>
 
-  <!-- Bench Players Section -->
-  <div class="header">
-    <h3 class="text-center mb-4">Bench Players</h3>
-  </div>
-  <div class="table-responsive">
-    <table id="bench-table" class="table table-striped table-bordered table-hover">
-      <thead class="thead-dark">
-        <tr>
-          <th class="text-center">NO</th>
-          <th class="text-center">Player Name</th>
-          <th class="text-center">Role</th>
-          <th class="text-center">IPL Team</th>
-          <th class="text-center">Points</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% sort_players_by_role(@bench_players).each_with_index do |player, index| %>
-          <% row_class = @bench_changed_player_ids.include?(player.id) ? 'table-danger' : '' %>
-          <tr class = "<%= row_class %>" >
-            <td class="text-center"><%= index+1 %></th>
-            <td class="res-profile text-center">
-              <div class="player-info">
-                <span class="player-name"><%= player.name %></span>
-                <% if player.foreigner %>
-                  <%= image_tag "overseas.png", class: "rounded img-fluid overseas res-overseas mx-2", style: "max-height: 8%; max-width: 8%;", alt: "Default Image" %>
-                <% end %>
-              </div>
-            </td>
-            <td>
-              <% if player.role == 'wicket_keeper' %>
-                <% set_image = 'WK.jpeg' %>
-              <% elsif player.role == 'batsman' %>
-                <% set_image = 'bat.png' %>
-              <% elsif player.role == 'all_rounder' %>
-                <% set_image = 'all_rounder.png' %>
-              <% elsif player.role == 'bowler' %>
-                <% set_image = 'bowler.png' %>
-              <% end %>
-              <center><%= image_tag set_image, class: 'mx-4 res-icons', alt: "Player Image" %></center>
-            </td>
-            <td class="text-center"><%= player.team_name %></td>
-            <td class="text-center"><%= player.points %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div class="text-center mt-3">
-  <%= link_to 'Back', other_players_team_path, class: "btn btn-primary back-button theme-btn-back" %>
-</div>
+  <!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const button = document.getElementById('weekSelectorButton');
+    const dropdown = document.getElementById('weekDropdown');
+    
+    if (button && dropdown) {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (dropdown.style.display === 'none') {
+          dropdown.style.display = 'block';
+          
+          // Position the dropdown at the right edge of the button
+          const buttonRect = button.getBoundingClientRect();
+          
+          dropdown.style.top = (buttonRect.bottom + 5) + 'px'; // Add 5px gap
+          dropdown.style.left = 'auto'; // Clear any previous left positioning
+          dropdown.style.right = (window.innerWidth - buttonRect.right) + 'px'; // Align to right edge
+          
+          // Set a minimum width for the dropdown
+          dropdown.style.minWidth = '120px';
+          
+        } else {
+          dropdown.style.display = 'none';
+        }
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && e.target !== button) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

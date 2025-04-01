@@ -1,0 +1,2 @@
+class SeriesMatchResponse < ApplicationRecord
+end

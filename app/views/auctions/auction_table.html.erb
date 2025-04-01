@@ -1,0 +1,229 @@
+<div class="text-center mt-3 mb-4">
+  <%= link_to 'Back', root_path, class:'btn btn-success back-button theme-btn-back' %>
+</div>
+<div class="container mb-4">
+  <h1 class="auction-header text-center text-primary">Auction Room</h1>
+</div>
+<% color_classes = ["text-bg-primary", "text-bg-success", "text-bg-warning", "text-bg-danger"] %>
+
+<div class="container mb-4">
+  <h4 class="text-center text-secondary">Team Rankings</h4>
+  <div class="row justify-content-center team-rankings-container">
+    <% @users.each_with_index do |user, index| %>
+      <% tag = user.username.split.last %>
+      <% badge_color = color_classes[index % color_classes.size] %>
+
+      <div class="col-3 text-center mb-2">
+        <div class="card shadow-sm border-0" style="border-radius: 10px;">
+          <div class="card-body p-2">
+            <h6><span class="fw-bold mb-0 badge badge-sm <%= badge_color %>">
+              <%= tag %>
+            </span></h6>
+            <p class="small mb-1 text-muted">Rank <%= index + 1 %></p>
+            <p class="fw-bold text-danger mb-0">
+              <%= TeamSkillEvaluator.calculate_winning_chances(user) %>
+            </p>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row">
+  <%= link_to 'Auction List', auction_list_path, class: 'btn btn-primary auction-list text-white mb-4', style: 'text-decoration: none; max-width: 30%; height: 20%; margin-left: 55px;' %>
+  <%= link_to 'Hotpicks', hotpicks_path, class: 'btn btn-danger text-right text-white mx-5 mb-4', style: 'text-decoration: none; max-width: 30%; height: 40px;' %>
+</div>
+
+<div id="user-cards" class="row">
+  <% @users.each do |user| %>
+    <div class="col-lg-6 col-md-12 auction-card-container">
+      <div class="card shadow-lg border-0">
+        <!-- User Image -->
+        <div class="text-center">
+          <% image = "#{user.username.split.join('_').downcase}" %>
+          <%= image_tag "#{image}.jpg", class: "captain-image rounded-circle shadow-sm", alt: 'default_player_image.jpeg', style: "width: 120px; height: 120px; object-fit: cover; border: 5px solid #007bff; margin-top: 20px;" %>
+        </div>
+
+        <!-- User Card Body -->
+        <div class="card-body text-center" data-user-id="<%= user.id %>">
+          <h5 class="card-title text-uppercase text-secondary fw-bold"><%= user.username %></h5>
+
+          <div class="container px-3 mb-4">
+            <div class="row gx-3">
+              <!-- Total Purse Card -->
+              <div class="col-6 col-md-3 mb-3">
+                <div class="card text-white bg-success shadow-sm">
+                  <div class="card-body text-center">
+                    <i class="fas fa-wallet fa-2x mb-2"></i>
+                    <h6 class="card-title mb-1">Total Purse</h6>
+                    <p class="fw-bold mb-0"><%= CurrencyFormatter.format(user.total_purse) %></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Remaining Purse Card -->
+              <div class="col-6 col-md-3 mb-3">
+                <div class="card text-white bg-info shadow-sm">
+                  <div class="card-body text-center">
+                    <i class="fas fa-coins fa-2x mb-2"></i>
+                    <h6 class="card-title mb-1">Remaining Purse</h6>
+                    <p class="fw-bold mb-0 remaining-purse"><%= CurrencyFormatter.format(user.remaining_purse) %></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Captain's Max Bid Card -->
+              <div class="col-6 col-md-3 mb-3">
+                <div class="card text-white bg-purple shadow-sm">
+                  <div class="card-body text-center">
+                    <i class="fas fa-gavel fa-2x mb-2"></i>
+                    <h6 class="card-title mb-1">Captain's Max Bid</h6>
+                    <p class="fw-bold mb-0 max-bid"><%= TeamSkillEvaluator.all_team_max_bid.dig(user.id) %></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Winning Chances Card -->
+              <div class="col-6 col-md-3 mb-3">
+                <div class="card text-white bg-danger shadow-sm">
+                  <div class="card-body text-center">
+                    <i class="fas fa-trophy fa-2x mb-2"></i>
+                    <h6 class="card-title mb-1">Winning Chances</h6>
+                    <p class="fw-bold mb-0 winning-chances"><%= TeamSkillEvaluator.calculate_winning_chances(user) %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Team Batting -->
+          <h4>Team Batting</h4>
+          <div class="progress auction-progress mb-3">
+            <div class="progress-bar progress-bar-striped bg-success team-batting" data-user-id="<%= user.id %>" style="width: <%= TeamSkillEvaluator.calculate_strength(user, 'batting') %>%; font-size: 20px;">
+              <%= TeamSkillEvaluator.calculate_strength(user, 'batting') %>%
+            </div>
+          </div>
+
+          <!-- Team Bowling -->
+          <h4>Team Bowling</h4>
+          <div class="progress auction-progress mb-3">
+            <div class="progress-bar progress-bar-striped bg-warning team-bowling" data-user-id="<%= user.id %>" style="width: <%= TeamSkillEvaluator.calculate_strength(user, 'bowling') %>%; font-size: 20px;">
+              <%= TeamSkillEvaluator.calculate_strength(user, 'bowling') %>%
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <!-- Players List -->
+          <h6 class="fw-bold text-secondary">Players</h6>
+          <ul class="list-group">
+            <% @auction_rooms.each do |player| %>
+              <% next if player.user != user %>
+              <li class="list-group-item auction-player-item d-flex align-items-center justify-content-between border rounded shadow-sm mb-2" data-player-name="<%= player.player_name %>" style="margin-left: 10px; width: 100%;">
+                <div class="d-flex align-items-center w-100">
+                  <!-- Section 1: Player Image and Name -->
+                  <div class="d-flex align-items-center" style="flex: 1; margin-right: 20px;">
+                    <%= image_tag 'default_player_image.jpeg', class: "player-image rounded-circle", alt: "Player Image", style: "width: 50px; height: 50px; object-fit: cover; border: 2px solid #007bff; margin-right: 15px;" %>
+                    <div>
+                      <div class="fw-bold"><%= player.player_name %></div>
+                      <% amount_unit = player.amount_unit == 'crores' ? 'CR' : 'L' %>
+                      <% sold_amount = '₹' + player.amount.to_s + amount_unit %>
+                      <% amount = sold_amount == '₹0.0CR' ? '👑 Captain' : sold_amount %>
+                        <div class="text-muted fw-bold <%= 'captain-badge' if amount == '👑 Captain' %>"><%= amount %></div>
+                    </div>
+                  </div>
+
+                  <!-- Section 2: Batting and Bowling Progress Bars -->
+                  <div class="progress-section d-flex flex-column text-center" style="flex: 1; margin-right: 20px; margin-right: 30px;">
+                    <div class="mb-2">
+                      <span class="small text-muted">Batting:</span>
+                      <div class="progress" style="height: 18px;">
+                        <div class="progress-bar bg-success" style="width: <%= player.auction_player.batting %>%;"><%= player.auction_player.batting %>%</div>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="small text-muted">Bowling:</span>
+                      <div class="progress" style="height: 18px;">
+                        <div class="progress-bar bg-warning" style="width: <%= player.auction_player.bowling %>%;"><%= player.auction_player.bowling %>%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Section 3: Purchase Insight -->
+                  <div style="flex: 0 0 50px; display: flex; justify-content: center; align-items: center;">
+                    <% image = player.is_a_captain? ? 'captain.jpeg' : "#{TeamSkillEvaluator.categorize_buy(player.auction_player.base_price, player.auction_player.total_skill, player.current_integer_amount)}.jpeg" %>
+                    <%= image_tag "#{image}", alt: "Insight", class: "rounded-circle shadow-sm", style: "width: 50px; height: 50px;" %>
+                  </div>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<style>
+  @media (min-width: 983px) {
+    .auction-list{
+      align-items: flex-start;
+      width: 20% !important;
+      margin-right: 800px;
+    }
+  }
+
+  .badge-sm {
+    font-size: 0.65rem; /* Smaller font size */
+    padding: 0.2em 0.2em; /* Smaller padding */
+    line-height: 1; /* Adjust line height */
+  }
+
+  .auction-total {
+    background-color: #28a745; /* Success Green */
+    color: white;
+    font-size: 20px;
+  }
+
+  .auction-remaining {
+    background-color: #17a2b8; /* Info Blue */
+    color: white;
+  }
+
+  .max-bid {
+    background-color: #6f42c1; /* Purple */
+    color: white;
+  }
+
+  .winning-chances {
+    background-color: #dc3545; /* Danger Red */
+    color: white;
+  }
+
+  .bg-purple {
+    background-color: #6f42c1;
+  }
+
+  .card i {
+    font-size: 24px;
+  }
+
+  .card p {
+    font-size: 18px;
+  }
+
+  @media (max-width: 768px) {
+    .card-title {
+      font-size: 12px;
+    }
+
+    .card p {
+      font-size: 14px;
+    }
+
+    .card i {
+      font-size: 20px;
+    }
+  }
+</style>

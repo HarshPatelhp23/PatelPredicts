@@ -1,0 +1,3 @@
+<tr id="auction_room_<%= auction_room.id %>_user<%= auction_room.user_id %>">
+  <td><%= auction_room.player_name %> - ₹<%= number_to_currency(auction_room.amount, unit: "", delimiter: ",") %> (<%= auction_room.amount_unit %>) </td>
+</tr>

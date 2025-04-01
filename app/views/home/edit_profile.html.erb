@@ -4,13 +4,13 @@
   </div>
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <form action="<%= update_profile_path %>" method="post" class="edit-profile-form">
+      <%= form_with(url: update_profile_path, method: :post, class: "edit-profile-form") do |form| %>
         <div class="form-group">
           <label for="username" class="form-label">Username:</label>
-          <input type="text" id="username" name="username" value="<%= current_user.username %>" class="form-control username-input" required>
+          <%= form.text_field :username, value: current_user.username, class: "form-control username-input", required: true %>
         </div>
-        <button type="submit" class="btn btn-primary update-profile-btn">Update Profile</button>
-      </form>
+        <%= form.submit "Update Profile", class: "btn btn-primary update-profile-btn" %>
+      <% end %>
     </div>
   </div>
 </div>

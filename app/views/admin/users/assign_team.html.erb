@@ -1,8 +1,12 @@
 <%= form_for [:admin, @user], url: assign_team_admin_user_path(@user), method: :post do |f| %>
   <div class="input-wrapper form-control-sm">
     <%= f.label :team, 'Team' %>
-    <%= f.text_field :team, value: @user.team.team_name, readonly: true, class: 'select-input mb-4 team' %>
+    <%= f.select :teams, 
+                 options_for_select(@user.teams.map(&:team_name), 'Select Team'), 
+                 { prompt: "Select a Team" }, 
+                 class: 'select-input mb-4 team' %>
   </div>
+
   <div class="input-wrapper data">
     <%= f.label :data, 'Data' %>
     <%= f.text_area :data, rows: 4, placeholder: 'Enter data here', class: 'text-area-input' %>

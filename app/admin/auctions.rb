@@ -3,7 +3,7 @@
 # rubocop:disable Metrics/BlockLength
 ActiveAdmin.register Auction do
   remove_filter :users
-  permit_params :name, :starts_at, :status, :teams_count, :admin_user_id
+  permit_params :name, :starts_at, :status, :teams_count, :admin_user_id, :user_auctions_id_eq
 
   index do
     selectable_column

@@ -1,98 +1,511 @@
-<section class="h-100 bg-light">
-  <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="col-xl-10">
-        <div class="card rounded-3 text-dark">
-          <div class="row g-0">
-            <!-- Left Side (Login Form) -->
-            <div class="col-lg-6">
-              <div class="card-body p-md-5 mx-md-4">
-                <div class="text-center">
-                  <%= image_tag('pp_logo.png', style: 'width: 105px;', alt: 'logo') %>
-                  <h4 class="mt-1 mb-5 pb-1 header mt-3">We are The Patel-Predicts Team</h4>
-                </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patel-Predicts Verify OTP</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      align-items: left;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin: 0 auto;
+      margin-right: 120px;
+    }
+    
+    .form-container {
+      display: flex;
+      flex-direction: row;
+      height: 600px;
+    }
+    
+    .verify-otp-form {
+      flex: 1;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .cricket-bg {
+      flex: 1;
+      background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      padding: 40px;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+    
+    .cricket-bg::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"><path d="M30,30 C40,10 60,10 70,30 S90,60 70,70 S40,90 30,70 S10,50 30,30 Z" /><path d="M40,40 C50,20 70,20 80,40 S100,70 80,80 S50,100 40,80 S20,60 40,40 Z" /></svg>');
+      opacity: 0.3;
+      background-size: 100px 100px;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 15px;
+      margin-top: 10px;
+    }
+    
+    .logo {
+      height: 60px;
+      width: 60px;
+      background: linear-gradient(135deg, #ff9a44 0%, #fc6076 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      box-shadow: 0 5px 15px rgba(252, 96, 118, 0.4);
+    }
+    
+    .logo-icon {
+      font-size: 28px;
+      color: white;
+    }
+    
+    h1 {
+      color: #333;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    form {
+      margin-top: 30px;
+      flex: 1;
+      width: 100%;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 14px 20px;
+      background: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #333;
+      transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus {
+      border-color: #0083b0;
+      box-shadow: 0 0 0 3px rgba(0, 131, 176, 0.1);
+      outline: none;
+    }
+    
+    .form-group input::placeholder {
+      color: #aaa;
+    }
+    
+    .form-group .input-icon {
+      position: absolute;
+      top: 42px;
+      left: 15px;
+      color: #aaa;
+    }
+    
+    .form-group input {
+      padding-left: 25px;
+    }
+    
+    .btn-verify-otp {
+      background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 5px 15px rgba(0, 131, 176, 0.3);
+    }
+    
+    .btn-verify-otp:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 131, 176, 0.4);
+    }
+    
+    .resend-otp-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+    
+    .resend-otp-link a {
+      color: #0083b0;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    
+    .cricket-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .cricket-title {
+      font-size: 26px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: white;
+    }
+    
+    .cricket-text {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .features {
+      margin-top: 25px;
+      text-align: left;
+      width: 100%;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      color: white;
+    }
+    
+    .feature-icon {
+      margin-right: 10px;
+      font-size: 18px;
+      background: rgba(255, 255, 255, 0.2);
+      height: 30px;
+      width: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    
+    .otp-input {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
 
-                <%= form_with(url: verify_otp_path, method: :post, class: "row g-3 align-items-center py-md-3") do |f| %>
-                  <div class="mb-4">
-                    <p class="mt-1 mb-5 pb-1 header2">Please enter your 6-digit OTP</p>
-                    <div class="otp-input">
-                      <%= f.text_field :digit1, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
-                      <div class="otp-gap"></div>
-                      <%= f.text_field :digit2, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
-                      <div class="otp-gap"></div>
-                      <%= f.text_field :digit3, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
-                      <div class="otp-gap"></div>
-                      <%= f.text_field :digit4, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
-                      <div class="otp-gap"></div>
-                      <%= f.text_field :digit5, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
-                      <div class="otp-gap"></div>
-                      <%= f.text_field :digit6, class: "form-control otp-digit", maxlength: 1, size: 1, placeholder: "" %>
-                    </div>
-                  </div>
+    .otp-digit {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-size: 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #f7f7f7;
+    transition: all 0.3s ease;
+    padding-left: 0 !important; /* Override the padding-left rule */
+  }
 
-                  <div class="text-center pt-1 mb-5 pb-1">
-                    <%= f.submit "Log in", class: "btn btn-primary btn-block fs-lg bg-gradient mb-3 res-login", style: "width: 150px; height: 40px; border-radius: 5px; background-color: #9932CC; color: white; margin-right: 20px; margin-top: 20px;" %>
-                  </div>
+  .otp-digit:focus {
+    border-color: #0083b0;
+    box-shadow: 0 0 0 3px rgba(0, 131, 176, 0.1);
+    outline: none;
+  }
 
-                  <div class="text-center">
-                    <%= link_to "Resend OTP", resend_otp_path, class: "btn btn-warning res-login", style: "width: 150px; height: 40px; border-radius: 5px; text-decoration: none; margin-bottom: 4px; color: black; margin-right: 22px;" %>
-                  </div>
-                <% end %>
+    
+    /*.otp-digit:focus {
+      border-color: #0083b0;
+      box-shadow: 0 0 0 3px rgba(0, 131, 176, 0.1);
+      outline: none;
+    }*/
+    
+    @media (max-width: 768px) {
+      .form-container {
+        flex-direction: column;
+        height: auto;
+      }
+      
+      .cricket-bg {
+        padding: 20px;
+        order: -1; /* Move cricket animation to the top on mobile */
+      }
+      
+      .verify-otp-form {
+        padding: 30px 20px;
+      }
+      
+      .cricket-animation {
+        transform: scale(0.7);
+        margin-bottom: 10px;
+      }
+      
+      .cricket-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .cricket-title {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      
+      .cricket-text {
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      
+      .features {
+        display: none;
+      }
+      
+      .container {
+        max-width: 480px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .cricket-bg {
+        padding: 15px;
+      }
+      
+      .cricket-animation {
+        transform: scale(0.6);
+        margin-bottom: 5px;
+      }
+      
+      .cricket-title {
+        font-size: 20px;
+        margin-bottom: 5px;
+      }
+      
+      .cricket-text {
+        margin-bottom: 5px;
+      }
+      
+      .verify-otp-form {
+        padding: 20px 15px;
+      }
+      
+      .form-group {
+        margin-bottom: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="verify-otp-container">
+    <div class="form-container">
+      <div class="verify-otp-form">
+        <div class="logo-container">
+          <div class="logo">
+            <i class="fas fa-chart-line logo-icon"></i>
+          </div>
+          <h1>Patel-Predicts</h1>
+        </div>
+        
+        <%= form_with(url: verify_otp_path, method: :post, class: "row g-3 align-items-center py-md-3") do |f| %>
+          <div class="form-group">
+            <p class="mb-4">Please enter your 6-digit OTP</p>
+            <div class="otp-input">
+              <%= f.text_field :digit1, class: "form-control otp-digit", placeholder: "" %>
+              <%= f.text_field :digit2, class: "form-control otp-digit", placeholder: "" %>
+              <%= f.text_field :digit3, class: "form-control otp-digit", placeholder: "" %>
+              <%= f.text_field :digit4, class: "form-control otp-digit", placeholder: "" %>
+              <%= f.text_field :digit5, class: "form-control otp-digit", placeholder: "" %>
+              <%= f.text_field :digit6, class: "form-control otp-digit", placeholder: "" %>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <%= f.submit "Verify OTP", class: "btn-verify-otp" %>
+          </div>
+        <% end %>
+        
+        <div class="resend-otp-link">
+          Didn't receive the OTP? <a href="<%= resend_otp_path %>">Resend OTP</a>
+        </div>
+      </div>
+      
+      <div class="cricket-bg">
+        <div class="cricket-content">
+          <!-- 3D Cricket Ball Animation -->
+          <div class="cricket-3d">
+            <div class="ball-3d">
+              <div class="ball-face face-front">
+                <div class="ball-seam"></div>
+              </div>
+              <div class="ball-face face-back">
+                <div class="ball-seam"></div>
+              </div>
+              <div class="ball-face face-right">
+                <div class="ball-seam"></div>
+              </div>
+              <div class="ball-face face-left">
+                <div class="ball-seam"></div>
+              </div>
+              <div class="ball-face face-top">
+                <div class="ball-seam"></div>
+              </div>
+              <div class="ball-face face-bottom">
+                <div class="ball-seam"></div>
               </div>
             </div>
-
-            <!-- Vertical Line -->
-            <div class="col-lg-1 vertical-line"></div>
-
-            <!-- Right Side (Additional Content) -->
-            <div class="col-lg-5 d-flex align-items-center bg-gradient res-right-hide">
-              <div class="px-3 py-4 p-md-5 mx-md-4">
-                <h4 class="mb-4">Experience the Thrill of Live Cricket Auctions</h4>
-                <p class="small mb-0">Welcome to Patel-Predicts, your gateway to the exciting world of live cricket auctions. Immerse yourself in the pulse-pounding action as teams bid for top cricket talent, strategize their lineups, and build championship-winning squads. With our platform, you can witness the drama and intensity of the auction room from the comfort of your own space.</p><br />
-                <p class="small mb-0">Get ready to cheer for your favorite players and teams as they go under the hammer. Whether it's the thrill of securing a star player or the excitement of outbidding your rivals, LiveAuction brings you closer to the heart of the game. Join us for an unforgettable journey through the world of cricket auctions!</p>
+          </div>
+          
+          <!-- Cricket Animation -->
+          <div class="cricket-animation">
+            <div class="cricket-field"></div>
+            <div class="stadium">
+              <div class="pitch"></div>
+              <div class="crowd">
+                <div class="crowd-section"></div>
               </div>
+            </div>
+            <div class="stumps">
+              <div class="stump"></div>
+              <div class="stump"></div>
+              <div class="stump"></div>
+            </div>
+            <div class="bails"></div>
+            <div class="cricket-element bat"></div>
+            <div class="cricket-element ball"></div>
+          </div>
+          
+          <h2 class="cricket-title">Join the Fantasy Cricket League</h2>
+          <p class="cricket-text">Create your dream team and compete with cricket fans worldwide!</p>
+          
+          <div class="features">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <span>Create your ultimate cricket team</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <span>Win prizes based on real match performances</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <span>Join private leagues with friends</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <span>Get expert predictions and analysis</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</section>
-
-<style>
-  .vertical-line {
-    border-left: 5px solid #9932CC;
-    height: 100%;
-    position: absolute;
-    margin-left: 50%;
+</body>
+</html>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Get all OTP input fields
+  const otpInputs = document.querySelectorAll('.otp-digit');
+  
+  // Add event listeners to each input
+  otpInputs.forEach((input, index) => {
+    // Handle input
+    input.addEventListener('input', function() {
+      // If a character is entered and there's a next input field, focus on it
+      if (this.value.length === 1 && index < otpInputs.length - 1) {
+        otpInputs[index + 1].focus();
+      }
+    });
+    
+    // Handle backspace key
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !this.value && index > 0) {
+        // If backspace is pressed on an empty field, go back to the previous field
+        otpInputs[index - 1].focus();
+      }
+    });
+    
+    // Handle paste event (for pasting the entire OTP)
+    input.addEventListener('paste', function(e) {
+      e.preventDefault();
+      
+      // Get pasted data
+      const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+      
+      // If we have digit data and it's reasonably within OTP length
+      if (pastedData && /^\d+$/.test(pastedData)) {
+        // Distribute the digits across fields
+        const digits = pastedData.split('');
+        
+        otpInputs.forEach((input, i) => {
+          if (i < digits.length) {
+            input.value = digits[i];
+            
+            // Focus the next input after the last digit from paste
+            if (i === Math.min(digits.length - 1, otpInputs.length - 1)) {
+              input.focus();
+            }
+          }
+        });
+      }
+    });
+  });
+  
+  // Set focus to the first input when the page loads
+  if (otpInputs.length > 0) {
+    otpInputs[0].focus();
   }
-
-  .otp-input {
-    display: flex;
-    justify-content: center;
-  }
-
-  .otp-digit {
-    text-align: center;
-  }
-
-  .otp-gap {
-    width: 50px; /* Adjust the gap width as needed */
-  }
-
-  .header2{
-    margin-left: 83px;
-  }
-
-
-  @media (max-width: 550px) and (min-width: 0px) {
-
-    .res-login {
-      width:100% !important;
-    }
-
-    .vertical-line, .res-right-hide{
-      display:none !important;
-    }
-  }
-</style>
+});
+</script>

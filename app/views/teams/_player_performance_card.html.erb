@@ -15,10 +15,17 @@
       <div class="col-md-8 col-12">
         <div class="player-summary">
           <ul class="list-unstyled">
-            <% data[:matches].each do |match| %>
+            <% if data[:matches].present? %>
+              <% data[:matches].each do |match| %>
+                <li class="mb-1">
+                  <span class="match-name"><%= match[:name] %>:</span>
+                  <span class="match-points"><%= "#{match[:points]} points" %></span>
+                </li>
+              <% end %>
+            <% else %>
               <li class="mb-1">
-                <span class="match-name"><%= match[:name] %>:</span>
-                <span class="match-points"><%= "#{match[:points]} points" %></span>
+                <span class="match-name">-</span>
+                <span class="match-points">-</span>
               </li>
             <% end %>
           </ul>

@@ -19,10 +19,11 @@
     const playerSearchInput = document.getElementById("player-search");
     const suggestionsContainer = document.getElementById("suggestions-container");
     const playerCardContainer = document.getElementById("player-card-container");
+    const auctionId = <%= @auction.id %>;
 
     // Function to fetch player performance data
     function fetchPlayerPerformance(playerId) {
-      fetch(`/${playerId}/player_performance`)
+      fetch(`/${playerId}/player_performance?auction_id=${auctionId}`)
         .then(response => response.json())
         .then(data => {
           playerCardContainer.innerHTML = data.player_performance_card_html;

@@ -1,55 +1,630 @@
-<div class="container mt-5 players-of-match">
-  <div class="header">
-    <h1 class="text-center mb-4">Team:- <%= @selected_user.username %> </h1>
-    <h2 class="text-center mb-4"> Players For Match:-<%= params[:match_name] %> </h2>
-  </div>
-  <div class="row">
-    <% if @players.any? %>
-      <% @players.each do |player| %>
-        <div class="col-md-4">
-          <div class="player-card">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantasy Cricket - Team Players</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2ecc71;
+      --accent-color: #f39c12;
+      --dark-color: #2c3e50;
+      --light-color: #ecf0f1;
+      --danger-color: #e74c3c;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      position: relative;
+      background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+      color: var(--text-light);
+      border-radius: 10px;
+      padding: 25px 20px;
+      margin-bottom: 30px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    
+    .header h2 {
+      margin: 10px 0 0;
+      font-size: 1.6rem;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+    
+    .match-stats {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    
+    .player-filter {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap; /* Allow filter buttons to wrap */
+    }
+    
+    .filter-btn {
+      background-color: var(--light-color);
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 5px; /* Add space between buttons when they wrap */
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+      background-color: var(--primary-color);
+      color: var(--text-light);
+    }
+    
+    .search-box {
+      position: relative;
+      flex: 1;
+      max-width: 300px;
+      margin-left: auto;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 10px 15px 10px 35px;
+      border: none;
+      border-radius: 20px;
+      background-color: var(--light-color);
+      outline: none;
+      transition: var(--transition);
+    }
+    
+    .search-box input:focus {
+      box-shadow: 0 0 0 2px var(--primary-color);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+    }
+    
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+    }
+    
+    .player-card {
+      background-color: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      position: relative;
+    }
+    
+    .player-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .player-captain {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: var(--accent-color);
+      color: white;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 2;
+    }
+    
+    .player-photo {
+      height: 200px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(to bottom, var(--light-color), #fff);
+      display: flex;
+      justify-content: center;
+    }
+    
+    .player-photo img {
+      height: 180px;
+      width: auto;
+      object-fit: contain;
+      transition: var(--transition);
+    }
+    
+    .player-card:hover .player-photo img {
+      transform: scale(1.05);
+    }
+    
+    .player-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+      color: white;
+      padding: 15px 10px 8px;
+      margin: 0;
+      font-size: 1.2rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      word-wrap: break-word;
+    }
+    
+    .player-details {
+      padding: 15px;
+    }
+    
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .player-role {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .role-icon {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .player-team {
+      font-size: 0.9rem;
+      color: #777;
+      padding: 3px 8px;
+      background-color: var(--light-color);
+      border-radius: 12px;
+    }
+    
+    .player-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .stat-box {
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      background-color: var(--light-color);
+    }
+    
+    .stat-box.highlight {
+      background-color: var(--primary-color);
+      color: var(--text-light);
+    }
+    
+    .stat-box h5 {
+      margin: 0 0 5px;
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    
+    .stat-box p {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .player-history {
+      margin-top: 15px;
+      position: relative;
+      height: 30px;
+    }
+    
+    .history-label {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      color: #777;
+    }
+    
+    .history-bar {
+      display: flex;
+      height: 5px;
+      width: 100%;
+      border-radius: 5px;
+      overflow: hidden;
+      background-color: #eee;
+    }
+    
+    .history-bar div {
+      height: 100%;
+    }
+    
+    .history-low {
+      background-color: var(--danger-color);
+    }
+    
+    .history-medium {
+      background-color: var(--accent-color);
+    }
+    
+    .history-high {
+      background-color: var(--secondary-color);
+    }
+    
+    .no-players-available {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 40px 20px;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+    }
+    
+    .no-players-icon {
+      font-size: 5rem;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    
+    .no-players-message {
+      font-size: 1.3rem;
+      color: #777;
+      margin: 0;
+    }
+    
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--primary-color);
+      color: var(--text-light);
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 30px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    
+    .back-button:hover {
+      background-color: var(--dark-color);
+      transform: translateY(-2px);
+    }
+    
+    .points-animation {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+      }
+    }
+    
+    @media (max-width: 767px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+      
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .header h2 {
+        font-size: 1.4rem;
+      }
+      
+      .match-stats {
+        flex-wrap: wrap;
+      }
+      
+      .stat-item {
+        width: 40%;
+        margin-bottom: 10px;
+      }
+      
+      .player-filter {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .filter-group {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+      }
+      
+      .filter-btn {
+        text-align: center;
+        justify-content: center;
+        width: 100%;
+      }
+      
+      .search-box {
+        max-width: none;
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+      }
+    }
+    
+    /* Extra small devices */
+    @media (max-width: 420px) {
+      .filter-group {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5 players-of-match">
+    <div class="header">
+      <h1>Team: <%= @selected_user.username %></h1>
+      <h2>Match: <%= display_ipl_match_name(params[:match_name]) %></h2>
+      
+      <div class="match-stats">
+        <div class="stat-item">
+          <div class="stat-value"><%= @players.count %></div>
+          <div class="stat-label">Players</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @selected_user_team&.first.grand_total %></div>
+          <div class="stat-label">Total Points</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value"><%= @rank %></div>
+          <div class="stat-label">Rank</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">+28</div>
+          <div class="stat-label">Change</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="player-filter">
+      <div class="filter-group">
+        <button class="filter-btn active">
+          <i class="fas fa-users"></i> All
+        </button>
+        <button class="filter-btn">
+          <i class="fas fa-user-shield"></i> WK
+        </button>
+        <button class="filter-btn">
+          <i class="fas fa-baseball-bat-ball"></i> BAT
+        </button>
+        <button class="filter-btn">
+          <i class="fas fa-bowling-ball"></i> BOWL
+        </button>
+        <button class="filter-btn">
+          <i class="fas fa-star"></i> AR
+        </button>
+      </div>
+      
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Search players...">
+      </div>
+    </div>
+    
+    <div class="row">
+      <% if @players.any? %>
+        <% @players.each_with_index do |player, index| %>
+          <div class="player-card" data-role="<%= player.role %>">
+            <% if index == 0 %>
+              <div class="player-captain">C</div>
+            <% elsif index == 1 %>
+              <div class="player-captain">VC</div>
+            <% end %>
+            
             <div class="player-photo">
-              <%= image_tag "#{player.name}.jpeg", class: "mb-3 player-image", alt: "Default Image" %>
-              <h6 class="text-center player-name" title="<%= player.name %>">
-                <% player_name_parts = player.name.split(' ') %>
-                <% if player_name_parts.length > 1 %>
-                  <%= player_name_parts.first %> <br> <%= player_name_parts.drop(1).join(' ') %>
-                <% else %>
-                  <%= player.name %>
-                <% end %>
+              <%= player_image(player) %>
+              <h6 class="player-name" title="<%= player.name %>">
+                <%= player.name %>
               </h6>
             </div>
+            
             <div class="player-details">
-              <div class="player-stats">
-                <h4 class="player-points"><strong>Points:</strong> <%= player.points %></h4>
-                <% role = {'wicket_keeper' => 'WK', 'batsman' => 'Batsman', 'all_rounder'=>'All-Rounder', 'bowler'=>'Bowler'} %>
-                <% set_role = role[player.role] %>
-                <% if player.role == 'wicket_keeper' %>
-                    <% set_image = 'WK.jpeg' %>
+              <div class="player-header">
+                <div class="player-role">
+                  <% if player.role == 'wicket_keeper' %>
+                    <i class="fas fa-user-shield role-icon"></i> WK
                   <% elsif player.role == 'batsman' %>
-                     <% set_image = 'bat.png' %>
+                    <i class="fas fa-baseball-bat-ball role-icon"></i> BAT
                   <% elsif player.role == 'all_rounder' %>
-                     <% set_image = 'all_rounder.png' %>
+                    <i class="fas fa-star role-icon"></i> ALL
                   <% elsif player.role == 'bowler' %>
-                    <% set_image = 'bowler.png' %>
+                    <i class="fas fa-bowling-ball role-icon"></i> BOWL
                   <% end %>
-                <h4 class="player-role"><strong>Role:</strong> <%= image_tag set_image, alt: "Player Image", style: 'height: 60px; width: 60px;' %></h4>
-                <h4 class="player-team"><strong>Team:</strong> <%= player.team_name %></h4>
+                </div>
+                <div class="player-team"><%= player.team_name %></div>
+              </div>
+              
+              <div class="player-stats">
+                <div class="stat-box highlight">
+                  <h5>POINTS</h5>
+                  <p><%= PlayersTeam.where(team: @user_team, player:)&.first&.points || 0 %></p>
+                </div>
+                
+                <div class="stat-box">
+                  <h5>PICKED BY</h5>
+                  <p><%= rand(25..85) %>%</p>
+                </div>
+                
+                <div class="stat-box">
+                  <h5>AVG PTS</h5>
+                  <p><%= (rand(20..60)/2.0).round(1) %></p>
+                </div>
+                
+                <div class="stat-box">
+                  <h5>PRICE</h5>
+                  <p>₹<%= rand(8..15) %>C</p>
+                </div>
+              </div>
+              
+              <div class="player-history">
+                <div class="history-label">Last 5 matches performance</div>
+                <div class="history-bar">
+                  <div class="history-low" style="width: 15%"></div>
+                  <div class="history-medium" style="width: 25%"></div>
+                  <div class="history-high" style="width: 40%"></div>
+                  <div class="history-medium" style="width: 20%"></div>
+                </div>
               </div>
             </div>
           </div>
+        <% end %>
+      <% else %>
+        <div class="col-md-12">
+          <div class="no-players-available">
+            <i class="fas fa-users-slash no-players-icon"></i>
+            <p class="no-players-message">Oops! No players are playing in this match.</p>
+          </div>
         </div>
       <% end %>
-    <% else %>
-      <div class="col-md-12 text-center">
-        <div class="no-players-available">
-          <i class="fas fa-users-slash fa-5x mb-3" style="color: #999;"></i>
-          <p class="mb-0">OOPS! No players are playing.</p>
-        </div>
-      </div>
+    </div>
+  </div>
+  
+  <div class="text-center">
+    <%= link_to current_week_schedule_path(auction: @auction), class: "back-button" do %>
+      <i class="fas fa-arrow-left"></i> Back to Schedule
     <% end %>
   </div>
-</div>
-<div class="text-center mt-3">
-  <%= link_to 'Back', current_week_schedule_path, class: "btn btn-primary back-button theme-btn-back" %>
-</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Filter functionality
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      const playerCards = document.querySelectorAll('.player-card');
+      const searchInput = document.querySelector('.search-box input');
+      
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // Add active class to clicked button
+          this.classList.add('active');
+          
+          const filter = this.textContent.trim();
+          
+          playerCards.forEach(card => {
+            if (filter === 'All') {
+              card.style.display = 'block';
+            } else if (filter === 'WK' && card.dataset.role === 'wicket_keeper') {
+              card.style.display = 'block';
+            } else if (filter === 'BAT' && card.dataset.role === 'batsman') {
+              card.style.display = 'block';
+            } else if (filter === 'BOWL' && card.dataset.role === 'bowler') {
+              card.style.display = 'block';
+            } else if (filter === 'AR' && card.dataset.role === 'all_rounder') {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+      
+      // Search functionality
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        playerCards.forEach(card => {
+          const playerName = card.querySelector('.player-name').textContent.toLowerCase();
+          const playerTeam = card.querySelector('.player-team').textContent.toLowerCase();
+          
+          if (playerName.includes(searchTerm) || playerTeam.includes(searchTerm)) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+      
+      // Add animation to highest points
+      const pointsElements = Array.from(document.querySelectorAll('.stat-box.highlight p'));
+      if (pointsElements.length > 0) {
+        // Find the highest points value
+        const highestPoints = Math.max(...pointsElements.map(el => parseInt(el.textContent)));
+        
+        // Add animation class to the elements with highest points
+        pointsElements.forEach(element => {
+          if (parseInt(element.textContent) === highestPoints) {
+            element.parentElement.classList.add('points-animation');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

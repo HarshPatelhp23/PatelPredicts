@@ -7,14 +7,19 @@
 <% elsif player.role == 'bowler' %>
   <% set_image = 'bowler.png' %>
 <% end %>
+
 <div class="card mb-4 shadow-lg rounded <%= set_background_color(player.team_name) %>">
+  <!-- <#% text_colour = set_background_color(player.team_name) == 'bg-csk' ? 'text-dark' : 'text-white' %> -->
   <% text_colour = set_background_color(player.team_name) == 'bg-csk' ? 'text-dark' : 'text-white' %>
-  <div class="card-body d-flex flex-column align-items-center justify-content-center" style="height: 300px; position: relative;">
-    <%= image_tag "#{player.name}.jpeg", class: "player-image mb-3", alt: "default_player_image.jpeg" %>
+  <div class="card-body d-flex flex-column align-items-center justify-content-center" style="height: 400px; position: relative;">
+    <%= player_card_image(player) %>
     <h5 class="<%= text_colour %> card-title mb-2"><%= player.name %></h5>
     <p class="card-text mb-3">
       <strong class="<%= text_colour %>">Points:</strong>
-      <span class="<%= text_colour %> font-weight-bold"><%= player.points %></span>
+      <span class="<%= text_colour %> font-weight-bold"><%= player.players_teams.where(team: @team)&.first&.points %></span>
+    </p>
+    <p class="card-text mb-3">
+      <div class="team-logo"><%= ipl_team_logo(player.team_name.downcase) %></div>
     </p>
     <div class="role-section d-flex align-items-center">
       <strong class="<%= text_colour %>">Role:</strong>
@@ -31,7 +36,173 @@
     </div>
     <input type="checkbox" name="selected_players[]" value="<%= player.id %>" class="player-checkbox ml-auto mr-3" style="transform: scale(1.5);">
   </div>
+  
+  <!-- Advanced Upcoming Matches Section - Only show if player has matches -->
+  <% if @current_week_matches.count > 0 %>
+  <div class="upcoming-matches-wrapper position-relative" style="border-top: 1px solid rgba(255,255,255,0.1); overflow: hidden;">
+    <!-- Match Indicator Button with Pulse Animation -->
+    <button type="button" 
+            class="upcoming-matches-trigger w-100 position-relative py-3 d-flex align-items-center justify-content-center" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#matchDetails<%= player.id %>" 
+            aria-expanded="false" 
+            aria-controls="matchDetails<%= player.id %>"
+            style="background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.8), rgba(0,0,0,0.7)); 
+                   border: none; color: white; overflow: hidden; z-index: 1;">
+      
+      <!-- Pulse Animation Element -->
+      <div class="position-absolute" style="left: 30px; top: 50%; transform: translateY(-50%);">
+        <div class="match-pulse-dot" style="width: 12px; height: 12px; border-radius: 50%; background-color: #4CAF50; position: relative;">
+          <div class="match-pulse-ring" style="position: absolute; top: -4px; left: -4px; height: 20px; width: 20px; border-radius: 50%; 
+                                              border: 2px solid #4CAF50; animation: pulse 1.5s infinite; opacity: 0.6;"></div>
+        </div>
+      </div>
+      
+      <!-- Match Text with Highlight -->
+      <div class="d-flex flex-column align-items-center">
+        <div class="d-flex align-items-center">
+          <span class="match-count position-relative px-2" 
+                style="font-size: 16px; font-weight: 600; background: linear-gradient(45deg, #FF6B6B, #FF8E53); 
+                       border-radius: 20px; color: white; margin-right: 10px; padding: 2px 10px;"><%= player.current_week_matches_count(@current_week_matches, @current_week_start_date, @current_week_end_date) %></span>
+          <span style="font-size: 15px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;">Upcoming Matches</span>
+        </div>
+        <div class="match-subtitle mt-1" style="font-size: 12px; opacity: 0.8; font-style: italic;">Tap to view details</div>
+      </div>
+      
+      <!-- Custom Animated Arrow -->
+      <div class="ms-3 chevron-down" style="width: 14px; height: 14px; position: relative; transition: transform 0.3s ease;">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-right: 3px solid white; border-bottom: 3px solid white; 
+                    transform: rotate(45deg);"></div>
+      </div>
+    </button>
+    
+    <!-- Enhanced Collapsible Match Details -->
+    <div class="collapse" id="matchDetails<%= player.id %>">
+      <div class="match-details-container" 
+           style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; border-top: 1px solid rgba(255,255,255,0.1);">
+        
+        <% if @current_week_matches.any? %>
+        <!-- Next Week Matches -->
+        <div class="match-timeline-header py-2 px-3 d-flex justify-content-between align-items-center" 
+             style="background-color: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); <%= 'border-top: 1px solid rgba(255,255,255,0.1);' if @current_week_matches.any? %>">
+          <span style="font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+            Next Week's Fixtures
+          </span>
+          <span style="font-size: 12px; opacity: 0.8;">
+            <%= @next_week_start_date.strftime("%b %d") %> - <%= @next_week_end_date&.strftime("%b %d") %>
+          </span>
+        </div>
+
+        <div class="match-timeline py-2">
+          <% @current_week_matches.each do |match| %>
+            <% t1,t2 = match.match_name.split(' vs ') %>
+            <% u_t1 = match_country_code[t1].upcase %>
+            <% u_t2 = match_country_code[t2].upcase %>
+            <% if u_t1.include?(player.team_name) || u_t2.include?(player.team_name) %>
+              <% 
+                match_date = match.match_date
+                home_team, away_team = match.match_name.split(" vs ")
+                home_team_abbr = home_team&.split(" ")&.map(&:first)&.join
+                away_team_abbr = away_team&.split(" ")&.map(&:first)&.join
+                
+                # Random color for demonstration - in real implementation, use team colors
+                color = ["#4CAF50", "#2196F3", "#FF5722", "#9C27B0", "#FFEB3B"].sample
+              %>
+              
+              <div class="match-item position-relative py-3 px-3" 
+                   style="border-left: 3px solid <%= color %>; margin-left: 20px; margin-bottom: 5px;">
+                
+                <!-- Date Circle -->
+                <div class="match-date-circle position-absolute" 
+                     style="left: -15px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; 
+                             background: linear-gradient(45deg, <%= color %>, <%= color %>AA); border-radius: 50%; 
+                             display: flex; justify-content: center; align-items: center;">
+                  <span style="font-size: 12px; font-weight: bold; color: white;"><%= match_date.strftime("%-d") %></span>
+                </div>
+                
+                <!-- Match Content -->
+                <div class="d-flex justify-content-between align-items-center">
+                  <!-- Teams with Logos -->
+                  <div class="match-teams d-flex align-items-center" style="flex: 1;">
+                    <div class="team d-flex flex-column align-items-center me-2" style="min-width: 40px;">
+                        <div class="team-logo-small" style="width: 25px; height: 25px; background-color: <%= team_color(u_t1) %>; border-radius: 50%;"></div>
+                        <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= u_t1 %></span>
+                      <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= home_team_abbr %></span>
+                    </div>
+                    <span style="font-weight: 300; color: rgba(255,255,255,0.7); margin: 0 10px;">vs</span>
+                    <div class="team d-flex flex-column align-items-center" style="min-width: 40px;">
+                      <div class="team-logo-small" style="width: 25px; height: 25px; background-color: <%= team_color(u_t2) %>; border-radius: 50%;"></div>
+                        <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= u_t2 %></span>
+                      <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= away_team_abbr %></span>
+                    </div>
+                  </div>
+                  
+                  <!-- Match Details -->
+                  <div class="match-meta d-flex flex-column align-items-end" style="min-width: 90px;">
+                    <div class="match-time" style="font-size: 12px; font-weight: 600;"><%= match.time&.strftime("%l:%M %p") || "TBD" %></div>
+                    <div class="match-venue" style="font-size: 11px; opacity: 0.7;"><%= match.stadium %></div>
+                  </div>
+                </div>
+              </div>
+              <% end %>
+            <% end %>
+        </div>
+        <% end %>
+        
+        <% if @current_week_matches.empty? && @next_week_matches.empty? %>
+        <div class="no-matches-message p-4 text-center">
+          <div style="font-size: 14px; opacity: 0.8;">No upcoming matches found for this player</div>
+        </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <% end %>
 </div>
+
+<!-- Add these styles to your CSS file -->
+<style>
+  @keyframes pulse {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.8;
+    }
+    70% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+  }
+  
+  .upcoming-matches-trigger:hover .chevron-down {
+    transform: translateY(3px);
+  }
+  
+  .upcoming-matches-trigger[aria-expanded="true"] .chevron-down {
+    transform: rotate(180deg);
+  }
+  
+  .match-item:hover {
+    background-color: rgba(255,255,255,0.05);
+    transition: background-color 0.3s ease;
+  }
+  
+  .team-logo-small {
+    width: 25px;
+    height: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .team-logo-small img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+</style>
 <%#= button_to player.bench? ? "Move to Playing-11" : "Move to Bench",
               team_update_playing11_path(player_id: player.id),
               method: :put,

@@ -14,6 +14,8 @@ module LiveAuction
     config.load_defaults 7.0
     config.assets.enabled = true
     config.time_zone = 'Kolkata'
+    config.active_job.queue_adapter = :sidekiq
+    config.autoload_paths += %W(#{config.root}/lib)
 
     # Configuration for the application, engines, and railties goes here.
     #

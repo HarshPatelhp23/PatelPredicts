@@ -2,27 +2,30 @@
 
 # rubocop:disable Metrics/BlockLength, Layout/LineLength
 ActiveAdmin.register Player do
-  permit_params :name, :base_price, :team_name, :foreigner, :team_id, :points, :image, :role
+  permit_params :name, :other_names, :base_price, :team_name, :foreigner, :team_ids, :image, :role
 
-  config.sort_order = 'points_desc'
+  config.sort_order = 'id_desc'
 
   filter :name
-  filter :points
+  filter :teams_id, as: :select, collection: -> { Team.pluck(:team_name, :id) }, label: 'Team'
   filter :role, as: :select, collection: -> { Player.roles }, include_blank: 'Select Role'
-  filter :team, as: :select, collection: -> { Team.pluck(:team_name, :id) }, include_blank: 'Select Team'
+  # filter :teams, as: :select, collection: -> { Team.pluck(:team_name, :id) }, include_blank: 'Select Team'
+  filter :team_name, as: :select, collection: -> { Player.pluck(:team_name).uniq }
   filter :foreigner
 
   index do
     selectable_column
     id_column
     column :name
-    column :points
     column :Team do |player|
-      player&.team&.team_name
+      player&.teams.pluck(:team_name).join(', ')
     end
     column :IPL_Team, &:team_name
     column :role
-    column :sold_price
+    column :other_names do |player|
+      player&.other_names&.join(', ')
+    end
+    # column :sold_price
     # column :foreigner
     actions
   end
@@ -30,31 +33,45 @@ ActiveAdmin.register Player do
   form do |f|
     f.inputs 'Player Details' do
       f.input :name
-      f.input :points
       f.input :role, as: :select, include_blank: 'Select Role'
       f.input :team_name, as: :select, collection: [
-        ['India', 'IND'],
-        ['Australia', 'AUS'],
-        ['Bangladesh', 'BANG'],
-        ['England', 'ENG'],
-        ['New Zealand', 'NZ'],
-        ['Pakistan', 'PAK'],
-        ['South Africa', 'SA'],
-        ['Sri Lanka', 'SL'],
-        ['West Indies', 'WI'],
-        ['AFGANISTAN', 'AFG'],
-        ['Canada', 'CA'],
-        ['Ireland', 'IRE'],
-        ['Namibia', 'NAM'],
-        ['Nepal', 'NEP'],
-        ['Netherlands', 'NETH'],
-        ['Oman', 'OMN'],
-        ['Papua New Guinea', 'PNG'],
-        ['Scotland', 'SCOT'],
-        ['Uganda', 'UG'],
-        [' United States', 'USA']
+        ['Chennai Super Kings', 'CSK'],
+        ['Rajasthan Royals' , 'RR'],
+        ['Kolkata Knight Riders', 'KKR'],
+        ['Sunrisers Hyderabad', 'SRH'],
+        ['Royal Challengers Bengaluru', 'RCB'],
+        ['Delhi Capitals', 'DC'],
+        ['Punjab Kings', 'PBKS'],
+        ['Mumbai Indians', 'MI'],
+        ['Gujarat Titans', 'GT'],
+        ['Lucknow Super Giants', 'LSG']
+        # ['Melbourne Renegades', 'MR'],
+        # [' Perth Scorchers', 'PS'],
+        # ['Sydney Sixers', 'SYS'],
+        # ['Melbourne Stars', 'MLS']
+        # ['India', 'IND'],
+        # ['Australia', 'AUS'],
+        # ['Bangladesh', 'BAN'],
+        # ['England', 'ENG'],
+        # ['New Zealand', 'NZ'],
+        # ['Pakistan', 'PAK'],
+        # ['South Africa', 'RSA'],
+        # ['Sri Lanka', 'SL'],
+        # ['West Indies', 'WI'],
+        # ['AFGANISTAN', 'AFG'],
+        # ['Canada', 'CA'],
+        # ['Ireland', 'IRE'],
+        # ['Namibia', 'NAM'],
+        # ['Nepal', 'NEP'],
+        # ['Netherlands', 'NETH'],
+        # ['Oman', 'OMN'],
+        # ['Papua New Guinea', 'PNG'],
+        # ['Scotland', 'SCOT'],
+        # ['Uganda', 'UG'],
+        # [' United States', 'USA']
       ], include_blank: 'Select Team'
-      f.input :team_id, as: :select, collection: Team.all.map { |t|
+      f.input :other_names, as: :string, input_html: { value: f.object.other_names.join(', ') }, hint: 'Enter comma-separated values'
+      f.input :teams, as: :select, collection: Team.all.map { |t|
                                                    [t.team_name, t.id]
                                                  }, include_blank: 'Select team of user'
       f.input :image, as: :file,
@@ -64,11 +81,23 @@ ActiveAdmin.register Player do
     f.actions
   end
 
+  controller do
+    def create
+      params[:player][:other_names] = params[:player][:other_names].split(',').map(&:strip)
+      super
+    end
+
+    def update
+      params[:player][:other_names] = params[:player][:other_names].split(',').map(&:strip)
+      super
+    end
+  end
+
   show do
     attributes_table do
       row :name
-      row :Team do |player|
-        player.team.team_name
+      row :Teams do |player|
+        player.teams.pluck(:team_name).join(', ')
       end
       row :foreigner
       row :role

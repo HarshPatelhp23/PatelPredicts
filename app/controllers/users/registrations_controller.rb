@@ -10,7 +10,7 @@ module Users
       WelcomeMailer.with(otp:, username: params[:user][:username],
                          email: params[:user][:email]).verify_otp.deliver_now
       if @user.save
-        Team.create(team_name: @user.username, user_id: @user.id)
+        @user.teams << Team.create(team_name: @user.username, user_id: @user.id)
         redirect_to verify_otp_path(@user)
         flash[:notice] = 'We have sent otp to your email please confirm it'
       else

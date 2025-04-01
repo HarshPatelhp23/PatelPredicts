@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Cards</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .auction-player-card {
+      width: 22rem;
+      margin: 15px auto;
+      text-align: center;
+    }
+    .auction-player-img {
+      height: 200px;
+      object-fit: cover;
+    }
+    .auction-player-card:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+    .auction-card-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .auction-section {
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    .spl-sections {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start; /* Ensures headers align at the top */
+      border-top: 1px solid #ccc;
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+    .spl-section {
+      flex: 1;
+      text-align: center;
+      margin: 0 5px;
+    }
+    .spl-section h6 {
+      font-size: 1rem;
+      font-weight: bold;
+      text-decoration: underline;
+      margin-bottom: 10px;
+    }
+    .section-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      text-align: center;
+    }
+    .section-content img {
+      width: 30px;
+      height: 30px;
+      margin-bottom: 8px;
+    }
+    .batting, .bowling {
+      margin-bottom: 15px;
+      width: 100%; /* Ensures consistent width */
+    }
+    .batting p, .bowling p {
+      margin: 5px 0;
+    }
+    .section-divider {
+      width: 100%;
+      border-top: 1px solid #ccc;
+      margin: 10px 0;
+    }
+    .bold-text {
+      font-weight: bold;
+    }
+    .search {
+      width: 50%;
+      justify-content: center;
+      margin-left: 100px;
+    }
+    .player-card {
+      font-size: smaller;
+    }
+</style>
+
+</head>
+<body>
+  <div class="text-center mt-3">
+    <%= link_to 'Back', root_path, class:'btn btn-primary back-button theme-btn-back' %>
+  </div>
+  <h1 class="text-center my-4">Player Cards</h1>
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <input type="text" id="playerSearch" class="form-control search mb-4" placeholder="Type player name...">
+      </div>
+    </div>
+  <div class="container">
+    <div class="row d-flex justify-content-center">
+      <% @auction_players.each do |player| %>
+      <div class="col-md-4 player-card" data-player-name="<%= player[:name].downcase %>">
+        <div class="card auction-player-card">
+          <img src="assets/default_player_image.jpeg" class="card-img-top auction-player-img" alt="assets/default_player_image.jpeg">
+          <div class="card-body">
+            <h5 class="auction-card-title"><%= player[:name] %></h5>
+            <!-- Horizontal SPL Sections -->
+            <div class="spl-sections">
+              <% ['4', '5', '6', '7'].each do |spl| %> 
+                <div class="spl-section">
+                  <h6>SPL-<%= spl %></h6>
+                  <div class="section-content">
+                    <!-- Batting Section -->
+                    <div class="batting">
+										  <img src="assets/bat.png" alt="Bat">
+										  <% ['matches', 'run', 'ball', 'sr', 'highest_score', 'fifties', 'hundreds', 'sixes', 'fours'].each do |field| %>
+										    <p>
+										      <span class="bold-text">
+										        <%= 
+										          case field
+                              when 'run'
+                                "Runs"
+                              when 'fifties'
+                                '50s'
+                              when 'hundreds'
+                                '100s'
+										          when 'sr'
+										            "SR"  # For Strike Rate, show SR
+										          when 'highest_score'
+										            "H/S"  # For Highest Score, show H/S
+										          else
+										            field.capitalize.gsub('_', ' ')  # Capitalize other fields normally
+										          end
+										        %>:
+										      </span> 
+										      <%= player["spl#{spl}_#{field}".to_sym] || "N/A" %>
+										    </p>
+										  <% end %>
+										</div>
+                    <!-- Horizontal Line -->
+                    <div class="section-divider"></div>
+                    <!-- Bowling Section -->
+                    <div class="bowling">
+                      <img src="assets/bowler.png" alt="Bowl">
+                      <% ['wickets', 'econ', 'overs', 'runs_given', 'maidens'].each do |field| %>
+                        <p>
+                        <span class="bold-text">
+                          <%=
+                              case field
+                              when 'runs_given'
+                                "Runs"
+                              else
+                                field.capitalize.gsub('_', ' ')  # Capitalize other fields normally
+                              end
+                            %>:
+                        </span> <%= player["spl#{spl}_#{field}".to_sym] || "N/A" %>
+                        </p>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %> 
+            </div>
+          </div>
+        </div>
+      </div>
+      <% end %>
+    </div>
+  </div>
+</body>
+</html>
+<script>
+  document.getElementById('playerSearch').addEventListener('input', function () {
+    const query = this.value.toLowerCase();
+    const cards = document.querySelectorAll('.player-card');
+
+    cards.forEach((card) => {
+      const playerName = card.getAttribute('data-player-name');
+      if (playerName.includes(query)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+</script>

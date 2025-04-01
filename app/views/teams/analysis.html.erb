@@ -60,12 +60,30 @@
     </div>
   </div>
 
-  <% if @users.present? %>
-    <%= line_chart @comparison_data %>
-  <% elsif @all_users.present? %>
-    <%= line_chart @all_users %>   
+  <% if @all_users.present? %>
+    <%= line_chart @all_users, 
+                 height: '400px', 
+                 xtitle: 'Matches', 
+                 ytitle: 'Ranking', 
+                 library: { 
+                   scales: {
+                     y: {
+                       min: 0,          # Set minimum value of Y-axis
+                       max: 10,         # Set maximum value of Y-axis
+                       ticks: {
+                         stepSize: 2,    # Set interval between ticks
+                         precision: 0    # Ensure no decimal places
+                       }
+                     }
+                   },
+                   elements: {
+                     line: {
+                       tension: 0        # Disable curve for straight lines
+                     }
+                   }
+                 } %>
   <% else %>
-    <%= line_chart @user_rankings_data %>
+    <%= line_chart @user_rankings_data, height: '400px', xtitle: 'Matches', ytitle: 'Ranking', library: { curve: false } %>
   <% end %>
 </div>
 

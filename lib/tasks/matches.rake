@@ -2,8 +2,8 @@
 
 namespace :matches do
   task insert_ipl_schedule: :environment do
-    require Rails.root.join('lib/match_schedule')
-    IPL_SCHEDULE.each do |match|
+    require Rails.root.join('lib/schedule')
+    Schedule::IPL_SCHEDULE.each do |match|
       MatchSchedule.create!(
         match_number: match[:match_number],
         match_name: match[:match_name],
@@ -22,10 +22,24 @@ namespace :matches do
     puts "Today's match:- #{MatchSchedule.where(match_date: Date.current).pluck(:match_name)}"
   end
 
+  task update_all_match_dates: :environment do
+    Match.all.each do |m|
+      match_date = m.send(:assign_match_date_and_auction)
+      m.update_columns(match_date:)
+    end
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '+++++  DONE +++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+    puts '++++++++++++++++++++++++++++++++++'
+  end
+
   task insert_wc_scehdule: :environment do
-    require Rails.root.join('lib/match_schedule')
+    require Rails.root.join('lib/schedule')
     MatchSchedule.destroy_all
-    T20_WORLDCUP_SCHEDULE.each do |match|
+    CT_2025_SCHEDULE.each do |match|
       MatchSchedule.create!(
         match_number: match[:match_number],
         match_name: match[:match_name],
@@ -94,16 +108,68 @@ namespace :matches do
   end
 
   task update_weekly_team_record: :environment do
-    weekly_user_team = WeeklyUserTeam.find(46)
-    weekly_user_team.update_columns(week_start_date: Date.new(2024, 6, 17), week_end_date: Date.new(2024, 6, 20))
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++ DONE  ++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
-    puts '++++++++++++++++++++++++++++++++++++++++'
+    kuki_team = WeeklyUserTeam.find(16)
+    parth_team = WeeklyUserTeam.find(14)
+  end
+
+  task update_team_changes: :environment do
+    w_teams_records = WeeklyUserTeam.where(week_end_date: Date.new(2025,4,6))
+    w_teams_records.each do |record|
+      playing11_changes  = WeeklyUserTeam.where(team: record.team, user: record.user, week: 2)&.first.playing11 - record.playing11
+      bench_changes  = WeeklyUserTeam.where(team: record.team, user: record.user, week:2)&.first.bench - record.bench
+      team_changes = {}
+      team_changes[:playing11_changes] = playing11_changes
+      team_changes[:bench_changes] = bench_changes
+      record.update_columns(team_changes: team_changes)
+    end
+    puts "DOOOOONE ++++++++++++++++++++++++"
+  end
+
+  task update_week: :environment do
+    first_week_teams = WeeklyUserTeam.where(id: (1..10))
+    second_week_teams = WeeklyUserTeam.where(id: (14..23))
+    first_week_teams.update_all(week: 1)
+    second_week_teams.update_all(week: 2)
+  end
+
+  desc "Import IPL 2025 match schedules from series data"
+  task import_schedules: :environment do
+    series_data = SeriesMatchResponse.where.not(series_res: '{}')&.last.series_res
+
+    match_records = []
+
+    series_data["matchDetails"].each do |detail|
+      next unless detail.key?("matchDetailsMap")
+
+      match_details_map = detail["matchDetailsMap"]
+      matches = match_details_map["match"] || []
+
+      matches.each do |match|
+        match_info = match["matchInfo"]
+        next unless match_info
+
+        match_name = "#{match_info['team1']['teamName']} vs #{match_info['team2']['teamName']}"
+        match_date = Time.at(match_info['startDate'].to_i / 1000).to_date
+        match_number = match_info['matchDesc'].gsub(/\D/, '') # Extract numbers from matchDesc
+
+        match_records << {
+          match_name: match_name,
+          match_date: match_date,
+          match_number: match_number.present? ? match_number.to_i : nil
+        }
+      end
+    end
+
+    # Create records in batches
+    MatchSchedule.transaction do
+      match_records.each do |record|
+        MatchSchedule.find_or_create_by!(record)
+      end
+    end
+
+    puts "Successfully imported #{match_records.size} match schedules"
+  rescue StandardError => e
+    puts "Error importing match schedules: #{e.message}"
+    puts e.backtrace.join("\n")
   end
 end

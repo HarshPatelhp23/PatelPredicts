@@ -1,16 +1,15 @@
-<div class="container mt-5 power-performance">
+<!-- <div class="container mt-5 power-performance">
   <div class="header">
     <h1 class="text-center mb-4">POWER-PERFORMERS XI</h1>
   </div>
   <div id="player-stats">
-    <!-- Player cards will be dynamically added here -->
   </div>
 </div>
 
 <script>
   // Assuming @sorted_players is an array of player objects in your Rails view
-  var sortedPlayers = <%= raw @sorted_players.to_json %>;
-  var owners = <%= raw @owners.to_json %>;
+  // var sortedPlayers = <#%= raw @top_11_players.to_json %>;
+  // var owners = <#%= raw @owners.to_json %>;
 
   // function setTeamBackgroundColor(teamName) {
   //   switch (teamName.toLowerCase()) {
@@ -32,12 +31,12 @@
       switch (teamName.toLowerCase()) {
         case 'afg': return 'bg-afg';
         case 'aus': return 'bg-aus';
-        case 'bang': return 'bg-bang';
+        case 'ban': return 'bg-ban';
         case 'eng': return 'bg-eng';
         case 'ind': return 'bg-ind';
         case 'nz': return 'bg-nz';
         case 'pak': return 'bg-pak';
-        case 'sa': return 'bg-sa';
+        case 'rsa': return 'bg-rsa';
         case 'sl': return 'bg-sl';
         case 'wi': return 'bg-wi';
         case 'usa': return 'bg-usa';
@@ -50,7 +49,7 @@
         case 'png': return 'bg-png';
         case 'scot': return 'bg-scot';
         case 'ug': return 'bg-ug';
-        default: return '';
+        default: return 'bg-ind';
       }
     }
 
@@ -68,6 +67,9 @@
     var playerImg = document.createElement('img');
     playerImg.src = "/assets/" + player.name + '.jpeg';
     playerImg.classList.add('player-img');
+    playerImg.onerror = function () {
+      this.src = "/assets/default_player_image.jpeg";
+    };
     playerCard.appendChild(playerImg);
 
     var playerDetails = document.createElement('div');
@@ -131,6 +133,7 @@
     playerStats.appendChild(teamOwner);
 
     var playerPoints = document.createElement('div');
+    console.log("XXXXXXXXXXXXXXXX", player)
     playerPoints.textContent = 'Points: ' + player.points;
     playerPoints.style.color = 'white'
     playerStats.appendChild(playerPoints);
@@ -146,3 +149,109 @@
     createPlayerCard(player, owners[index], index + 1);
   });
 </script>
+ -->
+
+<!-- app/views/leaderboards/index.html.erb -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Cricket Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".tab-button");
+        const tabContents = document.querySelectorAll(".tab-content");
+        
+        tabs.forEach(tab => {
+            tab.addEventListener("click", function () {
+                tabs.forEach(t => t.classList.remove("bg-blue-500", "text-white"));
+                tab.classList.add("bg-blue-500", "text-white");
+                
+                const target = tab.getAttribute("data-target");
+                tabContents.forEach(content => {
+                    content.classList.add("hidden");
+                });
+                document.getElementById(target).classList.remove("hidden");
+            });
+        });
+        
+        document.querySelector(".tab-button").click(); // Set default tab
+      });
+    </script>
+    <style>
+      body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(to right, #f8fafc, #e2e8f0);
+      }
+    </style>
+</head>
+<body class="p-4">
+  <div class="container mx-auto max-w-2xl">
+    <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800">Fantasy Cricket Leaderboard</h1>
+    
+    <!-- Tabs Navigation -->
+    <div class="flex justify-around mb-6">
+      <button class="tab-button px-4 py-2 rounded bg-gray-200" data-target="orange-cap">Orange Cap</button>
+      <button class="tab-button px-4 py-2 rounded bg-gray-200" data-target="purple-cap">Purple Cap</button>
+      <button class="tab-button px-4 py-2 rounded bg-gray-200" data-target="fantasy-points">Fantasy Points</button>
+    </div>
+
+    <!-- Orange Cap (Top Run Scorers) -->
+    <div id="orange-cap" class="tab-content hidden">
+      <h2 class="text-xl font-semibold mb-4 text-orange-500">🏏 Orange Cap - Top Run Scorers</h2>
+      <% @orange_cap_players.each do |k| %>
+        <div class="player-card bg-white shadow-lg rounded-lg p-4 flex items-center hover:bg-orange-100 mb-4">
+          <%= player_card_image(k[:player]) %>
+         <!--  <img src="<#%= player.overall_data.keys.first %>.jpg" alt="Player Image" class="w-16 h-16 rounded-full border-2 border-orange-500 mr-4"> -->
+          <div>
+            <h3 class="text-lg font-semibold"><%= k[:player].name %></h3>
+            <p class="text-lg font-semibold">Owner:- <%= k[:player].teams.where(auction: @auction)&.first&.team_name %></p>
+            <% matches =  k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
+            <p class="text-gray-600">Runs: <%= k[:total_runs] %> | Matches: <%= matches %> | Avg: <%= (k[:total_runs].to_f / matches.to_f).round(2) rescue 0 %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Purple Cap (Top Wicket Takers) -->
+    <div id="purple-cap" class="tab-content hidden">
+      <h2 class="text-xl font-semibold mb-4 text-purple-600">🎯 Purple Cap - Top Wicket Takers</h2>
+      <% @purple_cap_players.each do |k| %>
+        <div class="player-card bg-white shadow-lg rounded-lg p-4 flex items-center hover:bg-purple-100 mb-4">
+          <%= player_card_image(k[:player]) %>
+          <!-- <img src="<#%= player.overall_data.keys.first %>.jpg" alt="Player Image" class="w-16 h-16 rounded-full border-2 border-purple-600 mr-4"> -->
+          <div>
+            <h3 class="text-lg font-semibold"><%= k[:player].name %></h3>
+            <p class="text-lg font-semibold">Owner:- <%= k[:player].teams.where(auction: @auction)&.first&.team_name %></p>
+            <% matches =  k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
+            <p class="text-gray-600">Wickets: <%= k[:total_wickets] %> | Matches: <%= matches %> | Econ: <%= k[:average_eco] %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Top Fantasy Points Scorers -->
+    <div id="fantasy-points" class="tab-content hidden">
+      <h2 class="text-xl font-semibold mb-4 text-blue-500">📊 Top Fantasy Points Players</h2>
+      <% @top_fantasy_players.each do |player| %>
+        <div class="player-card bg-white shadow-lg rounded-lg p-4 flex items-center hover:bg-blue-100 mb-4">
+          <%= player_card_image(player) %>
+          <!-- <img src="<#%= player.overall_data.keys.first %>.jpg" alt="Player Image" class="w-16 h-16 rounded-full border-2 border-blue-500 mr-4"> -->
+          <div>
+            <h3 class="text-lg font-semibold"><%= player.name %></h3>
+            <p class="text-lg font-semibold">Owner:- <%= player.teams.where(auction: @auction)&.first&.team_name %></p>
+            <% matches =  player.teams.where(auction: @auction)&.first.matches.where(player_id: player.id).count %>
+            <p class="text-gray-600">Fantasy Points: <%= player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points %> | Matches: <%= matches %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <div class="text-center mt-3">
+      <%= link_to 'Back', after_login_path, class: "btn btn-primary back-button theme-btn-back" %>
+    </div>
+  </div>
+</body>
+</html>
+

@@ -7,7 +7,7 @@ class WelcomeMailer < ApplicationMailer
     mail(
       from: 'noreply.patelpredicts@gmail.com',
       to: params[:email],
-      subject: 'Confirm Your Account'
+      subject: 'Welcome To Patel-Predicts'
     )
   end
 
