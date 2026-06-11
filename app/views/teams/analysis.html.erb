@@ -1,140 +1,1555 @@
-<div class="container mt-5 res-bar_chart">
-  <!-- Alert Notice -->
-  <div class="alert alert-primary alert-dismissible fade show notice" role="alert">
-    <strong>Charts refreshed successfully!</strong> Keep playing, keep predicting!
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="cricket-app" id="cricketApp">
+  <!-- Mobile App Status Bar -->
+  <div class="status-bar">
+    <span class="time"><%= Time.now.strftime("%H:%M") %></span>
+    <div class="status-icons">
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M2 6h12M2 2h12M2 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24"><path d="M1 6l11 6L23 6M1 6v12l11 6 11-6V6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </div>
   </div>
 
-  <!-- Header -->
-  <div class="header">
-    <h1 class="text-center mb-4">Player Performance Analysis</h1>
-  </div>
+  <!-- App Header with Back Button -->
+  <header class="app-header">
+    <button class="back-btn" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <h1 class="header-title">Analysis</h1>
+    <button class="menu-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+      </svg>
+    </button>
+  </header>
 
-  <!-- Column Chart -->
-  <%= column_chart @player_perfomance, height: '400px', xtitle: 'Players', ytitle: 'Points' %>
-
-  <!-- Team Breakdown Pie Chart -->
-  <div class="header">
-    <h2 class="text-center mb-4"> Your Team Breakdown </h2>
-  </div>
-  <%= pie_chart @player_team_breakdown %>
-
-  <!-- Compare Your Journey Section -->
-  <div class="header">
-    <h3 class="text-center mb-4"> Compare Your Journey </h3>
-    <!-- Comparison Dropdown and Form -->
-    <div class="row justify-content-center">
-      <div class="col-auto">
-        <div class="btn-group">
-          <%= link_to "Compare with", "#", style: 'background-color: #3D5B59;text-decoration:none!important;', class: "btn btn-lg text-white dropdown-toggle", "data-bs-toggle": "dropdown", "aria-expanded": "false" %>
-          <ul class="dropdown-menu">
-            <%= form_tag(team_analysis_path, method: :get, id: 'userSelectionForm') do %>
-              <li>
-                <div class="form-check">
-                  <%= check_box_tag 'selected_users[]', 'all_users', @selected_user.present? && @selected_user.include?('all_users'), class: 'form-check-input', id: 'check-all' %>
-                  <%= label_tag 'selected_users[]', 'All', class: 'form-check-label', for: 'check-all' %>
-                </div>
-              </li>
-              <% @display_users.each do |user| %>
-                <li>
-                  <div class="form-check">
-                    <%= check_box_tag 'selected_users[]', user.id, @selected_user.present? && @selected_user.map(&:to_i).include?(user.id), class: 'form-check-input user-checkbox', id: "user-#{user.id}" %>
-                    <%= label_tag "user-#{user.id}", user.username, class: 'form-check-label' %>
-                  </div>
-                </li>
-              <% end %>
-              <li>
-                <%= submit_tag "Refresh Chart", class: "applySelectionBtn btn theme-btn-color text-white mt-3", style: "text-decoration: none; color: blue;", disabled: !@selected_user.present? %>
-              </li>
-            <% end %>
-          </ul>
+  <!-- Main Content Area -->
+  <main class="app-content">
+    
+    <!-- Stats Cards Carousel -->
+    <section class="stats-carousel">
+      <div class="carousel-container" id="statsCarousel">
+        <div class="stat-card-large active">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-content">
+            <span class="stat-number"><%= @default_team.players.sum { |p| p.players_teams.where(team: @default_team)&.first&.points || 0 } %></span>
+            <span class="stat-label">Total Points</span>
+          </div>
+          <div class="stat-trend up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l5-5 5 5M7 11l5-5 5 5"/></svg>
+            <span>+12%</span>
+          </div>
         </div>
+        
+        <div class="stat-card-large">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <span class="stat-number">#<%= @user_rankings_data.values.last || '-' %></span>
+            <span class="stat-label">Current Rank</span>
+          </div>
+          <div class="stat-trend up">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l5-5 5 5M7 11l5-5 5 5"/></svg>
+            <span>+2 spots</span>
+          </div>
+        </div>
+        
+        <div class="stat-card-large">
+          <div class="stat-icon">👥</div>
+          <div class="stat-content">
+            <span class="stat-number"><%= @default_team.players.count %></span>
+            <span class="stat-label">Squad Size</span>
+          </div>
+          <div class="stat-detail">
+            <%= @player_team_breakdown.keys.count %> teams
+          </div>
+        </div>
+      </div>
+      <div class="carousel-dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </section>
+
+    <!-- Top Performers -->
+    <section class="section">
+      <div class="section-header-inline">
+        <h2 class="section-title">Top Performers</h2>
+        <a href="#all" class="see-all">See All</a>
+      </div>
+      
+      <div class="player-cards-horizontal">
+        <% @default_team.players.order(points: :desc).limit(5).each_with_index do |player, index| %>
+          <% player_team_data = player.players_teams.where(team: @default_team)&.first %>
+          <% latest_perf = player.player_perfomace_points.order(created_at: :desc).first %>
+          
+          <div class="player-card-compact" onclick="openPlayerSheet(<%= player.id %>)">
+            <div class="rank-indicator rank-<%= index + 1 %>"><%= index + 1 %></div>
+            <div class="player-avatar-compact">
+              <div class="avatar-circle"><%= player.name.split.map(&:first).join %></div>
+            </div>
+            <div class="player-details-compact">
+              <h4 class="player-name-compact"><%= player.name.split.first %></h4>
+              <p class="player-meta-compact"><%= player.team_name %></p>
+            </div>
+            <div class="player-points-compact">
+              <span class="points-big"><%= player_team_data&.points || 0 %></span>
+              <span class="points-suffix">pts</span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <!-- Performance Chart -->
+    <section class="section">
+      <div class="section-header-inline">
+        <h2 class="section-title">Performance</h2>
+        <div class="chart-tabs">
+          <button class="tab-btn active" data-tab="chart">Chart</button>
+          <button class="tab-btn" data-tab="table">Table</button>
+        </div>
+      </div>
+      
+      <div class="chart-card" id="chartView">
+        <%= column_chart @player_perfomance, 
+            height: '280px',
+            library: {
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { size: 10 } }
+                },
+                y: {
+                  grid: { color: 'rgba(0,0,0,0.03)' },
+                  ticks: { font: { size: 10 } }
+                }
+              }
+            } %>
+      </div>
+
+      <div class="chart-card" id="tableView" style="display: none;">
+        <div class="simple-table">
+          <% @default_team.players.order(points: :desc).each do |player| %>
+            <% player_team_data = player.players_teams.where(team: @default_team)&.first %>
+            <div class="table-row" onclick="openPlayerSheet(<%= player.id %>)">
+              <div class="table-cell-player">
+                <div class="mini-avatar"><%= player.name.split.map(&:first).join %></div>
+                <div>
+                  <div class="player-name-small"><%= player.name %></div>
+                  <div class="player-team-small"><%= player.team_name %></div>
+                </div>
+              </div>
+              <div class="table-cell-points"><%= player_team_data&.points || 0 %></div>
+              <div class="table-cell-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 6l6 6-6 6"/>
+                </svg>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team Distribution -->
+    <section class="section">
+      <h2 class="section-title">Team Breakdown</h2>
+      
+      <div class="team-chips">
+        <% @player_team_breakdown.each do |team, count| %>
+          <div class="team-chip">
+            <span class="chip-name"><%= team %></span>
+            <span class="chip-count"><%= count %></span>
+          </div>
+        <% end %>
+      </div>
+      
+      <div class="chart-card small">
+        <%= pie_chart @player_team_breakdown, 
+            height: '220px',
+            donut: true,
+            library: {
+              plugins: {
+                legend: {
+                  display: false
+                }
+              }
+            } %>
+      </div>
+    </section>
+
+    <!-- Rankings Comparison -->
+    <section class="section">
+      <div class="section-header-inline">
+        <h2 class="section-title">Rankings</h2>
+        <button class="icon-btn" onclick="openCompareSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <path d="M20 8v6M23 11h-6"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="chart-card">
+        <% if @all_users.present? %>
+          <%= line_chart @all_users, 
+              height: '280px',
+              library: {
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    reverse: true,
+                    min: 1,
+                    max: 10,
+                    ticks: { stepSize: 1, precision: 0, font: { size: 10 } },
+                    grid: { color: 'rgba(0,0,0,0.03)' }
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 10 } }
+                  }
+                },
+                elements: {
+                  line: { tension: 0.4, borderWidth: 2.5 },
+                  point: { radius: 3, hoverRadius: 5 }
+                },
+                plugins: {
+                  legend: {
+                    position: 'bottom',
+                    labels: { padding: 12, font: { size: 11 } }
+                  }
+                }
+              } %>
+        <% else %>
+          <%= line_chart @user_rankings_data, 
+              height: '280px',
+              library: {
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    reverse: true,
+                    grid: { color: 'rgba(0,0,0,0.03)' },
+                    ticks: { font: { size: 10 } }
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 10 } }
+                  }
+                },
+                elements: {
+                  line: { tension: 0.4, borderWidth: 2.5 },
+                  point: { radius: 3, hoverRadius: 5 }
+                }
+              } %>
+        <% end %>
+      </div>
+    </section>
+
+    <div class="bottom-spacer"></div>
+  </main>
+
+  <!-- Bottom Sheet for Player Details -->
+  <div class="bottom-sheet" id="playerSheet">
+    <div class="sheet-backdrop" onclick="closePlayerSheet()"></div>
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <div class="sheet-body" id="sheetBody">
+        <!-- Dynamic player content loaded here -->
       </div>
     </div>
   </div>
-  
-  <!-- Loader -->
-  <div class="loader-container">
-    <div class="loader spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+
+  <!-- Bottom Sheet for Compare -->
+  <div class="bottom-sheet" id="compareSheet">
+    <div class="sheet-backdrop" onclick="closeCompareSheet()"></div>
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <div class="sheet-body">
+        <h3 class="sheet-title">Compare Rankings</h3>
+        <%= form_tag(team_analysis_path, method: :get, id: 'compareForm') do %>
+          <div class="user-list">
+            <label class="user-option">
+              <%= check_box_tag 'selected_users[]', 'all_users', 
+                  @selected_user.present? && @selected_user.include?('all_users'), 
+                  class: 'user-checkbox', 
+                  id: 'compare-all' %>
+              <span class="user-label">
+                <span class="user-name">All Players</span>
+              </span>
+              <span class="checkmark"></span>
+            </label>
+            
+            <% @display_users.each do |user| %>
+              <label class="user-option">
+                <%= check_box_tag 'selected_users[]', user.id, 
+                    @selected_user.present? && @selected_user.map(&:to_i).include?(user.id), 
+                    class: 'user-checkbox user-check', 
+                    id: "compare-#{user.id}" %>
+                <span class="user-label">
+                  <span class="user-avatar-mini"><%= user.username[0].upcase %></span>
+                  <span class="user-name"><%= user.username %></span>
+                </span>
+                <span class="checkmark"></span>
+              </label>
+            <% end %>
+          </div>
+          
+          <div class="sheet-actions">
+            <%= submit_tag "Apply", class: "btn-primary-large", id: "compareApply" %>
+          </div>
+        <% end %>
+      </div>
     </div>
   </div>
 
-  <% if @all_users.present? %>
-    <%= line_chart @all_users, 
-                 height: '400px', 
-                 xtitle: 'Matches', 
-                 ytitle: 'Ranking', 
-                 library: { 
-                   scales: {
-                     y: {
-                       min: 0,          # Set minimum value of Y-axis
-                       max: 10,         # Set maximum value of Y-axis
-                       ticks: {
-                         stepSize: 2,    # Set interval between ticks
-                         precision: 0    # Ensure no decimal places
-                       }
-                     }
-                   },
-                   elements: {
-                     line: {
-                       tension: 0        # Disable curve for straight lines
-                     }
-                   }
-                 } %>
-  <% else %>
-    <%= line_chart @user_rankings_data, height: '400px', xtitle: 'Matches', ytitle: 'Ranking', library: { curve: false } %>
-  <% end %>
+  <!-- Loading Overlay -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="cricket-loader">
+        <div class="ball"></div>
+        <div class="stumps">
+          <div class="stump"></div>
+          <div class="stump"></div>
+          <div class="stump"></div>
+        </div>
+      </div>
+      <p class="loading-text">Updating...</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+    <span>Rankings updated!</span>
+  </div>
 </div>
 
+<!-- Hidden Player Data for Sheet -->
+<% @default_team.players.each do |player| %>
+  <% player_team_data = player.players_teams.where(team: @default_team)&.first %>
+  <% latest_perf = player.player_perfomace_points.order(created_at: :desc).first %>
+  
+  <script type="application/json" id="player-data-<%= player.id %>">
+    {
+      "name": "<%= player.name %>",
+      "team": "<%= player.team_name %>",
+      "points": <%= player_team_data&.points || 0 %>,
+      "matches": <%= player.player_perfomace_points.count %>,
+      "performance": <%= latest_perf ? {
+        match: latest_perf.match,
+        runs: latest_perf.runs,
+        balls: latest_perf.balls_faced,
+        sr: latest_perf.strike_rate.round(1),
+        fours: latest_perf.fours,
+        sixes: latest_perf.sixes,
+        wickets: latest_perf.wickets,
+        overs: latest_perf.overs_bowled,
+        eco: latest_perf.eco.round(1),
+        maidens: latest_perf.maidens,
+        catches: latest_perf.catches,
+        runouts: latest_perf.run_outs,
+        stumping: latest_perf.stumping,
+        isMom: latest_perf.is_mom,
+        bonuses: {
+          fifty: latest_perf.bonus_50,
+          hundred: latest_perf.bonus_100,
+          threeW: latest_perf.bonus_3w,
+          fourW: latest_perf.bonus_4w,
+          fiveW: latest_perf.bonus_5w,
+          mom: latest_perf.bonus_mom
+        }
+      }.to_json : 'null' %>
+    }
+  </script>
+<% end %>
+
 <style>
-  /* Custom Styles */
-  .loader-container {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --primary: #0066FF;
+  --primary-dark: #0052CC;
+  --success: #00C853;
+  --background: #F5F7FA;
+  --surface: #FFFFFF;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --border: #E5E7EB;
+  --shadow: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --radius: 16px;
+  --radius-sm: 12px;
+  --status-bar-height: 24px;
+  --header-height: 56px;
+  --safe-area-top: env(safe-area-inset-top, 0);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  background: var(--background);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.cricket-app {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--background);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Status Bar */
+.status-bar {
+  height: var(--status-bar-height);
+  background: var(--surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+
+.time {
+  letter-spacing: 0.3px;
+}
+
+.status-icons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.status-icons svg {
+  opacity: 0.8;
+}
+
+/* App Header */
+.app-header {
+  height: var(--header-height);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  position: sticky;
+  top: var(--status-bar-height);
+  z-index: 99;
+  border-bottom: 1px solid var(--border);
+}
+
+.back-btn, .menu-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.back-btn:active, .menu-btn:active {
+  background: var(--background);
+}
+
+.back-btn svg, .menu-btn svg {
+  width: 24px;
+  height: 24px;
+  color: var(--text-primary);
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Main Content */
+.app-content {
+  padding: 0 0 80px;
+}
+
+/* Stats Carousel */
+.stats-carousel {
+  padding: 20px 0 12px;
+  background: var(--surface);
+  margin-bottom: 8px;
+}
+
+.carousel-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carousel-container::-webkit-scrollbar {
+  display: none;
+}
+
+.stat-card-large {
+  min-width: 280px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-radius: var(--radius);
+  padding: 24px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 16px rgba(0,102,255,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-large::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.stat-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-number {
+  font-size: 44px;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.stat-label {
+  font-size: 15px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  align-self: flex-start;
+  background: rgba(255,255,255,0.15);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.stat-trend svg {
+  width: 16px;
+  height: 16px;
+}
+
+.stat-detail {
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: all 0.3s;
+}
+
+.dot.active {
+  width: 20px;
+  background: var(--primary);
+}
+
+/* Section */
+.section {
+  padding: 20px 16px;
+  background: var(--surface);
+  margin-bottom: 8px;
+}
+
+.section-header-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.see-all {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--background);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-primary);
+}
+
+/* Player Cards Horizontal */
+.player-cards-horizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-card-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--background);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.player-card-compact:active {
+  transform: scale(0.98);
+}
+
+.rank-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; }
+.rank-2 { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); color: white; }
+.rank-3 { background: linear-gradient(135deg, #CD7F32, #B87333); color: white; }
+
+.player-avatar-compact {
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.player-details-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name-compact {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-meta-compact {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.player-points-compact {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.points-big {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.points-suffix {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Chart Tabs */
+.chart-tabs {
+  display: flex;
+  background: var(--background);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Chart Card */
+.chart-card {
+  background: var(--background);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.chart-card.small {
+  padding: 12px;
+}
+
+/* Simple Table */
+.simple-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.table-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.table-row:active {
+  background: var(--background);
+}
+
+.table-cell-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mini-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.player-name-small {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-team-small {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.table-cell-points {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-right: 8px;
+}
+
+.table-cell-arrow svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+}
+
+/* Team Chips */
+.team-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.team-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--background);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+}
+
+.chip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chip-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  background: var(--primary);
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* Bottom Spacer */
+.bottom-spacer {
+  height: 40px;
+}
+
+/* Bottom Sheet */
+.bottom-sheet {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.bottom-sheet.active {
+  pointer-events: all;
+  opacity: 1;
+}
+
+.sheet-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.bottom-sheet.active .sheet-backdrop {
+  opacity: 1;
+}
+
+.sheet-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-sheet.active .sheet-content {
+  transform: translateY(0);
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+  flex-shrink: 0;
+}
+
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 32px;
+}
+
+.sheet-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.3px;
+}
+
+/* User List */
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 20px;
+  background: var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.user-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.user-option:active {
+  background: var(--background);
+}
+
+.user-checkbox {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.user-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.user-avatar-mini {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.checkmark {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.user-checkbox:checked ~ .user-label ~ .checkmark {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.user-checkbox:checked ~ .user-label ~ .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 11px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Sheet Actions */
+.sheet-actions {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-primary-large {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary-large:active {
+  transform: scale(0.98);
+  background: var(--primary-dark);
+}
+
+.btn-primary-large:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-screen.active {
+  display: flex;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.cricket-loader {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.ball {
+  width: 24px;
+  height: 24px;
+  background: #FF5252;
+  border-radius: 50%;
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  margin-left: -12px;
+  animation: ballBounce 1s infinite;
+}
+
+@keyframes ballBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(40px); }
+}
+
+.stumps {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.stump {
+  width: 4px;
+  height: 30px;
+  background: var(--text-primary);
+  border-radius: 2px;
+}
+
+.loading-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-area-bottom) + 80px);
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--text-primary);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 3000;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Player Detail Styles */
+.player-header-sheet {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.player-avatar-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 24px;
+}
+
+.player-info-sheet {
+  flex: 1;
+}
+
+.player-name-sheet {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+
+.player-team-sheet {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.stat-box {
+  background: var(--background);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+}
+
+.stat-box-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.stat-box-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.performance-section {
+  margin-top: 24px;
+}
+
+.performance-header {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.perf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.perf-item {
+  background: var(--background);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.perf-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.perf-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.match-badge-sheet {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--primary);
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
+.mom-badge-sheet {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: white;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.no-data-sheet {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 480px) {
+  .cricket-app {
+    max-width: 100%;
   }
+  
+  .stat-card-large {
+    min-width: calc(100vw - 48px);
+  }
+}
 </style>
 
 <script>
-  $(document).ready(function() {
-    const checkAllCheckbox = document.getElementById('check-all');
-    const checkboxes = document.querySelectorAll('.user-checkbox');
-    const refreshBtn = document.querySelector('.applySelectionBtn');
+// Carousel auto-scroll
+const carousel = document.getElementById('statsCarousel');
+const dots = document.querySelectorAll('.dot');
 
-    // Check all users if "All" is checked
-    checkAllCheckbox.addEventListener('change', function() {
-      checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-      });
-      refreshBtn.disabled = !this.checked && !Array.from(checkboxes).some(checkbox => checkbox.checked);
-    });
-
-    // Enable refresh button if any user is checked
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        refreshBtn.disabled = !Array.from(checkboxes).some(checkbox => checkbox.checked);
-        checkAllCheckbox.checked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-      });
-    });
-
-    $('.applySelectionBtn').click(function(event) {
-      // Show the loader
-      $('.loader-container').fadeIn();
-
-      // Prevent the form from submitting immediately
-      event.preventDefault();
-
-      // Set a timeout to simulate loading (3 seconds)
-      setTimeout(() => {
-        // Hide the loader
-        $('.loader-container').fadeOut();
-
-        // Show the notice after the form submission
-        $('.notice').show();
-      }, 3000); // 3 seconds delay
-    });
+carousel.addEventListener('scroll', () => {
+  const scrollLeft = carousel.scrollLeft;
+  const cardWidth = carousel.querySelector('.stat-card-large').offsetWidth + 16;
+  const activeIndex = Math.round(scrollLeft / cardWidth);
+  
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === activeIndex);
   });
+});
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    if (tab === 'chart') {
+      document.getElementById('chartView').style.display = 'block';
+      document.getElementById('tableView').style.display = 'none';
+    } else {
+      document.getElementById('chartView').style.display = 'none';
+      document.getElementById('tableView').style.display = 'block';
+    }
+  });
+});
+
+// Player sheet
+function openPlayerSheet(playerId) {
+  const sheet = document.getElementById('playerSheet');
+  const sheetBody = document.getElementById('sheetBody');
+  const dataEl = document.getElementById(`player-data-${playerId}`);
+  
+  if (!dataEl) return;
+  
+  const data = JSON.parse(dataEl.textContent);
+  
+  let html = `
+    <div class="player-header-sheet">
+      <div class="player-avatar-large">${data.name.split(' ').map(n => n[0]).join('')}</div>
+      <div class="player-info-sheet">
+        <h3 class="player-name-sheet">${data.name}</h3>
+        <p class="player-team-sheet">${data.team}</p>
+      </div>
+    </div>
+    
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-box-label">Total Points</div>
+        <div class="stat-box-value">${data.points}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-label">Matches</div>
+        <div class="stat-box-value">${data.matches}</div>
+      </div>
+    </div>
+  `;
+  
+  if (data.performance) {
+    const perf = data.performance;
+    html += `
+      <div class="performance-section">
+        <div class="performance-header">Latest Performance</div>
+        <div class="match-badge-sheet">${perf.match}</div>
+        ${perf.isMom ? '<span class="mom-badge-sheet">⭐ Man of the Match</span>' : ''}
+    `;
+    
+    if (perf.runs > 0 || perf.balls > 0) {
+      html += `
+        <div class="performance-header" style="margin-top: 20px;">Batting</div>
+        <div class="perf-grid">
+          <div class="perf-item">
+            <div class="perf-label">Runs</div>
+            <div class="perf-value">${perf.runs}(${perf.balls})</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Strike Rate</div>
+            <div class="perf-value">${perf.sr}</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">4s/6s</div>
+            <div class="perf-value">${perf.fours}/${perf.sixes}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    if (perf.wickets > 0 || perf.overs > 0) {
+      html += `
+        <div class="performance-header" style="margin-top: 20px;">Bowling</div>
+        <div class="perf-grid">
+          <div class="perf-item">
+            <div class="perf-label">Wickets</div>
+            <div class="perf-value">${perf.wickets}</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Overs</div>
+            <div class="perf-value">${perf.overs}</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Economy</div>
+            <div class="perf-value">${perf.eco}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    if (perf.catches > 0 || perf.runouts > 0 || perf.stumping > 0) {
+      html += `
+        <div class="performance-header" style="margin-top: 20px;">Fielding</div>
+        <div class="perf-grid">
+          <div class="perf-item">
+            <div class="perf-label">Catches</div>
+            <div class="perf-value">${perf.catches}</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Run Outs</div>
+            <div class="perf-value">${perf.runouts}</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-label">Stumpings</div>
+            <div class="perf-value">${perf.stumping}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    html += `</div>`;
+  } else {
+    html += `<div class="no-data-sheet">No performance data available</div>`;
+  }
+  
+  sheetBody.innerHTML = html;
+  sheet.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayerSheet() {
+  document.getElementById('playerSheet').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Compare sheet
+function openCompareSheet() {
+  document.getElementById('compareSheet').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCompareSheet() {
+  document.getElementById('compareSheet').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Check all functionality
+const checkAll = document.getElementById('compare-all');
+const userChecks = document.querySelectorAll('.user-check');
+const applyBtn = document.getElementById('compareApply');
+
+if (checkAll) {
+  checkAll.addEventListener('change', function() {
+    userChecks.forEach(cb => cb.checked = this.checked);
+    updateApplyBtn();
+  });
+}
+
+userChecks.forEach(cb => {
+  cb.addEventListener('change', () => {
+    if (checkAll) {
+      checkAll.checked = Array.from(userChecks).every(c => c.checked);
+    }
+    updateApplyBtn();
+  });
+});
+
+function updateApplyBtn() {
+  const anyChecked = (checkAll && checkAll.checked) || Array.from(userChecks).some(c => c.checked);
+  if (applyBtn) {
+    applyBtn.disabled = !anyChecked;
+  }
+}
+
+// Form submission
+const compareForm = document.getElementById('compareForm');
+const loadingScreen = document.getElementById('loadingScreen');
+const toast = document.getElementById('toast');
+
+if (compareForm) {
+  compareForm.addEventListener('submit', function() {
+    closeCompareSheet();
+    loadingScreen.classList.add('active');
+    
+    setTimeout(() => {
+      loadingScreen.classList.remove('active');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }, 2000);
+  });
+}
+
+// Show toast on page load if refreshed
+<% if params[:refreshed] %>
+  setTimeout(() => {
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }, 500);
+<% end %>
 </script>

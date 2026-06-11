@@ -101,7 +101,7 @@ module BonusPoints
 
     points = case eco.to_f
              when 0..3
-               8
+               10
              when 3..5
                4
              when 5..6
@@ -109,7 +109,7 @@ module BonusPoints
              when 9..12
               -4
              when 12..40
-              -8
+              -6
              else
                0
              end

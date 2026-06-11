@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.1.2'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem 'rails', '~> 7.0.0'
+gem 'rails', '~> 7.0.8.7'
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem 'sprockets-rails'
@@ -95,3 +95,9 @@ gem 'fuzzy_match'
 gem 'levenshtein'
 gem 'amatch'
 gem 'rails_performance'
+gem 'webpush'
+gem 'fcm'
+gem "concurrent-ruby", "= 1.3.4"
+gem "twilio-ruby"
+gem 'prawn'
+gem 'prawn-table'

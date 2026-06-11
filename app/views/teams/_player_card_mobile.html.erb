@@ -1,0 +1,855 @@
+<% 
+  # Determine role styling
+  role_colors = {
+    'wicket_keeper' => {bg: '#3b82f6', light: '#60a5fa'},
+    'batsman' => {bg: '#8b5cf6', light: '#a78bfa'},
+    'all_rounder' => {bg: '#f59e0b', light: '#fbbf24'},
+    'bowler' => {bg: '#10b981', light: '#34d399'}
+  }
+  role_color = role_colors[player.role] || {bg: '#6b7280', light: '#9ca3af'}
+  
+  # Determine role icon
+  role_icons = {
+    'wicket_keeper' => 'user-shield',
+    'batsman' => 'baseball-ball',
+    'all_rounder' => 'star',
+    'bowler' => 'circle'
+  }
+  role_icon = role_icons[player.role] || 'user'
+  
+  # Get team background color (same as desktop)
+  team_bg_class = set_background_color(player.team_name)
+  
+  # Determine text color based on team (same logic as desktop)
+  text_colour = team_bg_class == 'bg-aus' ? 'text-dark' : 'text-white'
+  
+  # Get player status
+  is_bench = player.players_teams.where(team: @team)&.first&.bench?
+  player_points = player.players_teams.where(team: @team)&.first&.points || 0
+  player_bench_points = player.matches.sum(:bench_points)
+%>
+<% is_replacement = player.replacement_of.present? %>
+<div class="mobile-player-card <%= is_bench ? 'bench-player' : '' %> <%= team_bg_class %>"        data-player-id="<%= player.id %>"
+        data-controller="player-card"
+        data-player-card-is-replacement-value="<%= is_replacement %>">
+  <!-- Card Header with Team Color Background -->
+
+  <% if is_replacement %>
+    <div class="replacement-banner" data-player-card-target="replacementBanner">
+      <div class="replacement-banner-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" 
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <polyline points="23 20 23 14 17 14"/>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+        </svg>
+      </div>
+      <div class="replacement-banner-text">
+        <span class="replacement-label">Replacement Player</span>
+        <span class="replacement-for">
+          Replaces <strong><%= player.replacement_of %></strong>
+        </span>
+      </div>
+      <span class="replacement-new-badge">NEW IN</span>
+    </div>
+  <% end %>
+  <div class="mobile-card-header <%= team_bg_class %>">
+    <div class="player-meta-top">
+      <div class="player-avatar-image">
+        <div class="player-avatar-compact">
+          <%= player_team_detail_image(player) %>
+        </div>
+      </div>
+      <div class="player-name-section">
+        <h3 class="player-name-mobile <%= text_colour %>"><%= player.name %></h3>
+        <div class="player-team-info <%= text_colour %>">
+          <div class="team-logo-mobile"><%= wc_team_logo(player.team_name, size: :small) %></div>
+          <span class="team-name"><%= player.team_name %></span>
+          <% if player.foreigner %>
+            <span class="overseas-indicator">
+              <%= image_tag "overseas.png", style: "width: 16px; height: 16px;" %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="player-stats-row">
+      <div class="stat-item-mobile <%= text_colour %>">
+        <i class="fas fa-<%= role_icon %>" style="font-size: 14px;"></i>
+        <% if player.role == 'wicket_keeper' %>
+          <% player_role = 'WK' %>
+        <% else %>
+          <% player_role = player.role.titleize %>
+        <% end %>
+        <span><%= player_role %></span>
+      </div>
+      <div class="stat-divider-mobile"></div>
+      <div class="stat-item-mobile <%= text_colour %>">
+        <i class="fas fa-trophy" style="font-size: 14px;"></i>
+        <span><%= player_points %> pts</span>
+      </div>
+      <div class="stat-divider-mobile"></div>
+      <div class="stat-item-mobile <%= text_colour %>">
+        <i class="bi bi-person-down" style="font-size: 14px;"></i>
+        <span><%= player_bench_points %> pts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matches Section (if available) -->
+  <% if defined?(@current_week_matches) && @current_week_matches.present? %>
+    <% 
+      # Get player's matches for current week
+      player_has_matches = false
+      @current_week_matches.each do |match|
+        t1, t2 = match.match_name.split(' vs ')
+        t1 = 'TBC' if t1.blank?
+        t2 = 'TBC' if t2.blank?
+        t1 = match_country_code[t1]
+        t2 = match_country_code[t2]
+        if t1 == player.team_name || t2 == player.team_name
+          player_has_matches = true
+          break
+        end
+      end
+    %>
+    
+    <% if player_has_matches %>
+      <% 
+        match_count = 0
+        @current_week_matches.each do |match|
+          t1, t2 = match.match_name.split(' vs ')
+          t1 = 'TBC' if t1.blank?
+          t2 = 'TBC' if t2.blank?
+          t1 = match_country_code[t1]
+          t2 = match_country_code[t2]
+          match_count += 1 if t1 == player.team_name || t2 == player.team_name
+        end
+      %>
+    <% end %>
+  <% end %>
+      
+      <div class="matches-section">
+        <button type="button" class="matches-toggle" data-bs-toggle="collapse" 
+                data-bs-target="#matches<%= player.id %>" aria-expanded="false"
+                aria-controls="matches<%= player.id %>">
+          <div class="matches-info">
+            <div class="match-pulse-indicator">
+              <div class="pulse-dot"></div>
+              <div class="pulse-ring"></div>
+            </div>
+            <span class="matches-count"><%= match_count || 0 %></span>
+            <div class="matches-text-container">
+              <span class="matches-text">Upcoming Matches</span>
+              <span class="matches-hint">Tap to expand</span>
+            </div>
+          </div>
+          <div class="chevron-indicator">
+            <i class="fas fa-chevron-down"></i>
+          </div>
+        </button>
+        
+        <div class="collapse matches-details" id="matches<%= player.id %>">
+          <div class="matches-timeline">
+            <div class="timeline-header">
+              <span class="timeline-title">This Week's Fixtures</span>
+              <span class="timeline-dates">
+                <%= @week_start_date.strftime("%b %d") %> - <%= @week_end_date&.strftime("%b %d") %>
+              </span>
+            </div>
+            
+            <% @current_week_matches.each do |match| %>
+              <% t1, t2 = match.match_name.split(' vs ') %>
+              <% if t1.blank? || t2.blank? %>
+                <% t1 = t2 = 'TBC' %>
+              <% end %>
+             <% t1 = match_country_code[t1] %>
+             <% t2 = match_country_code[t2] %>
+              <% if t1 == player.team_name || t2 == player.team_name %>
+                <div class="match-item-mobile">
+                  <div class="match-date-badge">
+                    <span class="match-day"><%= match.match_date.strftime("%-d") %></span>
+                    <span class="match-month"><%= match.match_date.strftime("%b") %></span>
+                  </div>
+                  
+                  <div class="match-details-mobile">
+                    <div class="match-teams-mobile">
+                      <div class="team-mobile">
+                        <div class="team-logo-mini" style="background: <%= team_color(t1) %>;"></div>
+                        <span class="<%= t1 == player.team_name ? 'player-team' : '' %>"><%= t1 %></span>
+                      </div>
+                      <span class="vs-text">vs</span>
+                      <div class="team-mobile">
+                        <div class="team-logo-mini" style="background: <%= team_color(t2) %>;"></div>
+                        <span class="<%= t2 == player.team_name ? 'player-team' : '' %>"><%= t2 %></span>
+                      </div>
+                    </div>
+                    
+                    <div class="match-meta-mobile">
+                      <% match_time = match.time.is_a?(String) ? match.time : match.time&.strftime("%l:%M %p") %>
+                      <span class="match-time-mobile">
+                        <i class="fas fa-clock"></i> <%= match_time || "TBD" %>
+                      </span>
+                      <span class="match-venue-mobile">
+                        <i class="fas fa-map-marker-alt"></i> <%= match.stadium %>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+  <!-- Card Footer with Actions -->
+  <div class="mobile-card-footer">
+    <div class="status-badge-mobile <%= is_bench ? 'bench' : 'playing' %>">
+      <i class="fas fa-<%= is_bench ? 'chair' : 'users' %>"></i>
+      <span><%= is_bench ? 'Bench' : 'Playing 11' %></span>
+    </div>
+    
+    <label class="checkbox-container-mobile">
+      <input type="checkbox" name="selected_players[]" value="<%= player.id %>" class="player-checkbox">
+      <span class="checkmark"></span>
+    </label>
+  </div>
+</div>
+
+<style>
+/* Mobile Player Card */
+.mobile-player-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.mobile-player-card.bench-player {
+  opacity: 0.8;
+}
+
+.mobile-player-card:active {
+  transform: scale(0.98);
+}
+
+/* Card Header - Uses team background color */
+.mobile-card-header {
+  padding: 16px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  /* Team background will be applied via class from desktop helpers */
+}
+
+.mobile-card-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 150px;
+  height: 150px;
+  /*background: rgba(255, 255, 255, 0.1);*/
+  border-radius: 50%;
+}
+
+.player-meta-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.player-avatar-image {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.player-avatar-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-name-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name-mobile {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-team-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.team-logo-mobile {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-logo-mobile img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.team-name {
+  font-weight: 600;
+}
+
+.overseas-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.player-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+}
+
+.stat-item-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.stat-divider-mobile {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Matches Section */
+.matches-section {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));
+  border-top: 2px solid rgba(76, 175, 80, 0.3);
+}
+
+.matches-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 18px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 60px;
+  position: relative;
+}
+
+.matches-toggle:active {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.matches-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.match-pulse-indicator {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.pulse-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  background: #4CAF50;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #4CAF50;
+  border-radius: 50%;
+  animation: pulse-animation 1.5s ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes pulse-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.matches-count {
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 16px;
+  flex-shrink: 0;
+  min-width: 32px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.matches-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.matches-text {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+}
+
+.matches-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.player-avatar-compact {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+  border: 2px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.player-avatar-section {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.player-avatar-compact img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chevron-indicator {
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+
+.chevron-indicator i {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.matches-toggle[aria-expanded="true"] .chevron-indicator {
+  transform: rotate(180deg);
+}
+
+.matches-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.matches-timeline {
+  padding: 16px;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.timeline-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timeline-dates {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.match-item-mobile {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border-left: 3px solid #4CAF50;
+}
+
+.match-item-mobile:last-child {
+  margin-bottom: 0;
+}
+
+.match-date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-radius: 10px;
+  padding: 8px;
+  min-width: 50px;
+  flex-shrink: 0;
+}
+
+.match-day {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.match-month {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.match-details-mobile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.match-teams-mobile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.team-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-mobile .player-team {
+  font-weight: 700;
+  color: #4CAF50;
+}
+
+.team-logo-mini {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.vs-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.match-meta-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.match-time-mobile,
+.match-venue-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-time-mobile i,
+.match-venue-mobile i {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Card Footer */
+.mobile-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.status-badge-mobile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-badge-mobile.playing {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge-mobile.bench {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-badge-mobile i {
+  font-size: 11px;
+}
+
+/* Custom Checkbox */
+.checkbox-container-mobile {
+  display: block;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.checkbox-container-mobile input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.checkmark::after {
+  content: "";
+  display: none;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
+
+.checkbox-container-mobile input:checked ~ .checkmark {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-color: #3b82f6;
+}
+
+.checkbox-container-mobile input:checked ~ .checkmark::after {
+  display: block;
+}
+
+.checkbox-container-mobile:active .checkmark {
+  transform: scale(0.95);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 360px) {
+  .player-name-mobile {
+    font-size: 16px;
+  }
+  
+  .player-avatar-image {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .match-teams-mobile {
+    font-size: 13px;
+  }
+}
+
+  /* ── Replacement Player Card ─────────────────────────────── */
+.replacement-player-card {
+  border: 2px solid #f59e0b !important;
+  animation: replacement-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes replacement-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.0); }
+  50%       { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.15); }
+}
+
+.replacement-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, #92400e, #b45309);
+  padding: 9px 14px;
+  /* banner slides down on mount via Stimulus */
+  overflow: hidden;
+  transform-origin: top;
+}
+
+.replacement-banner.banner-animate-in {
+  animation: banner-slide-down 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes banner-slide-down {
+  from { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+  to   { max-height: 60px; opacity: 1; padding-top: 9px; padding-bottom: 9px; }
+}
+
+.replacement-banner-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fbbf24;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.replacement-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.replacement-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.replacement-for {
+  font-size: 13px;
+  color: #fef3c7;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.replacement-for strong {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.replacement-new-badge {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #fbbf24;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+</style>
+
+<script>
+// Add haptic feedback and smooth expand/collapse
+document.addEventListener('DOMContentLoaded', function() {
+  // Add click handlers to all match toggles
+  document.querySelectorAll('.matches-toggle').forEach(function(toggle) {
+    toggle.addEventListener('click', function() {
+      // Haptic feedback on mobile
+      if ('vibrate' in navigator) {
+        navigator.vibrate(10);
+      }
+    });
+  });
+  
+  // Add shown/hidden event listeners for smooth animations
+  document.querySelectorAll('.matches-details').forEach(function(details) {
+    details.addEventListener('shown.bs.collapse', function() {
+      // Scroll the expanded section into view
+      this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+});
+</script>

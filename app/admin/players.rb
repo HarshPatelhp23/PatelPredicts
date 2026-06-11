@@ -2,7 +2,7 @@
 
 # rubocop:disable Metrics/BlockLength, Layout/LineLength
 ActiveAdmin.register Player do
-  permit_params :name, :other_names, :base_price, :team_name, :foreigner, :team_ids, :image, :role
+  permit_params :name, :other_names, :base_price, :team_name, :cricbuzz_player_id, :foreigner, :team_ids, :image, :role, :replacement_of
 
   config.sort_order = 'id_desc'
 
@@ -22,9 +22,10 @@ ActiveAdmin.register Player do
     end
     column :IPL_Team, &:team_name
     column :role
-    column :other_names do |player|
-      player&.other_names&.join(', ')
-    end
+    column :cricbuzz_player_id
+    # column :other_names do |player|
+    #   player&.other_names&.join(', ')
+    # end
     # column :sold_price
     # column :foreigner
     actions
@@ -33,6 +34,7 @@ ActiveAdmin.register Player do
   form do |f|
     f.inputs 'Player Details' do
       f.input :name
+      f.input :replacement_of
       f.input :role, as: :select, include_blank: 'Select Role'
       f.input :team_name, as: :select, collection: [
         ['Chennai Super Kings', 'CSK'],
@@ -68,9 +70,11 @@ ActiveAdmin.register Player do
         # ['Papua New Guinea', 'PNG'],
         # ['Scotland', 'SCOT'],
         # ['Uganda', 'UG'],
-        # [' United States', 'USA']
+        # [' United States', 'USA'],
+        # ['Srilanka', 'SL']
       ], include_blank: 'Select Team'
-      f.input :other_names, as: :string, input_html: { value: f.object.other_names.join(', ') }, hint: 'Enter comma-separated values'
+      f.input :cricbuzz_player_id
+      # f.input :other_names, as: :string, input_html: { value: f.object.other_names.join(', ') }, hint: 'Enter comma-separated values'
       f.input :teams, as: :select, collection: Team.all.map { |t|
                                                    [t.team_name, t.id]
                                                  }, include_blank: 'Select team of user'
@@ -81,21 +85,22 @@ ActiveAdmin.register Player do
     f.actions
   end
 
-  controller do
-    def create
-      params[:player][:other_names] = params[:player][:other_names].split(',').map(&:strip)
-      super
-    end
+  # controller do
+  #   def create
+  #     params[:player][:other_names] = params[:player][:other_names].split(',').map(&:strip)
+  #     super
+  #   end
 
-    def update
-      params[:player][:other_names] = params[:player][:other_names].split(',').map(&:strip)
-      super
-    end
-  end
+  #   def update
+  #     params[:player][:other_names] = params[:player][:other_names].split(',').map(&:strip)
+  #     super
+  #   end
+  # end
 
   show do
     attributes_table do
       row :name
+      row :replacement_of
       row :Teams do |player|
         player.teams.pluck(:team_name).join(', ')
       end

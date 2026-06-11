@@ -1,257 +1,932 @@
-<!-- <div class="container mt-5 power-performance">
-  <div class="header">
-    <h1 class="text-center mb-4">POWER-PERFORMERS XI</h1>
-  </div>
-  <div id="player-stats">
-  </div>
-</div>
-
-<script>
-  // Assuming @sorted_players is an array of player objects in your Rails view
-  // var sortedPlayers = <#%= raw @top_11_players.to_json %>;
-  // var owners = <#%= raw @owners.to_json %>;
-
-  // function setTeamBackgroundColor(teamName) {
-  //   switch (teamName.toLowerCase()) {
-  //     case 'csk': return 'bg-csk';
-  //     case 'dc': return 'bg-dc';
-  //     case 'kkr': return 'bg-kkr';
-  //     case 'mi': return 'bg-mi';
-  //     case 'pbks': return 'bg-pbks';
-  //     case 'rr': return 'bg-rr';
-  //     case 'rcb': return 'bg-rcb';
-  //     case 'srh': return 'bg-srh';
-  //     case 'gt': return 'bg-gt';
-  //     case 'lsg': return 'bg-lsg';
-  //     default: return '';
-  //   }
-  // }
-
-  function setTeamBackgroundColor(teamName) {
-      switch (teamName.toLowerCase()) {
-        case 'afg': return 'bg-afg';
-        case 'aus': return 'bg-aus';
-        case 'ban': return 'bg-ban';
-        case 'eng': return 'bg-eng';
-        case 'ind': return 'bg-ind';
-        case 'nz': return 'bg-nz';
-        case 'pak': return 'bg-pak';
-        case 'rsa': return 'bg-rsa';
-        case 'sl': return 'bg-sl';
-        case 'wi': return 'bg-wi';
-        case 'usa': return 'bg-usa';
-        case 'ca': return 'bg-ca';
-        case 'ire': return 'bg-ire';
-        case 'nam': return 'bg-nam';
-        case 'nep': return 'bg-nep';
-        case 'neth': return 'bg-neth';
-        case 'omn': return 'bg-omn';
-        case 'png': return 'bg-png';
-        case 'scot': return 'bg-scot';
-        case 'ug': return 'bg-ug';
-        default: return 'bg-ind';
-      }
-    }
-
-
-  // Function to create player cards dynamically
-  function createPlayerCard(player, owner, ranking) {
-    var playerCard = document.createElement('div');
-    playerCard.classList.add('player-card');
-
-    var bgColorClass = setTeamBackgroundColor(player.team_name);
-    if (bgColorClass) {
-      playerCard.classList.add(bgColorClass);
-    }
-
-    var playerImg = document.createElement('img');
-    playerImg.src = "/assets/" + player.name + '.jpeg';
-    playerImg.classList.add('player-img');
-    playerImg.onerror = function () {
-      this.src = "/assets/default_player_image.jpeg";
-    };
-    playerCard.appendChild(playerImg);
-
-    var playerDetails = document.createElement('div');
-    playerDetails.classList.add('player-details');
-
-    var playerName = document.createElement('div');
-    playerName.classList.add('player-name');
-    playerName.textContent = player.name;
-    playerDetails.appendChild(playerName);
-
-    var playerSoldPrice = document.createElement('div');
-    playerSoldPrice.classList.add('sold-price');
-    playerSoldPrice.textContent = player.sold_price;
-    playerSoldPrice.style.color = 'white'
-    playerDetails.appendChild(playerSoldPrice);
-
-    var playerStats = document.createElement('div');
-    playerStats.classList.add('player-stats');
-
-    var rankingDiv = document.createElement('div');
-    rankingDiv.textContent = 'Ranking: ' + ranking;
-    rankingDiv.style.color = 'white'
-    playerStats.appendChild(rankingDiv);
-
-    // var teamRole = document.createElement('div');
-    // teamRole.textContent = 'Role: ' + player.role.toString().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-    // playerStats.appendChild(teamRole);
-
-    var playerRole = document.createElement('div');
-    playerRole.classList.add('player-role');
-
-    // Add images based on player roles
-    var roleImage = document.createElement('img');
-    switch (player.role) {
-      case 'wicket_keeper':
-        roleImage.src = "/assets/WK.jpeg";
-        break;
-      case 'batsman':
-        roleImage.src = "/assets/bat.png";
-        break;
-      case 'all_rounder':
-        roleImage.src = "/assets/all_rounder.png";
-        break;
-      case 'bowler':
-        roleImage.src = "/assets/bowler.png";
-        break;
-      default:
-        roleImage.src = "/assets/default_role_image.png"; // Default image if role not recognized
-    }
-    roleImage.alt = "Role Image";
-    roleImage.style.width = "40px";
-    roleImage.style.height = "40px";
-    roleImage.style.border = 'white'
-    playerRole.appendChild(roleImage);
-
-    playerDetails.appendChild(playerRole);
-
-    var teamOwner = document.createElement('div');
-    teamOwner.textContent = 'Owner: ' + owner;
-    teamOwner.style.color = 'white'
-    playerStats.appendChild(teamOwner);
-
-    var playerPoints = document.createElement('div');
-    console.log("XXXXXXXXXXXXXXXX", player)
-    playerPoints.textContent = 'Points: ' + player.points;
-    playerPoints.style.color = 'white'
-    playerStats.appendChild(playerPoints);
-
-    playerDetails.appendChild(playerStats);
-    playerCard.appendChild(playerDetails);
-
-    document.getElementById('player-stats').appendChild(playerCard);
-  }
-
-  // Render player cards
-  sortedPlayers.forEach(function(player, index) {
-    createPlayerCard(player, owners[index], index + 1);
-  });
-</script>
- -->
-
-<!-- app/views/leaderboards/index.html.erb -->
+<!-- app/views/leaderboards/power_performers.html.erb -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Cricket Leaderboard</title>
+    <title>Power Performers</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const tabs = document.querySelectorAll(".tab-button");
-        const tabContents = document.querySelectorAll(".tab-content");
-        
-        tabs.forEach(tab => {
-            tab.addEventListener("click", function () {
-                tabs.forEach(t => t.classList.remove("bg-blue-500", "text-white"));
-                tab.classList.add("bg-blue-500", "text-white");
-                
-                const target = tab.getAttribute("data-target");
-                tabContents.forEach(content => {
-                    content.classList.add("hidden");
-                });
-                document.getElementById(target).classList.remove("hidden");
-            });
-        });
-        
-        document.querySelector(".tab-button").click(); // Set default tab
-      });
-    </script>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: 'Arial', sans-serif;
-        background: linear-gradient(to right, #f8fafc, #e2e8f0);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #0f0f23;
+        min-height: 100vh;
+        color: white;
+        overflow-x: hidden;
+      }
+
+      /* Animated Background */
+      .bg-animated {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        z-index: -1;
+      }
+
+      .bg-animated::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+        animation: pulse 8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(10deg); }
+      }
+
+      /* Header */
+      .hero-header {
+        padding: 2rem 1rem 1rem;
+        text-align: center;
+        position: relative;
+      }
+
+      .hero-title {
+        font-size: 2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6347 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      .hero-subtitle {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 500;
+      }
+
+      /* Segmented Control Tabs */
+      .segmented-control {
+        display: flex;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 4px;
+        margin: 1.5rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+      }
+
+      .segment {
+        flex: 1;
+        padding: 0.75rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: color 0.3s ease;
+        position: relative;
+        z-index: 2;
+      }
+
+      .segment.active {
+        color: white;
+      }
+
+      .segment-indicator {
+        position: absolute;
+        height: calc(100% - 8px);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+        top: 4px;
+      }
+
+      /* Podium for Top 3 */
+      .podium-container {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 2rem 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .podium-place {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+      }
+
+      .podium-place.first {
+        order: 2;
+      }
+
+      .podium-place.second {
+        order: 1;
+      }
+
+      .podium-place.third {
+        order: 3;
+      }
+
+      .podium-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 0.5rem;
+        border: 3px solid;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .first .podium-avatar {
+        width: 90px;
+        height: 90px;
+        border-color: #FFD700;
+        animation: float 3s ease-in-out infinite;
+      }
+
+      .second .podium-avatar {
+        width: 75px;
+        height: 75px;
+        border-color: #C0C0C0;
+      }
+
+      .third .podium-avatar {
+        width: 75px;
+        height: 75px;
+        border-color: #CD7F32;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+
+      .podium-crown {
+        position: absolute;
+        top: -20px;
+        font-size: 2rem;
+        animation: bounce 2s ease-in-out infinite;
+      }
+
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0px) rotate(-15deg); }
+        50% { transform: translateY(-5px) rotate(15deg); }
+      }
+
+      .podium-base {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px 8px 0 0;
+        padding: 1rem 1.5rem;
+        text-align: center;
+        min-width: 90px;
+      }
+
+      .first .podium-base {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.1) 100%);
+        height: 120px;
+        border-color: rgba(255, 215, 0, 0.3);
+      }
+
+      .second .podium-base {
+        background: linear-gradient(135deg, rgba(192, 192, 192, 0.2) 0%, rgba(192, 192, 192, 0.1) 100%);
+        height: 90px;
+        border-color: rgba(192, 192, 192, 0.3);
+      }
+
+      .third .podium-base {
+        background: linear-gradient(135deg, rgba(205, 127, 50, 0.2) 0%, rgba(205, 127, 50, 0.1) 100%);
+        height: 90px;
+        border-color: rgba(205, 127, 50, 0.3);
+      }
+
+      .podium-rank {
+        font-size: 2rem;
+        font-weight: 900;
+        margin-bottom: 0.25rem;
+      }
+
+      .first .podium-rank {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+      }
+
+      .second .podium-rank {
+        background: linear-gradient(135deg, #E8E8E8 0%, #A8A8A8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .third .podium-rank {
+        background: linear-gradient(135deg, #F4A460 0%, #B87333 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .podium-name {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+      }
+
+      .podium-stat {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: #FFD700;
+      }
+
+      .first .podium-stat {
+        font-size: 1.5rem;
+      }
+
+      .podium-label {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Timeline Leaderboard for Rest */
+      .timeline-container {
+        padding: 0 1rem 2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      .timeline-line {
+        position: absolute;
+        left: 2rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(180deg, rgba(102, 126, 234, 0.5) 0%, rgba(102, 126, 234, 0) 100%);
+      }
+
+      .timeline-item {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        animation: slideIn 0.5s ease-out forwards;
+        opacity: 0;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+      .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+      .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+      .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+      .timeline-item:nth-child(5) { animation-delay: 0.5s; }
+
+      .timeline-marker {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 2;
+        border: 3px solid #0f0f23;
+      }
+
+      .timeline-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .timeline-content:active {
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .timeline-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(102, 126, 234, 0.5);
+      }
+
+      .timeline-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .timeline-name {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .timeline-owner {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 0.25rem;
+      }
+
+      .timeline-stats {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .timeline-stat-value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: right;
+        line-height: 1;
+      }
+
+      .timeline-stat-label {
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: right;
+        margin-top: 0.25rem;
+      }
+
+      /* Section Header */
+      .section-header {
+        text-align: center;
+        margin: 2rem 0 1rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 600;
+      }
+
+      /* Back Button */
+      .back-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 3rem;
+        border-radius: 50px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        margin: 2rem auto;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .back-button:active {
+        transform: translateY(2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .button-container {
+        text-align: center;
+        padding: 1rem;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+      }
+
+      /* Desktop */
+      @media (min-width: 768px) {
+        .hero-title {
+          font-size: 3rem;
+        }
+
+        .segmented-control {
+          max-width: 600px;
+          margin: 2rem auto;
+        }
+
+        .timeline-container {
+          max-width: 800px;
+        }
+
+        .timeline-content:hover {
+          background: rgba(255, 255, 255, 0.06);
+          transform: translateX(10px);
+          border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .back-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+        }
       }
     </style>
 </head>
-<body class="p-4">
-  <div class="container mx-auto max-w-2xl">
-    <h1 class="text-3xl font-extrabold text-center mb-6 text-gray-800">Fantasy Cricket Leaderboard</h1>
-    
-    <!-- Tabs Navigation -->
-    <div class="flex justify-around mb-6">
-      <button class="tab-button px-4 py-2 rounded bg-gray-200" data-target="orange-cap">Orange Cap</button>
-      <button class="tab-button px-4 py-2 rounded bg-gray-200" data-target="purple-cap">Purple Cap</button>
-      <button class="tab-button px-4 py-2 rounded bg-gray-200" data-target="fantasy-points">Fantasy Points</button>
-    </div>
+<body>
+  <div class="bg-animated"></div>
 
-    <!-- Orange Cap (Top Run Scorers) -->
-    <div id="orange-cap" class="tab-content hidden">
-      <h2 class="text-xl font-semibold mb-4 text-orange-500">🏏 Orange Cap - Top Run Scorers</h2>
-      <% @orange_cap_players.each do |k| %>
-        <div class="player-card bg-white shadow-lg rounded-lg p-4 flex items-center hover:bg-orange-100 mb-4">
-          <%= player_card_image(k[:player]) %>
-         <!--  <img src="<#%= player.overall_data.keys.first %>.jpg" alt="Player Image" class="w-16 h-16 rounded-full border-2 border-orange-500 mr-4"> -->
-          <div>
-            <h3 class="text-lg font-semibold"><%= k[:player].name %></h3>
-            <p class="text-lg font-semibold">Owner:- <%= k[:player].teams.where(auction: @auction)&.first&.team_name %></p>
-            <% matches =  k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
-            <p class="text-gray-600">Runs: <%= k[:total_runs] %> | Matches: <%= matches %> | Avg: <%= (k[:total_runs].to_f / matches.to_f).round(2) rescue 0 %></p>
-          </div>
-        </div>
-      <% end %>
-    </div>
-
-    <!-- Purple Cap (Top Wicket Takers) -->
-    <div id="purple-cap" class="tab-content hidden">
-      <h2 class="text-xl font-semibold mb-4 text-purple-600">🎯 Purple Cap - Top Wicket Takers</h2>
-      <% @purple_cap_players.each do |k| %>
-        <div class="player-card bg-white shadow-lg rounded-lg p-4 flex items-center hover:bg-purple-100 mb-4">
-          <%= player_card_image(k[:player]) %>
-          <!-- <img src="<#%= player.overall_data.keys.first %>.jpg" alt="Player Image" class="w-16 h-16 rounded-full border-2 border-purple-600 mr-4"> -->
-          <div>
-            <h3 class="text-lg font-semibold"><%= k[:player].name %></h3>
-            <p class="text-lg font-semibold">Owner:- <%= k[:player].teams.where(auction: @auction)&.first&.team_name %></p>
-            <% matches =  k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
-            <p class="text-gray-600">Wickets: <%= k[:total_wickets] %> | Matches: <%= matches %> | Econ: <%= k[:average_eco] %></p>
-          </div>
-        </div>
-      <% end %>
-    </div>
-
-    <!-- Top Fantasy Points Scorers -->
-    <div id="fantasy-points" class="tab-content hidden">
-      <h2 class="text-xl font-semibold mb-4 text-blue-500">📊 Top Fantasy Points Players</h2>
-      <% @top_fantasy_players.each do |player| %>
-        <div class="player-card bg-white shadow-lg rounded-lg p-4 flex items-center hover:bg-blue-100 mb-4">
-          <%= player_card_image(player) %>
-          <!-- <img src="<#%= player.overall_data.keys.first %>.jpg" alt="Player Image" class="w-16 h-16 rounded-full border-2 border-blue-500 mr-4"> -->
-          <div>
-            <h3 class="text-lg font-semibold"><%= player.name %></h3>
-            <p class="text-lg font-semibold">Owner:- <%= player.teams.where(auction: @auction)&.first&.team_name %></p>
-            <% matches =  player.teams.where(auction: @auction)&.first.matches.where(player_id: player.id).count %>
-            <p class="text-gray-600">Fantasy Points: <%= player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points %> | Matches: <%= matches %></p>
-          </div>
-        </div>
-      <% end %>
-    </div>
-    <div class="text-center mt-3">
-      <%= link_to 'Back', after_login_path, class: "btn btn-primary back-button theme-btn-back" %>
-    </div>
+  <!-- Header -->
+  <div class="hero-header">
+    <h1 class="hero-title">Power Performers</h1>
+    <p class="hero-subtitle">Top Players of the Tournament</p>
   </div>
+
+  <!-- Segmented Control Tabs -->
+  <div class="segmented-control">
+    <div class="segment-indicator" id="indicator"></div>
+    <div class="segment active" data-target="orange-cap">🏏 Runs</div>
+    <div class="segment" data-target="purple-cap">🎯 Wickets</div>
+    <div class="segment" data-target="fantasy-points">⚡ Points</div>
+  </div>
+
+  <!-- Orange Cap Content -->
+  <div id="orange-cap" class="tab-content">
+    <% if @orange_cap_players.present? %>
+      <!-- Top 3 Podium -->
+      <div class="podium-container">
+        <% [1, 0, 2].each_with_index do |idx, position| %>
+          <% if @orange_cap_players[idx] %>
+            <% k = @orange_cap_players[idx] %>
+            <% rank_class = idx == 0 ? 'first' : idx == 1 ? 'second' : 'third' %>
+            <div class="podium-place <%= rank_class %>">
+              <% if idx == 0 %>
+                <div class="podium-crown">👑</div>
+              <% end %>
+              <%= player_card_image(k[:player], klass: 'podium-avatar') %>
+              <div class="podium-base">
+                <div class="podium-rank">#<%= idx + 1 %></div>
+                <div class="podium-name"><%= k[:player].name.split(' ').first %></div>
+                <div class="podium-stat"><%= k[:total_runs] %></div>
+                <div class="podium-label">runs</div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Rest of the List (4th onwards) -->
+      <% if @orange_cap_players.length > 3 %>
+        <div class="section-header">— Rest of the Leaders —</div>
+        <div class="timeline-container">
+          <div class="timeline-line"></div>
+          <% @orange_cap_players[3..-1].each_with_index do |k, idx| %>
+            <% rank = idx + 4 %>
+            <div class="timeline-item">
+              <div class="timeline-marker"><%= rank %></div>
+              <div class="timeline-content">
+                <%= player_card_image(k[:player], klass: 'timeline-avatar') %>
+                <div class="timeline-info">
+                  <div class="timeline-name"><%= k[:player].name %></div>
+                  <div class="timeline-owner"><%= k[:player].teams.where(auction: @auction)&.first&.team_name %></div>
+                  <% matches = k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
+                  <div class="timeline-stats">
+                    <span>Matches: <%= matches %></span>
+                    <span>Avg: <%= (k[:total_runs].to_f / matches.to_f).round(2) rescue 0 %></span>
+                  </div>
+                </div>
+                <div>
+                  <div class="timeline-stat-value"><%= k[:total_runs] %></div>
+                  <div class="timeline-stat-label">runs</div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">🏏</div>
+        <p>No run scorers yet</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Purple Cap Content -->
+  <div id="purple-cap" class="tab-content hidden">
+    <% if @purple_cap_players.present? %>
+      <!-- Top 3 Podium -->
+      <div class="podium-container">
+        <% [1, 0, 2].each_with_index do |idx, position| %>
+          <% if @purple_cap_players[idx] %>
+            <% k = @purple_cap_players[idx] %>
+            <% rank_class = idx == 0 ? 'first' : idx == 1 ? 'second' : 'third' %>
+            <div class="podium-place <%= rank_class %>">
+              <% if idx == 0 %>
+                <div class="podium-crown">👑</div>
+              <% end %>
+              <%= player_card_image(k[:player], klass: 'podium-avatar') %>
+              <div class="podium-base">
+                <div class="podium-rank">#<%= idx + 1 %></div>
+                <div class="podium-name"><%= k[:player].name.split(' ').first %></div>
+                <div class="podium-stat"><%= k[:total_wickets] %></div>
+                <div class="podium-label">wickets</div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Rest of the List -->
+      <% if @purple_cap_players.length > 3 %>
+        <div class="section-header">— Rest of the Leaders —</div>
+        <div class="timeline-container">
+          <div class="timeline-line"></div>
+          <% @purple_cap_players[3..-1].each_with_index do |k, idx| %>
+            <% rank = idx + 4 %>
+            <div class="timeline-item">
+              <div class="timeline-marker"><%= rank %></div>
+              <div class="timeline-content">
+                <%= player_card_image(k[:player], klass: 'timeline-avatar') %>
+                <div class="timeline-info">
+                  <div class="timeline-name"><%= k[:player].name %></div>
+                  <div class="timeline-owner"><%= k[:player].teams.where(auction: @auction)&.first&.team_name %></div>
+                  <% matches = k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
+                  <div class="timeline-stats">
+                    <span>Matches: <%= matches %></span>
+                    <span>Econ: <%= k[:average_eco].round(2) %></span>
+                  </div>
+                </div>
+                <div>
+                  <div class="timeline-stat-value"><%= k[:total_wickets] %></div>
+                  <div class="timeline-stat-label">wickets</div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <p>No wicket takers yet</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Fantasy Points Content -->
+  <div id="fantasy-points" class="tab-content hidden">
+    <% if @top_fantasy_players.present? %>
+      <!-- Top 3 Podium -->
+      <div class="podium-container">
+        <% [1, 0, 2].each_with_index do |idx, position| %>
+          <% if @top_fantasy_players[idx] %>
+            <% player = @top_fantasy_players[idx] %>
+            <% rank_class = idx == 0 ? 'first' : idx == 1 ? 'second' : 'third' %>
+            <div class="podium-place <%= rank_class %>">
+              <% if idx == 0 %>
+                <div class="podium-crown">👑</div>
+              <% end %>
+              <%= player_card_image(player, klass: 'podium-avatar') %>
+              <div class="podium-base">
+                <div class="podium-rank">#<%= idx + 1 %></div>
+                <div class="podium-name"><%= player.name.split(' ').first %></div>
+                <div class="podium-stat"><%= player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points %></div>
+                <div class="podium-label">points</div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Rest of the List -->
+      <% if @top_fantasy_players.length > 3 %>
+        <div class="section-header">— Rest of the Leaders —</div>
+        <div class="timeline-container">
+          <div class="timeline-line"></div>
+          <% @top_fantasy_players[3..-1].each_with_index do |player, idx| %>
+            <% rank = idx + 4 %>
+            <div class="timeline-item">
+              <div class="timeline-marker"><%= rank %></div>
+              <div class="timeline-content">
+                <%= player_card_image(player, klass: 'timeline-avatar') %>
+                <div class="timeline-info">
+                  <div class="timeline-name"><%= player.name %></div>
+                  <div class="timeline-owner"><%= player.teams.where(auction: @auction)&.first&.team_name %></div>
+                  <% matches = player.teams.where(auction: @auction)&.first.matches.where(player_id: player.id).count %>
+                  <div class="timeline-stats">
+                    <span>Matches: <%= matches %></span>
+                    <span>Avg: <%= matches > 0 ? (player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points.to_f / matches.to_f).round(2) : 0 %></span>
+                  </div>
+                </div>
+                <div>
+                  <div class="timeline-stat-value"><%= player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points %></div>
+                  <div class="timeline-stat-label">points</div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty-state">
+        <div class="empty-icon">⚡</div>
+        <p>No fantasy points yet</p>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Back Button -->
+  <div class="button-container">
+    <%= link_to 'Back to Dashboard', after_login_path, class: "back-button" %>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const segments = document.querySelectorAll(".segment");
+      const indicator = document.getElementById("indicator");
+      const tabContents = document.querySelectorAll(".tab-content");
+      
+      function updateIndicator(activeSegment) {
+        const segmentIndex = Array.from(segments).indexOf(activeSegment);
+        const segmentWidth = activeSegment.offsetWidth;
+        const segmentLeft = activeSegment.offsetLeft;
+        
+        indicator.style.width = segmentWidth + 'px';
+        indicator.style.left = segmentLeft + 'px';
+      }
+      
+      segments.forEach(segment => {
+        segment.addEventListener("click", function () {
+          // Remove active class from all segments
+          segments.forEach(s => s.classList.remove("active"));
+          // Add active class to clicked segment
+          segment.classList.add("active");
+          
+          // Update indicator position
+          updateIndicator(segment);
+          
+          // Hide all tab contents
+          const target = segment.getAttribute("data-target");
+          tabContents.forEach(content => {
+            content.classList.add("hidden");
+          });
+          
+          // Show target content
+          document.getElementById(target).classList.remove("hidden");
+        });
+      });
+      
+      // Initialize first tab
+      updateIndicator(segments[0]);
+      segments[0].click();
+    });
+  </script>
 </body>
 </html>
+  <!-- App Header -->
+  <div class="app-header">
+    <h1 class="app-title">🏆 Power Performers</h1>
+  </div>
 
+  <!-- Tab Pills Navigation -->
+  <div class="tab-pills">
+    <button class="tab-pill active" data-target="orange-cap">
+      <span class="category-icon">🏏</span>Orange Cap
+    </button>
+    <button class="tab-pill" data-target="purple-cap">
+      <span class="category-icon">🎯</span>Purple Cap
+    </button>
+    <button class="tab-pill" data-target="fantasy-points">
+      <span class="category-icon">⚡</span>Fantasy Points
+    </button>
+  </div>
+
+  <!-- Orange Cap (Top Run Scorers) -->
+  <div id="orange-cap" class="tab-content">
+    <div class="leaderboard-list">
+      <% if @orange_cap_players.present? %>
+        <% @orange_cap_players.each_with_index do |k, index| %>
+          <% rank = index + 1 %>
+          <div class="rank-item rank-<%= rank <= 3 ? rank : 'default' %>">
+            <% if rank <= 3 %>
+              <span class="trophy-icon">
+                <%= rank == 1 ? '🥇' : rank == 2 ? '🥈' : '🥉' %>
+              </span>
+            <% end %>
+            
+            <div class="rank-badge">#<%= rank %></div>
+            
+            <%= player_card_image(k[:player], klass: 'player-avatar') %>
+            
+            <div class="player-info">
+              <div class="player-name"><%= k[:player].name %></div>
+              <div class="player-owner"><%= k[:player].teams.where(auction: @auction)&.first&.team_name %></div>
+              <% matches = k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
+              <div class="player-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Matches:</span>
+                  <span><%= matches %></span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Avg:</span>
+                  <span><%= (k[:total_runs].to_f / matches.to_f).round(2) rescue 0 %></span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="primary-stat">
+              <%= k[:total_runs] %>
+              <div style="font-size: 0.7rem; font-weight: 500; opacity: 0.9;">runs</div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          </svg>
+          <p style="font-size: 1.25rem; font-weight: 600;">No data available yet</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Purple Cap (Top Wicket Takers) -->
+  <div id="purple-cap" class="tab-content hidden">
+    <div class="leaderboard-list">
+      <% if @purple_cap_players.present? %>
+        <% @purple_cap_players.each_with_index do |k, index| %>
+          <% rank = index + 1 %>
+          <div class="rank-item rank-<%= rank <= 3 ? rank : 'default' %>">
+            <% if rank <= 3 %>
+              <span class="trophy-icon">
+                <%= rank == 1 ? '🥇' : rank == 2 ? '🥈' : '🥉' %>
+              </span>
+            <% end %>
+            
+            <div class="rank-badge">#<%= rank %></div>
+            
+            <%= player_card_image(k[:player], klass: 'player-avatar') %>
+            
+            <div class="player-info">
+              <div class="player-name"><%= k[:player].name %></div>
+              <div class="player-owner"><%= k[:player].teams.where(auction: @auction)&.first&.team_name %></div>
+              <% matches = k[:player].teams.where(auction: @auction)&.first.matches.where(player_id: k[:player].id).count %>
+              <div class="player-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Matches:</span>
+                  <span><%= matches %></span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Econ:</span>
+                  <span><%= k[:average_eco].round(2) %></span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="primary-stat">
+              <%= k[:total_wickets] %>
+              <div style="font-size: 0.7rem; font-weight: 500; opacity: 0.9;">wickets</div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          </svg>
+          <p style="font-size: 1.25rem; font-weight: 600;">No data available yet</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Top Fantasy Points Scorers -->
+  <div id="fantasy-points" class="tab-content hidden">
+    <div class="leaderboard-list">
+      <% if @top_fantasy_players.present? %>
+        <% @top_fantasy_players.each_with_index do |player, index| %>
+          <% rank = index + 1 %>
+          <div class="rank-item rank-<%= rank <= 3 ? rank : 'default' %>">
+            <% if rank <= 3 %>
+              <span class="trophy-icon">
+                <%= rank == 1 ? '🥇' : rank == 2 ? '🥈' : '🥉' %>
+              </span>
+            <% end %>
+            
+            <div class="rank-badge">#<%= rank %></div>
+            
+            <%= player_card_image(player, klass: 'player-avatar') %>
+            
+            <div class="player-info">
+              <div class="player-name"><%= player.name %></div>
+              <div class="player-owner"><%= player.teams.where(auction: @auction)&.first&.team_name %></div>
+              <% matches = player.teams.where(auction: @auction)&.first.matches.where(player_id: player.id).count %>
+              <div class="player-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Matches:</span>
+                  <span><%= matches %></span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Avg:</span>
+                  <span><%= matches > 0 ? (player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points.to_f / matches.to_f).round(2) : 0 %></span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="primary-stat">
+              <%= player.players_teams.joins(:team).where(teams: { auction_id: @auction.id })&.first&.points %>
+              <div style="font-size: 0.7rem; font-weight: 500; opacity: 0.9;">points</div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="empty-state">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+          </svg>
+          <p style="font-size: 1.25rem; font-weight: 600;">No data available yet</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <div class="button-container">
+    <%= link_to 'Back to Dashboard', after_login_path, class: "back-button" %>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const pills = document.querySelectorAll(".tab-pill");
+      const tabContents = document.querySelectorAll(".tab-content");
+      
+      pills.forEach(pill => {
+        pill.addEventListener("click", function () {
+          // Remove active class from all pills
+          pills.forEach(p => p.classList.remove("active"));
+          // Add active class to clicked pill
+          pill.classList.add("active");
+          
+          // Hide all tab contents
+          const target = pill.getAttribute("data-target");
+          tabContents.forEach(content => {
+            content.classList.add("hidden");
+          });
+          
+          // Show target content
+          document.getElementById(target).classList.remove("hidden");
+        });
+      });
+      
+      // Set default tab
+      pills[0].click();
+    });
+  </script>
+</body>
+</html>

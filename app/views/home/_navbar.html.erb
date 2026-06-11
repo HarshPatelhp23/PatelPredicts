@@ -41,9 +41,19 @@
                 <%= link_to spl_purple_cap_path, class: 'dropdown-item d-flex align-items-center', data: { no_loader: true } do %>
                   SPL-
                   <%= image_tag('purple_cap.jpeg', alt: 'Orange Cap', style: 'max-height: 30px;') %>
-                <%= link_to 'AuctionRoom', auction_table_path, class: 'dropdown-item disabled', data: { no_loader: true } %>
-                <%= link_to 'Auction-HotPicks', hotpicks_path, class:  'dropdown-item disabled', data: { no_loader: true } %>
                 <% end %>
+                <%= link_to 'AuctionRoom', auction_table_path, class: 'dropdown-item', data: { no_loader: true } %>
+                <!-- <#%= link_to 'Auction-HotPicks', hotpicks_path, class: 'dropdown-item',  data: { no_loader: true } %> -->
+
+                <% if Time.now < Time.new(2025, 6, 1) %>
+                  <%= link_to 'Auction-HotPicks', hotpicks_path, class: 'dropdown-item', data: { no_loader: true } %>
+                <% else %>
+                  <li class="dropdown-item disabled text-muted">
+                    Auction-HotPicks (Coming Soon)
+                  </li>
+                <% end %>
+                <!-- <#%= link_to 'Categorywise Playerlist', category_wise_players_path, class: 'dropdown-item', data: {no_loader: true} %> -->
+               <!--  <#%= link_to 'SPL-Head-To-Head', spl_head_to_head_path, class:  'dropdown-item', data: { no_loader: true } %> -->
             </ul>
           </li>
         </ul>

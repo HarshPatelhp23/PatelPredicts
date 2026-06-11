@@ -1,0 +1,2 @@
+class RemoveFieldsFromSplUser < ApplicationRecord
+end

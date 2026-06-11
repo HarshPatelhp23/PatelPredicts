@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patel-Predicts Scorecard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #0a0e1a;
+      font-family: 'DM Sans', sans-serif;
+      color: #e8eaf0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .email-wrapper {
+      max-width: 620px;
+      margin: 0 auto;
+      background-color: #0a0e1a;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0f1628 0%, #1a1040 50%, #0f1628 100%);
+      padding: 48px 40px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255,200,50,0.15);
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% -10%, rgba(255,180,30,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 100%, rgba(99,102,241,0.12) 0%, transparent 60%);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,200,50,0.12);
+      border: 1px solid rgba(255,200,50,0.35);
+      color: #ffc832;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px;
+      letter-spacing: 3px;
+      line-height: 1;
+      background: linear-gradient(135deg, #ffd44a 0%, #ffb300 40%, #ff8c00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .hero-subtitle {
+      font-size: 13px;
+      color: rgba(232,234,240,0.5);
+      letter-spacing: 1px;
+      position: relative;
+    }
+    .cricket-icon {
+      font-size: 34px;
+      margin-bottom: 12px;
+      position: relative;
+      display: block;
+    }
+
+    /* ── GREETING STRIP ── */
+    .greeting-strip {
+      background: linear-gradient(90deg, #13192e, #1c1040, #13192e);
+      padding: 22px 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .greeting-strip .label {
+      font-size: 11px;
+      color: rgba(232,234,240,0.4);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+    .greeting-strip .name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .greeting-strip .date {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: #ffc832;
+      margin-top: 2px;
+    }
+
+    /* ── BODY ── */
+    .body-content {
+      padding: 32px 40px;
+    }
+
+    /* ── MATCH BLOCK ── */
+    .match-block {
+      margin-bottom: 36px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: #10162a;
+    }
+
+    .match-header {
+      background: linear-gradient(90deg, #1c1f3a, #16193a);
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,200,50,0.1);
+    }
+    .match-name-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .match-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ffc832;
+      flex-shrink: 0;
+      box-shadow: 0 0 8px rgba(255,200,50,0.6);
+    }
+    .match-name-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1.5px;
+      color: #fff;
+    }
+    .match-total-pill {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffd44a, #ff8c00);
+      color: #0a0e1a;
+      padding: 5px 14px;
+      border-radius: 30px;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 22px 10px;
+    }
+    .section-label-icon { font-size: 14px; }
+    .section-label-text {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: rgba(232,234,240,0.4);
+    }
+    .section-label-line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* ── PLAYER TABLE ── */
+    .player-table {
+      width: 100%;
+      border-collapse: collapse;
+      padding: 0 22px 16px;
+      display: table;
+    }
+    .player-table td {
+      padding: 0;
+    }
+    .player-row {
+      display: flex;
+      align-items: center;
+      padding: 11px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.2s;
+    }
+    .player-row:last-child { border-bottom: none; }
+    .player-row:hover { background: rgba(255,255,255,0.03); }
+
+    .player-rank {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(232,234,240,0.25);
+      width: 24px;
+      flex-shrink: 0;
+    }
+    .player-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e2540, #2a305a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-right: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      color: rgba(232,234,240,0.7);
+    }
+    .player-name {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 500;
+      color: #e8eaf0;
+    }
+    .player-points {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #4ade80;
+    }
+    .player-points-label {
+      font-size: 9px;
+      color: rgba(74,222,128,0.5);
+      margin-left: 3px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* bench variant */
+    .bench-row .player-points { color: #a78bfa; }
+    .bench-row .player-points-label { color: rgba(167,139,250,0.5); }
+    .bench-row .player-avatar {
+      background: linear-gradient(135deg, #1e1a40, #2a2060);
+    }
+
+    /* sub-total row */
+    .subtotal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 22px;
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .subtotal-label {
+      font-size: 11px;
+      color: rgba(232,234,240,0.35);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .subtotal-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: rgba(232,234,240,0.6);
+    }
+
+    /* ── GRAND TOTAL CARD ── */
+    .grand-total-card {
+      background: linear-gradient(135deg, #1a2a1a, #112211);
+      border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .grand-total-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 90% 50%, rgba(74,222,128,0.06) 0%, transparent 70%);
+    }
+    .grand-total-left .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: rgba(74,222,128,0.6);
+      margin-bottom: 4px;
+    }
+    .grand-total-left .value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 46px;
+      line-height: 1;
+      background: linear-gradient(135deg, #6ee7b7, #4ade80);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .grand-total-left .sublabel {
+      font-size: 12px;
+      color: rgba(232,234,240,0.3);
+      margin-top: 2px;
+    }
+    .grand-total-right {
+      font-size: 40px;
+      position: relative;
+    }
+
+    /* ── CTA BUTTON ── */
+    .cta-section {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .cta-notice {
+      font-size: 12px;
+      color: rgba(232,234,240,0.35);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+    .cta-notice strong { color: rgba(255,200,50,0.7); }
+
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #ffd44a 0%, #ff8c00 100%);
+      color: #0a0e1a;
+      text-decoration: none;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      padding: 15px 36px;
+      border-radius: 50px;
+      box-shadow: 0 4px 24px rgba(255,180,30,0.35), 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .cta-btn-sub {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(10,14,26,0.6);
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      margin: 32px 0;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: #080c18;
+      padding: 28px 40px;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffd44a, #ff8c00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .footer-text {
+      font-size: 11px;
+      color: rgba(232,234,240,0.25);
+      line-height: 1.7;
+    }
+    .footer-friends {
+      font-size: 12px;
+      color: rgba(232,234,240,0.4);
+      margin-top: 10px;
+    }
+    .footer-friends span { color: #ffc832; }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <span class="cricket-icon">🏏</span>
+    <div class="hero-badge">Match Scorecard</div>
+    <div class="greeting-strip">
+      <div class="name">Patel-Predicts</div>
+    </div>
+    <div class="hero-subtitle">Fantasy Cricket · <%= Date.current.strftime('%A, %d %B %Y') %></div>
+  </div>
+
+  <!-- GREETING -->
+  <div class="greeting-strip">
+    <div class="label">Team Owner</div>
+    <div class="name">Hey <%= team.user.username %> 👋</div>
+    <div class="date">Team: <%= team.team_name %></div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-content">
+
+    <% match_summaries.each do |ms| %>
+    <!-- MATCH BLOCK -->
+    <div class="match-block">
+
+      <!-- Match Header -->
+      <div class="match-header">
+        <div class="match-name-badge">
+          <div class="match-dot"></div>
+          <div class="match-name-text"><%= ms[:match_name] %></div>
+        </div>
+        <div class="match-total-pill"><%= ms[:total].to_i %> pts</div>
+      </div>
+
+      <!-- Playing XI Section -->
+      <% if ms[:playing_xi].any? %>
+        <div class="section-label">
+          <span class="section-label-icon">⚡</span>
+          <span class="section-label-text">Playing XI</span>
+          <div class="section-label-line"></div>
+        </div>
+
+        <% ms[:playing_xi].each_with_index do |match, i| %>
+        <div class="player-row">
+          <div class="player-rank"><%= (i + 1).to_s.rjust(2, '0') %></div>
+          <!-- <div class="player-avatar"><%= player_image_tag(match.player) %></div> -->
+          <div class="player-name"><%= match.player.name %>:-  </div>
+          <div>
+            <span class="player-points"><%= match.points.to_i %></span>
+            <span class="player-points-label">pts</span>
+          </div>
+        </div>
+        <% end %>
+
+        <div class="subtotal-row">
+          <span class="subtotal-label">Playing XI Total</span>
+          <span class="subtotal-value"><%= ms[:playing_xi].sum { |p| p[:points].to_f }.to_i %> pts</span>
+        </div>
+      <% end %>
+
+      <!-- Bench Section -->
+      <% if ms[:bench].any? %>
+        <div class="section-label" style="margin-top: 8px;">
+          <span class="section-label-icon">🪑</span>
+          <span class="section-label-text">Bench</span>
+          <div class="section-label-line"></div>
+        </div>
+
+        <% ms[:bench].each_with_index do |match, i| %>
+        <div class="player-row bench-row">
+          <div class="player-rank"><%= (i + 1).to_s.rjust(2, '0') %></div>
+          <div class="player-name"><%= match.player.name %>:-  </div>
+          <div>
+            <span class="player-points"><%= match.bench_points.to_i %></span>
+            <span class="player-points-label">pts</span>
+          </div>
+        </div>
+        <% end %>
+
+        <div class="subtotal-row">
+          <span class="subtotal-label">Bench Total</span>
+          <span class="subtotal-value"><%= ms[:bench].sum { |p| p[:points].to_f }.to_i %> pts</span>
+        </div>
+      <% end %>
+
+    </div><!-- /match-block -->
+    <% end %>
+
+    <!-- GRAND TOTAL -->
+    <div class="grand-total-card">
+      <div class="grand-total-left">
+        <div class="label">Today's Grand Total</div>
+        <div class="value"><%= grand_total.to_i %></div>
+        <div class="sublabel">points earned across all matches</div>
+      </div>
+      <div class="grand-total-right">🏆</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <p class="cta-notice">
+        Want to see the full points table and how you stack up against your friends?<br/>
+        <strong>Patel-Predicts is open till 12:00 AM midnight tonight!</strong>
+      </p>
+      <a href="<%= point_table_url %>" class="cta-btn">
+        🏏 View Full Points Table
+        <span class="cta-btn-sub">Patel-Predicts</span>
+      </a>
+    </div>
+
+  </div><!-- /body-content -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-logo">Patel-Predicts</div>
+    <div class="footer-friends">Email generated by the Patel-Predicts</div>
+
+    <div style="margin: 16px auto 0; max-width: 480px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 18px;">
+      <div style="font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(232,234,240,0.35); margin-bottom: 8px;">⚠ Important Disclaimer</div>
+      <div class="footer-text" style="color: rgba(232,234,240,0.45); line-height: 1.8;">
+        Patel-Predicts is a <strong style="color: rgba(232,234,240,0.65);">free, private fantasy cricket game</strong> played purely for fun among a group of friends.
+        <strong style="color: rgba(232,234,240,0.65);">No money, prizes, entry fees, or any monetary transactions</strong> of any kind are involved or exchanged at any point.
+        Points are virtual and hold no monetary value whatsoever.
+        This platform is not affiliated with any paid fantasy sports service.
+      </div>
+    </div>
+
+    <div class="footer-text" style="margin-top: 14px; font-size: 10px;">
+      This scorecard was automatically generated after today's match update.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

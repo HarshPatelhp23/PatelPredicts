@@ -1,0 +1,1716 @@
+<!-- app/views/chatbot/index.html.erb -->
+<% content_for :title, "Cricket AI Assistant" %>
+<% content_for :head do %>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<% end %>
+
+<div class="chatbot-container">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="bot-avatar-large">
+        <span class="pp-logo">PP</span>
+      </div>
+      <div class="header-info">
+        <h1 class="bot-title">
+          <span class="gradient-text">Cricket AI Assistant</span>
+          <span class="beta-badge">BETA</span>
+        </h1>
+        <p class="bot-description">Your intelligent fantasy cricket companion</p>
+        <div class="user-greeting">
+          <i class="fas fa-user-circle"></i>
+          Welcome, <strong><%= @user_stats[:user_name] %></strong>!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats Dashboard -->
+  <div class="stats-dashboard">
+    <div class="stats-grid">
+      <!-- User Stats Card -->
+      <div class="stat-card user-card">
+        <div class="card-header">
+          <i class="fas fa-trophy"></i>
+          <h3>Your Performance</h3>
+        </div>
+        <div class="card-content">
+          <div class="main-stat">
+            <span class="stat-value"><%= @user_stats[:total_points] %></span>
+            <span class="stat-label">Total Points</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-value">Rank #<%= @user_stats[:rank] %></span>
+              <span class="sub-label">Position</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-value"><%= @user_stats[:remaining_purse] %></span>
+              <span class="sub-label">Remaining</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Card -->
+      <div class="stat-card team-card">
+        <div class="card-header">
+          <i class="fas fa-users"></i>
+          <h3>Your Team</h3>
+        </div>
+        <div class="card-content">
+          <div class="main-stat">
+            <span class="stat-value team-name"><%= @user_stats[:team_name] %></span>
+            <span class="stat-label">Team Name</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-value"><%= @user_stats[:players_count] %></span>
+              <span class="sub-label">Players</span>
+            </div>
+            <div class="sub-stat penalty <%= 'penalty-warning' if @user_stats[:penalty_points] > 0 %>">
+              <span class="sub-value">-<%= @user_stats[:penalty_points] %></span>
+              <span class="sub-label">Penalty</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- League Stats Card -->
+      <div class="stat-card league-card">
+        <div class="card-header">
+          <i class="fas fa-globe"></i>
+          <h3>League Stats</h3>
+        </div>
+        <div class="card-content">
+          <div class="league-stats">
+            <div class="league-stat">
+              <span class="league-value"><%= @quick_stats[:total_players] %></span>
+              <span class="league-label">Total Players</span>
+            </div>
+            <div class="league-stat">
+              <span class="league-value"><%= @quick_stats[:foreign_players] %></span>
+              <span class="league-label">Foreign Players</span>
+            </div>
+            <div class="league-stat">
+              <span class="league-value"><%= @quick_stats[:total_teams] %></span>
+              <span class="league-label">Teams</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matches Card -->
+      <div class="stat-card matches-card">
+        <div class="card-header">
+          <i class="fas fa-calendar-alt"></i>
+          <h3>Upcoming</h3>
+        </div>
+        <div class="card-content">
+          <div class="main-stat">
+            <span class="stat-value"><%= @quick_stats[:upcoming_matches] %></span>
+            <span class="stat-label">Matches</span>
+          </div>
+          <div class="sub-stats">
+            <div class="sub-stat">
+              <span class="sub-value"><%= @quick_stats[:active_auctions] %></span>
+              <span class="sub-label">Active Auctions</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Features Showcase -->
+  <div class="ai-features">
+    <h2 class="features-title">
+      <i class="fas fa-magic"></i>
+      What I Can Help You With
+    </h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon players-icon">
+          <i class="fas fa-running"></i>
+        </div>
+        <h3>Player Insights</h3>
+        <p>Get detailed information about players, their roles, performance stats, and foreign player status</p>
+        <div class="feature-examples">
+          <span class="example-tag">"Show foreign players"</span>
+          <span class="example-tag">"Top batsmen"</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon team-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3>Team Analysis</h3>
+        <p>Analyze team performance, purse management, and get strategic recommendations</p>
+        <div class="feature-examples">
+          <span class="example-tag">"My team stats"</span>
+          <span class="example-tag">"Leaderboard"</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon match-icon">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <h3>Match Data</h3>
+        <p>Stay updated with match schedules, results, and point calculations</p>
+        <div class="feature-examples">
+          <span class="example-tag">"Upcoming matches"</span>
+          <span class="example-tag">"Match points"</span>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon auction-icon">
+          <i class="fas fa-gavel"></i>
+        </div>
+        <h3>Auction Intelligence</h3>
+        <p>Track auction results, player prices, and market trends</p>
+        <div class="feature-examples">
+          <span class="example-tag">"Recent sales"</span>
+          <span class="example-tag">"Player prices"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start Chat Button -->
+  <div class="start-chat-section">
+    <button id="startChatBtn" class="start-chat-btn">
+      <div class="btn-content">
+        <i class="fas fa-comments"></i>
+        <span class="btn-text">Start Chatting with AI</span>
+        <div class="btn-sparkle">✨</div>
+      </div>
+    </button>
+    <p class="chat-hint">Ask me anything about your fantasy cricket experience!</p>
+  </div>
+
+  <!-- Chat Interface (Initially Hidden) -->
+  <div class="chat-interface" id="chatInterface" style="display: none;">
+    <!-- Chat Header (Mobile) -->
+    <div class="chat-header-mobile">
+      <button id="backToHome" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="chat-header-info">
+        <div class="chat-bot-avatar">
+          <span class="pp-logo-small">PP</span>
+        </div>
+        <div class="chat-header-text">
+          <h3>Patel-Predicts AI</h3>
+          <span class="online-status"><i class="fas fa-circle"></i> Online</span>
+        </div>
+      </div>
+      <button class="menu-button">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot-message welcome-message">
+        <div class="message-avatar">
+          <span class="pp-logo-small">PP</span>
+        </div>
+        <div class="message-content">
+          <div class="message-bubble">
+            <p>🏏 Hello <%= @user_stats[:user_name] %>! I see you're ranked #<%= @user_stats[:rank] %> with <%= @user_stats[:total_points] %> points.</p>
+            <p>How can I help you improve your fantasy cricket game today?</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <div class="quick-action-buttons">
+        <button class="quick-btn" data-message="Show me all foreign players">
+          <i class="fas fa-globe"></i>
+          Foreign Players
+        </button>
+        <button class="quick-btn" data-message="What's my team performance?">
+          <i class="fas fa-chart-bar"></i>
+          My Performance
+        </button>
+        <button class="quick-btn" data-message="Show upcoming matches">
+          <i class="fas fa-calendar"></i>
+          Upcoming Matches
+        </button>
+        <button class="quick-btn" data-message="Top performing players this season">
+          <i class="fas fa-star"></i>
+          Top Players
+        </button>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-container">
+      <div class="chat-input-wrapper">
+        <div class="input-group">
+          <button class="attachment-button">
+            <i class="fas fa-plus"></i>
+          </button>
+          <input 
+            type="text" 
+            id="messageInput" 
+            class="message-input" 
+            placeholder="Type your message..."
+            autocomplete="off"
+          >
+          <button id="sendButton" class="send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+      <div class="message bot-message">
+        <div class="message-avatar">
+          <span class="pp-logo-small">PP</span>
+        </div>
+        <div class="message-content">
+          <div class="typing-animation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .chatbot-container {
+    max-width: 100%;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Dashboard Header */
+  .dashboard-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 2rem 1rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bot-avatar-large {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .pp-logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 1px;
+  }
+
+  .pp-logo-small {
+    font-size: 1rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .bot-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .beta-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    font-size: 0.65rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+  }
+
+  .bot-description {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+  }
+
+  .user-greeting {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+  }
+
+  /* Stats Dashboard */
+  .stats-dashboard {
+    padding: 1.5rem 1rem;
+    background: #f8f9fa;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+  }
+
+  .stat-card:active {
+    transform: scale(0.98);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-header i {
+    font-size: 1.3rem;
+    color: #667eea;
+  }
+
+  .card-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .main-stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1;
+  }
+
+  .team-name {
+    font-size: 1.6rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin-top: 0.5rem;
+    font-weight: 500;
+  }
+
+  .sub-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .sub-stat {
+    text-align: center;
+    flex: 1;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+  }
+
+  .sub-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .sub-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    margin-top: 0.25rem;
+  }
+
+  .penalty-warning .sub-value {
+    color: #e74c3c;
+  }
+
+  .league-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .league-stat {
+    text-align: center;
+    flex: 1;
+  }
+
+  .league-value {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .league-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    margin-top: 0.25rem;
+  }
+
+  /* AI Features Section */
+  .ai-features {
+    padding: 2rem 1rem;
+    background: white;
+  }
+
+  .features-title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .features-title i {
+    color: #667eea;
+    font-size: 1.5rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.25rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .feature-card {
+    text-align: center;
+    padding: 1.5rem 1.25rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  .feature-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .feature-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 1.4rem;
+    color: white;
+  }
+
+  .players-icon { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .team-icon { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+  .match-icon { background: linear-gradient(135deg, #f39c12, #e67e22); }
+  .auction-icon { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+  .feature-card h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+  }
+
+  .feature-card p {
+    color: #7f8c8d;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .feature-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  .example-tag {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* Start Chat Section */
+  .start-chat-section {
+    padding: 2.5rem 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    text-align: center;
+    color: white;
+  }
+
+  .start-chat-btn {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 1.25rem 2.5rem;
+    border-radius: 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .start-chat-btn:active {
+    transform: scale(0.97);
+  }
+
+  .btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-sparkle {
+    font-size: 1.25rem;
+    animation: sparkle 2s infinite;
+  }
+
+  @keyframes sparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(180deg); }
+  }
+
+  .chat-hint {
+    font-size: 1rem;
+    opacity: 0.95;
+    margin-top: 0.75rem;
+  }
+
+  /* Chat Interface Styles */
+  .chat-interface {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #f8f9fa;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Mobile Chat Header */
+  .chat-header-mobile {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .back-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .back-button:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+  }
+
+  .chat-header-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .chat-bot-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+
+  .chat-header-text h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+  }
+
+  .online-status {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .online-status i {
+    font-size: 0.5rem;
+    color: #2ecc71;
+    animation: pulse 2s infinite;
+  }
+
+  .menu-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .menu-button:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .message {
+    display: flex;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+    gap: 0.5rem;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .user-message {
+    flex-direction: row-reverse;
+  }
+
+  .message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .bot-message .message-avatar {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+  }
+
+  .user-message .message-avatar {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+  }
+
+  .message-content {
+    max-width: 80%;
+    min-width: 80px;
+  }
+
+  .message-bubble {
+    background: white;
+    padding: 0.85rem 1rem;
+    border-radius: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    position: relative;
+    word-wrap: break-word;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  /* Formatted Content Styles */
+  .formatted-content {
+    line-height: 1.6;
+  }
+
+  .formatted-content .chat-heading,
+  .formatted-content h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0.75rem 0 0.5rem 0;
+    display: block;
+  }
+
+  .formatted-content .chat-heading:first-child,
+  .formatted-content h3:first-child {
+    margin-top: 0;
+  }
+
+  .formatted-content ul {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+  }
+
+  .formatted-content .list-disc {
+    list-style-type: disc;
+  }
+
+  .formatted-content li {
+    margin: 0.4rem 0;
+    line-height: 1.6;
+  }
+
+  .formatted-content .font-semibold {
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .formatted-content .text-gray-900 {
+    color: #2c3e50;
+  }
+
+  .formatted-content br + br {
+    display: block;
+    content: "";
+    margin: 0.25rem 0;
+  }
+
+  .formatted-content hr {
+    border: none;
+    border-top: 1px solid #e9ecef;
+    margin: 1rem 0;
+  }
+
+  /* Better spacing for paragraphs */
+  .formatted-content > br:first-child {
+    display: none;
+  }
+
+  /* Style for user message formatted content */
+  .user-message .formatted-content .font-semibold,
+  .user-message .formatted-content .text-gray-900,
+  .user-message .formatted-content .chat-heading,
+  .user-message .formatted-content h3 {
+    color: white;
+  }
+
+  .user-message .message-bubble {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+  }
+
+  .bot-message .message-bubble {
+    border-bottom-left-radius: 0.25rem;
+  }
+
+  .welcome-message .message-bubble {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+  }
+
+  /* Quick Actions */
+  .quick-actions {
+    padding: 0.75rem 1rem;
+    background: white;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .quick-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quick-action-buttons::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .quick-action-buttons::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .quick-action-buttons::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+
+  .quick-btn {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.7rem 1.15rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 6px rgba(116, 185, 255, 0.3);
+    flex-shrink: 0;
+  }
+
+  .quick-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 3px rgba(116, 185, 255, 0.4);
+  }
+
+  /* Input Area */
+  .chat-input-container {
+    background: white;
+    padding: 0.85rem 1rem;
+    padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+    border-top: 1px solid #e9ecef;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 2rem;
+    padding: 0.4rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
+  .input-group:focus-within {
+    border-color: #667eea;
+    background: white;
+  }
+
+  .attachment-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #7f8c8d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .attachment-button:active {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+  }
+
+  .message-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0.65rem 0.75rem;
+    font-size: 16px;
+    outline: none;
+    color: #2c3e50;
+  }
+
+  .message-input::placeholder {
+    color: #95a5a6;
+  }
+
+  .send-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    flex-shrink: 0;
+  }
+
+  .send-button:active {
+    transform: scale(0.92);
+  }
+
+  .send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Typing Animation */
+  .typing-animation {
+    display: flex;
+    gap: 4px;
+    padding: 0.85rem 1rem;
+  }
+
+  .typing-animation span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #667eea;
+    animation: typing 1.5s infinite;
+  }
+
+  .typing-animation span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-animation span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-8px);
+    }
+  }
+
+  /* Desktop Sidebar Support */
+  @media (min-width: 769px) {
+    .chatbot-container {
+      margin-left: 250px;
+    }
+
+    .chat-interface {
+      left: 250px;
+    }
+
+    .chat-header-mobile {
+      display: none;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .features-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Tablet Responsiveness */
+  @media (max-width: 768px) {
+    .chatbot-container {
+      margin-left: 0;
+    }
+
+    .dashboard-header {
+      padding: 1.75rem 1rem 1.25rem;
+    }
+
+    .bot-avatar-large {
+      width: 65px;
+      height: 65px;
+      font-size: 1.8rem;
+    }
+    
+    .bot-title {
+      font-size: 1.35rem;
+    }
+
+    .bot-description {
+      font-size: 0.9rem;
+    }
+
+    .user-greeting {
+      font-size: 0.85rem;
+      padding: 0.55rem 1rem;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .stat-card {
+      padding: 1.15rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+    }
+
+    .team-name {
+      font-size: 1.5rem;
+    }
+    
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-card {
+      padding: 1.35rem 1.15rem;
+    }
+    
+    .start-chat-btn {
+      padding: 1.15rem 2.25rem;
+      font-size: 1.05rem;
+    }
+    
+    .message-content {
+      max-width: 85%;
+    }
+  }
+
+  /* Mobile Optimization */
+  @media (max-width: 480px) {
+    .dashboard-header {
+      padding: 1.5rem 0.85rem 1rem;
+    }
+
+    .bot-avatar-large {
+      width: 60px;
+      height: 60px;
+      font-size: 1.6rem;
+    }
+
+    .bot-title {
+      font-size: 1.25rem;
+    }
+
+    .bot-description {
+      font-size: 0.85rem;
+    }
+
+    .user-greeting {
+      font-size: 0.8rem;
+      padding: 0.5rem 0.9rem;
+    }
+
+    .stats-dashboard {
+      padding: 1rem 0.85rem;
+    }
+
+    .stat-card {
+      padding: 1rem;
+    }
+
+    .card-header h3 {
+      font-size: 0.95rem;
+    }
+
+    .stat-value {
+      font-size: 1.85rem;
+    }
+
+    .team-name {
+      font-size: 1.35rem;
+    }
+
+    .sub-value {
+      font-size: 1rem;
+    }
+
+    .sub-label {
+      font-size: 0.7rem;
+    }
+
+    .league-value {
+      font-size: 1.25rem;
+    }
+
+    .league-label {
+      font-size: 0.7rem;
+    }
+    
+    .ai-features {
+      padding: 1.75rem 0.85rem;
+    }
+
+    .features-title {
+      font-size: 1.35rem;
+    }
+
+    .feature-card {
+      padding: 1.25rem 1rem;
+    }
+
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 1.3rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.05rem;
+    }
+
+    .feature-card p {
+      font-size: 0.85rem;
+    }
+
+    .example-tag {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.65rem;
+    }
+    
+    .start-chat-section {
+      padding: 2rem 0.85rem;
+    }
+
+    .start-chat-btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+    }
+
+    .btn-content {
+      gap: 0.65rem;
+    }
+
+    .btn-sparkle {
+      font-size: 1.15rem;
+    }
+
+    .chat-hint {
+      font-size: 0.9rem;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      font-size: 0.9rem;
+    }
+
+    .message-bubble {
+      padding: 0.75rem 0.9rem;
+      font-size: 0.9rem;
+    }
+
+    .quick-btn {
+      font-size: 0.75rem;
+      padding: 0.65rem 1rem;
+    }
+
+    .chat-input-container {
+      padding: 0.75rem 0.85rem;
+    }
+
+    .send-button {
+      width: 38px;
+      height: 38px;
+      font-size: 0.95rem;
+    }
+
+    .attachment-button {
+      width: 34px;
+      height: 34px;
+      font-size: 1rem;
+    }
+  }
+
+  /* Extra Small Mobile (< 375px) */
+  @media (max-width: 374px) {
+    .bot-title {
+      font-size: 1.15rem;
+    }
+
+    .stat-value {
+      font-size: 1.7rem;
+    }
+
+    .team-name {
+      font-size: 1.25rem;
+    }
+
+    .features-title {
+      font-size: 1.25rem;
+    }
+
+    .start-chat-btn {
+      padding: 0.9rem 1.75rem;
+      font-size: 0.95rem;
+    }
+  }
+
+  /* Custom Scrollbar */
+  .chat-messages::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+
+  /* Landscape Mode Optimization */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .dashboard-header {
+      padding: 1rem 0.85rem 0.75rem;
+    }
+
+    .bot-avatar-large {
+      width: 50px;
+      height: 50px;
+      font-size: 1.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .stats-dashboard {
+      padding: 1rem 0.85rem;
+    }
+
+    .ai-features {
+      padding: 1.5rem 0.85rem;
+    }
+
+    .start-chat-section {
+      padding: 1.5rem 0.85rem;
+    }
+
+    .chat-messages {
+      padding: 0.75rem;
+    }
+  }
+
+  /* Prevent Body Scroll When Chat is Open */
+  body.chat-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* Safe Area Insets for iOS */
+  @supports (padding: max(0px)) {
+    .chat-input-container {
+      padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+    }
+
+    .chat-header-mobile {
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const startChatBtn = document.getElementById('startChatBtn');
+  const chatInterface = document.getElementById('chatInterface');
+  const messageInput = document.getElementById('messageInput');
+  const sendButton = document.getElementById('sendButton');
+  const chatMessages = document.getElementById('chatMessages');
+  const typingIndicator = document.getElementById('typingIndicator');
+  const quickButtons = document.querySelectorAll('.quick-btn');
+  const backButton = document.getElementById('backToHome');
+  let isTyping = false;
+
+  // Show chat interface
+  startChatBtn.addEventListener('click', function() {
+    chatInterface.style.display = 'flex';
+    document.body.classList.add('chat-open');
+    setTimeout(() => {
+      messageInput.focus();
+      scrollToBottom();
+    }, 300);
+  });
+
+  // Back button
+  if (backButton) {
+    backButton.addEventListener('click', function() {
+      chatInterface.style.display = 'none';
+      document.body.classList.remove('chat-open');
+      window.scrollTo(0, 0);
+    });
+  }
+
+  // Send message function
+  async function sendMessage(message) {
+    if (!message.trim()) return;
+
+    addMessage(message, 'user');
+    messageInput.value = '';
+    showTypingIndicator();
+    setInputState(false);
+
+    try {
+      await delay(300);
+      
+      const response = await fetch('/chatbot/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ message: message })
+      });
+      
+      const data = await response.json();
+      hideTypingIndicator();
+      await delay(500);
+      
+      if (data.success) {
+        if (data.formatted_message) {
+          addFormattedMessage(data.formatted_message, 'bot');
+        } else if (data.message) {
+          // Check if message contains HTML tags
+          if (data.message.includes('<') && data.message.includes('>')) {
+            addFormattedMessage(data.message, 'bot');
+          } else {
+            addMessage(data.message, 'bot');
+          }
+        }
+      } else {
+        addErrorMessage(data.message || 'Sorry, I encountered an error.');
+      }
+    } catch (error) {
+      hideTypingIndicator();
+      await delay(500);
+      addErrorMessage('Sorry, I\'m having trouble connecting. Please check your internet connection and try again.');
+      console.error('Error:', error);
+    } finally {
+      setInputState(true);
+      messageInput.focus();
+    }
+  }
+
+  function addMessage(message, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    
+    const avatarContent = sender === 'bot' 
+      ? '<span class="pp-logo-small">PP</span>' 
+      : '<i class="fas fa-user"></i>';
+    const formattedMessage = formatMessage(message);
+    
+    messageDiv.innerHTML = `
+      <div class="message-avatar">
+        ${avatarContent}
+      </div>
+      <div class="message-content">
+        <div class="message-bubble">
+          ${formattedMessage}
+        </div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  function addFormattedMessage(formattedHtml, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    
+    const avatarContent = sender === 'bot' 
+      ? '<span class="pp-logo-small">PP</span>' 
+      : '<i class="fas fa-user"></i>';
+        
+    // Unescape HTML entities if they're escaped
+    let cleanedHtml = formattedHtml.trim();
+    
+    // Check if HTML is escaped (contains &lt; or &gt;)
+    if (cleanedHtml.includes('&lt;') || cleanedHtml.includes('&gt;')) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = cleanedHtml;
+      cleanedHtml = tempDiv.textContent || tempDiv.innerText || '';
+    }
+    
+    // Remove outer wrapper div if it exists
+    if (cleanedHtml.startsWith("<div class='chat-message'>")) {
+      cleanedHtml = cleanedHtml.replace(/^<div class='chat-message'>/, '').replace(/<\/div>$/, '');
+    }
+    
+    // Convert markdown headings to HTML
+    cleanedHtml = cleanedHtml.replace(/###\s*(.+?)(<br>|$)/g, '<h3 class="chat-heading">$1</h3>');
+    
+    // Convert horizontal rules
+    cleanedHtml = cleanedHtml.replace(/---<br>/g, '<hr>');
+    
+    // Clean up extra <br> tags that come before and after HTML elements
+    cleanedHtml = cleanedHtml
+      .replace(/<br><br><br>/g, '<br><br>')
+      .replace(/<br><ul/g, '<ul')
+      .replace(/<\/ul><br><br>/g, '</ul><br>')
+      .replace(/<\/ul><br>/g, '</ul>')
+      .replace(/<br><li>/g, '<li>')
+      .replace(/<\/li><br>/g, '</li>')
+      .replace(/<h3/g, '<br><h3')
+      .replace(/<br><br><h3/g, '<br><h3')
+      .trim();
+    
+    messageDiv.innerHTML = `
+      <div class="message-avatar">
+        ${avatarContent}
+      </div>
+      <div class="message-content">
+        <div class="message-bubble formatted-content">
+          ${cleanedHtml}
+        </div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  function addErrorMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message bot-message';
+    
+    messageDiv.innerHTML = `
+      <div class="message-avatar">
+        <span class="pp-logo-small">PP</span>
+      </div>
+      <div class="message-content">
+        <div class="message-bubble" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52) !important; color: white !important;">
+          <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+          ${escapeHtml(message)}
+        </div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  function formatMessage(message) {
+    return escapeHtml(message)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(?!\*)(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function showTypingIndicator() {
+    if (isTyping) return;
+    isTyping = true;
+    typingIndicator.style.display = 'block';
+    scrollToBottom();
+  }
+
+  function hideTypingIndicator() {
+    isTyping = false;
+    typingIndicator.style.display = 'none';
+  }
+
+  function setInputState(enabled) {
+    messageInput.disabled = !enabled;
+    sendButton.disabled = !enabled;
+    
+    if (enabled) {
+      sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+      sendButton.style.opacity = '1';
+    } else {
+      sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      sendButton.style.opacity = '0.7';
+    }
+  }
+
+  function scrollToBottom() {
+    setTimeout(() => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 100);
+  }
+
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Event listeners
+  if (sendButton) {
+    sendButton.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      if (message) {
+        sendMessage(message);
+      }
+    });
+  }
+
+  if (messageInput) {
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+          sendMessage(message);
+        }
+      }
+    });
+    
+    messageInput.addEventListener('input', () => {
+      sendButton.disabled = messageInput.value.trim() === '';
+    });
+  }
+
+  quickButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const message = button.getAttribute('data-message');
+      if (message) {
+        sendMessage(message);
+      }
+    });
+  });
+
+  // Prevent zoom on iOS
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+  }
+
+  setInputState(true);
+});
+</script>

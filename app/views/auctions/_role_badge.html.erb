@@ -1,0 +1,13 @@
+<%
+  role_map = {
+    'batsman' => { label: 'BAT', class: 'batsman', icon: '🏏' },
+    'bowler' => { label: 'BOWL', class: 'bowler', icon: '⚡' },
+    'all_rounder' => { label: 'ALL', class: 'all_rounder', icon: '⭐' },
+    'wicket_keeper' => { label: 'WK', class: 'wicket_keeper', icon: '🧤' }
+  }
+  
+  role_info = role_map[role.to_s.downcase]
+%>
+<span class="role-badge <%= role_info[:class] %>">
+  <%= role_info[:icon] %> <%= role_info[:label] %>
+</span>

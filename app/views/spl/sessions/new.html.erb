@@ -1,0 +1,223 @@
+<%# app/views/spl/sessions/new.html.erb %>
+
+<div class="spl-auth-screen"
+  data-controller="spl-session"
+  data-spl-session-send-otp-url-value="<%= send_otp_login_spl_user_session_path %>"
+  data-spl-session-verify-otp-url-value="<%= verify_otp_login_spl_user_session_path %>">
+
+  <%# ── Cricket background ── %>
+  <div class="cricket-bg" aria-hidden="true">
+    <svg class="field-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="200" cy="200" rx="195" ry="195" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+      <ellipse cx="200" cy="200" rx="140" ry="140" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>
+      <ellipse cx="200" cy="200" rx="60" ry="30" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+      <line x1="200" y1="5" x2="200" y2="395" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="5" y1="200" x2="395" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <rect x="188" y="160" width="24" height="80" rx="2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+    </svg>
+    <div class="ball ball-1"></div>
+    <div class="ball ball-2"></div>
+    <div class="ball ball-3"></div>
+    <svg class="bat-silhouette bat-right" viewBox="0 0 60 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="22" y="0" width="16" height="120" rx="8" fill="rgba(255,255,255,0.06)"/>
+      <ellipse cx="30" cy="148" rx="22" ry="52" fill="rgba(255,255,255,0.04)"/>
+    </svg>
+    <div class="stumps" style="left: auto; right: 2rem;" aria-hidden="true">
+      <div class="stump"></div><div class="stump"></div><div class="stump"></div>
+      <div class="bail"></div><div class="bail"></div>
+    </div>
+    <div class="score-ticker" aria-hidden="true">
+      <span class="ticker-text">SPL-9 Finals &nbsp;•&nbsp; SPARTANS XI vs STRIKERS XI &nbsp;•&nbsp; SPARTANS:- 81/4 (8.0ov) &nbsp;•&nbsp; STRIKERS:- 18(ALL-OUT) &nbsp;•&nbsp; SPARTANS WON BY 63 RUNS &nbsp;•&nbsp;</span>
+    </div>
+  </div>
+
+  <div class="auth-card">
+
+    <div class="android-status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="4" width="3" height="8" rx="1"/><rect x="4" y="2" width="3" height="10" rx="1"/><rect x="8" y="0" width="3" height="12" rx="1"/><rect x="12" y="0" width="3" height="12" rx="1" opacity="0.3"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2C5.2 2 2.7 3.1 0.9 5L2.3 6.4C3.8 4.9 5.8 4 8 4s4.2.9 5.7 2.4L15.1 5C13.3 3.1 10.8 2 8 2z"/><path d="M8 6c-1.7 0-3.2.7-4.3 1.7L5.1 9.1C5.8 8.4 6.9 8 8 8s2.2.4 2.9 1.1l1.4-1.4C11.2 6.7 9.7 6 8 6z"/><circle cx="8" cy="11" r="1.5"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor"><rect x="0" y="1" width="22" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="22.5" y="4" width="2" height="4" rx="1"/><rect x="1.5" y="2.5" width="16" height="7" rx="1" fill="currentColor"/></svg>
+      </div>
+    </div>
+
+    <div class="auth-logo-area">
+      <div class="logo-badge"><span class="logo-icon">🏏</span></div>
+      <h1 class="app-name">SPL Fantasy</h1>
+      <p class="app-tagline">Sugam Premier League</p>
+    </div>
+
+    <% if flash[:alert].present? %>
+      <div class="flash-alert">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+    <% if flash[:notice].present? %>
+      <div class="flash-notice">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+
+    <%# Login mode toggle %>
+    <div class="login-toggle">
+      <button type="button" class="toggle-tab active"
+        data-action="click->spl-session#showPassword"
+        data-spl-session-target="passwordTab">Password</button>
+      <button type="button" class="toggle-tab"
+        data-action="click->spl-session#showOtp"
+        data-spl-session-target="otpTab">OTP Login</button>
+    </div>
+
+    <%# ── Password Login ── %>
+    <div data-spl-session-target="passwordPanel">
+
+      <%#
+        KEY CHANGE: data-action="submit->spl-session#submitLogin"
+        intercepts the Devise form submit so we can handle the response
+        in JS (show toast on error, redirect on success) instead of
+        getting a raw HTML/JSON page rendered in the browser.
+      %>
+      <%= form_for(resource, as: resource_name,
+            url: session_path(resource_name),
+            html: {
+              class: "devise-form",
+              data: {
+                spl_session_target: "loginForm",
+                action: "submit->spl-session#submitLogin"
+              }
+            }) do |f| %>
+
+        <div class="field-group">
+          <label class="field-label" for="user_email">Email Address</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="14" height="10" rx="2"/><path d="M2 7l7 4 7-4" stroke-linecap="round"/></svg>
+            <%= f.email_field :email,
+                autofocus: true,
+                autocomplete: "email",
+                class: "spl-input",
+                placeholder: "you@example.com" %>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="label-row">
+            <label class="field-label" for="user_password">Password</label>
+            <% if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+              <a href="<%= new_password_path(resource_name) %>" class="forgot-link">Forgot?</a>
+            <% end %>
+          </div>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="8" width="10" height="8" rx="2"/><path d="M6 8V6a3 3 0 016 0v2" stroke-linecap="round"/></svg>
+            <%= f.password_field :password,
+                autocomplete: "current-password",
+                class: "spl-input",
+                placeholder: "Enter password",
+                data: { spl_session_target: "pwdField" } %>
+            <button type="button" class="toggle-eye"
+              data-action="click->spl-session#togglePassword">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"
+                data-spl-session-target="eyeIcon">
+                <path d="M1 9s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5z"/>
+                <circle cx="9" cy="9" r="2.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="remember-row">
+            <label class="checkbox-label">
+              <%= f.check_box :remember_me, class: "spl-checkbox" %>
+              <span>Remember me</span>
+            </label>
+          </div>
+        <% end %>
+
+        <button type="submit" class="btn-primary"
+          data-spl-session-target="loginSubmitBtn">
+          <span class="btn-text">🏏 Sign In</span>
+          <span class="btn-loader hidden" data-spl-session-target="loginSubmitLoader"><span class="spinner"></span></span>
+          <svg class="btn-arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h10M9 4l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+      <% end %>
+    </div>
+
+    <%# ── OTP Login ── %>
+    <div class="hidden" data-spl-session-target="otpPanel">
+
+      <%# Step 1: Enter email %>
+      <div data-spl-session-target="otpEmailStep">
+        <div class="field-group">
+          <label class="field-label">Registered Email</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="14" height="10" rx="2"/><path d="M2 7l7 4 7-4" stroke-linecap="round"/></svg>
+            <input type="email" class="spl-input" placeholder="you@example.com"
+              data-spl-session-target="otpEmailField" autocomplete="email"/>
+          </div>
+        </div>
+
+        <div class="error-msg hidden" data-spl-session-target="otpEmailError">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 4.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="9.5" r=".75"/></svg>
+          <span data-spl-session-target="otpEmailErrorText"></span>
+        </div>
+
+        <button type="button" class="btn-primary"
+          data-action="click->spl-session#sendLoginOtp"
+          data-spl-session-target="sendLoginOtpBtn">
+          <span class="btn-text">Send OTP</span>
+          <span class="btn-loader hidden" data-spl-session-target="sendLoginOtpLoader"><span class="spinner"></span></span>
+          <svg class="btn-arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h10M9 4l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <%# Step 2: Verify OTP %>
+      <div class="hidden" data-spl-session-target="otpVerifyStep">
+        <p class="step-subtitle" style="margin-bottom: 1rem;">OTP sent to <strong data-spl-session-target="loginOtpEmailDisplay"></strong></p>
+
+        <div class="otp-boxes" data-action="paste->spl-session#handleOtpPaste">
+          <% 6.times do |i| %>
+            <input type="text" inputmode="numeric" maxlength="1"
+              class="otp-box"
+              data-spl-session-target="otpBox"
+              data-action="input->spl-session#handleOtpInput keydown->spl-session#handleOtpKeydown"
+              data-index="<%= i %>"
+              autocomplete="<%= i == 0 ? 'one-time-code' : 'off' %>"/>
+          <% end %>
+        </div>
+
+        <p class="resend-row">
+          Didn't receive it?
+          <button type="button" class="link-btn"
+            data-action="click->spl-session#resendLoginOtp"
+            data-spl-session-target="resendLoginBtn">Resend OTP</button>
+          <span class="countdown hidden" data-spl-session-target="loginCountdown">in <strong></strong>s</span>
+        </p>
+
+        <div class="error-msg hidden" data-spl-session-target="loginOtpError">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 4.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="9.5" r=".75"/></svg>
+          <span data-spl-session-target="loginOtpErrorText"></span>
+        </div>
+
+        <button type="button" class="btn-primary"
+          data-action="click->spl-session#verifyLoginOtp"
+          data-spl-session-target="verifyLoginOtpBtn">
+          <span class="btn-text">Verify & Sign In</span>
+          <span class="btn-loader hidden" data-spl-session-target="verifyLoginLoader"><span class="spinner"></span></span>
+          <svg class="btn-arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h10M9 4l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <button type="button" class="btn-ghost"
+          data-action="click->spl-session#backToOtpEmail">← Change Email</button>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      <p>New to SPL Fantasy? <a href="<%= new_spl_user_registration_path %>" class="auth-link">Create Account</a></p>
+    </div>
+
+  </div>
+</div>

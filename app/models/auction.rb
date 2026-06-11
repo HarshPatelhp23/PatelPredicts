@@ -7,7 +7,7 @@ class Auction < ApplicationRecord
   has_many :teams
   belongs_to :admin_user
   enum :status, %i[upcoming ongoing completed]
-  IPL_FIRST_WEEK_DATE = '17/03/2025'
+  IPL_FIRST_WEEK_DATE = '23/03/2026'
   # T20_WC_FIRST_WEEK_DATE = '02/06/2024'
   # CT_FIRST_WEEK_DATE = '17/02/2025'
 

@@ -1,1 +1,5 @@
-<%= render 'form' %>
+<% if mobile_device? %>
+  <%= render 'form_mobile' %>
+<% else %>
+  <%= render 'form' %>
+<% end %>

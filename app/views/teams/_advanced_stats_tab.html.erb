@@ -1,0 +1,200 @@
+<div class="advanced-stats-container">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Performance Metrics</h5>
+        </div>
+        <div class="card-body">
+          <div class="stat-row">
+            <div class="stat-label">Consistency Rating</div>
+            <div class="stat-value"><%= @consistency_rating || 'N/A' %></div>
+            <div class="stat-progress">
+              <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: <%= @consistency_rating %>%" aria-valuenow="<%= @consistency_rating %>" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-label">Impact Index</div>
+            <div class="stat-value"><%= @impact_index || 'N/A' %></div>
+            <div class="stat-progress">
+              <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: <%= @impact_index %>%" aria-valuenow="<%= @impact_index %>" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-label">Points Per Match</div>
+            <div class="stat-value"><%= @average_points.round(2) %></div>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-label">Value For Money</div>
+            <div class="stat-value"><%= number_to_currency(@value_for_money, unit: "₹", precision: 2) if @value_for_money %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Match Contributions</h5>
+        </div>
+        <div class="card-body">
+          <div class="contribution-stats">
+            <div class="contribution-row">
+              <div class="contribution-label">Batting Points</div>
+              <div class="contribution-value">
+                <!-- <#%= @matches.sum(:batting_points) %> -->
+                  
+                </div>
+              <div class="contribution-percentage"><%= '50%' %>
+                <!-- <#%= ((@matches.sum(:batting_points).to_f / @total_points) * 100 rescue 0).round(1) %>% -->
+              </div>
+
+            </div>
+
+            <div class="contribution-row">
+              <div class="contribution-label">Bowling Points</div>
+              <div class="contribution-value">
+                <!-- <#%= @matches.sum(:bowling_points) %> -->
+                
+              </div>
+              <div class="contribution-percentage"><%= '50%' %>
+                <!-- <#%= ((@matches.sum(:bowling_points).to_f / @total_points) * 100 rescue 0).round(1) %>% -->
+              </div>
+
+
+            </div>
+
+            <div class="contribution-row">
+              <div class="contribution-label">Fielding Points</div>
+              <div class="contribution-value">
+                <!-- <#%= @matches.sum(:fielding_points) %> -->
+                  
+                </div>
+              <div class="contribution-percentage"><%= '50%' %>
+                <!-- <#%= ((@matches.sum(:fielding_points).to_f / @total_points) * 100 rescue 0).round(1) %>% -->
+              </div>
+
+
+            </div>
+
+            <div class="contribution-row">
+              <div class="contribution-label">Bonus Points</div>
+              <div class="contribution-value">
+                <!-- <#%= @matches.sum(:bonus_points) %> -->
+                  
+                </div>
+              <div class="contribution-percentage"><%= '50%' %>
+                <!-- <#%= ((@matches.sum(:bonus_points).to_f / @total_points) * 100 rescue 0).round(1) %>% -->
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5>Performance Insights</h5>
+        </div>
+        <div class="card-body">
+          <div class="insights-container">
+            <div class="insight-item">
+              <i class="bi bi-graph-up"></i>
+              <div class="insight-text">Best performance: <%= @highest_score %> points vs <%= @best_match_opponent %></div>
+            </div>
+            
+            <div class="insight-item">
+              <i class="bi bi-graph-down"></i>
+              <div class="insight-text">Worst performance: <%= @lowest_score %> points vs <%= @worst_match_opponent %></div>
+            </div>
+            
+            <div class="insight-item">
+              <i class="bi bi-lightning-charge"></i>
+              <div class="insight-text"><%= @player.name %> scores 15+ points in <%= @good_performances_count %> out of <%= @matches.size %> matches</div>
+            </div>
+            
+            <div class="insight-item">
+              <i class="bi bi-calendar-week"></i>
+              <div class="insight-text">Recent form: <%= @recent_form.join(', ') %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .advanced-stats-container .stat-row {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .advanced-stats-container .stat-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+  }
+  
+  .advanced-stats-container .stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  
+  .advanced-stats-container .progress {
+    height: 8px;
+    border-radius: 4px;
+  }
+  
+  .advanced-stats-container .contribution-stats .contribution-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .advanced-stats-container .contribution-stats .contribution-label {
+    flex: 2;
+    font-weight: 500;
+  }
+  
+  .advanced-stats-container .contribution-stats .contribution-value {
+    flex: 1;
+    text-align: right;
+    font-weight: 600;
+    padding-right: 10px;
+  }
+  
+  .advanced-stats-container .contribution-stats .contribution-percentage {
+    flex: 1;
+    text-align: right;
+    color: #666;
+  }
+  
+  .advanced-stats-container .insights-container .insight-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .advanced-stats-container .insights-container i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+    color: #4a00e0;
+  }
+  
+  .advanced-stats-container .insights-container .insight-text {
+    flex: 1;
+  }
+</style>

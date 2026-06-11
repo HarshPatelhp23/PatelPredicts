@@ -1,0 +1,70 @@
+<div class="player-profile-container">
+  <!-- Player Header Section -->
+  <div class="player-header">
+    <div class="player-image-container">
+      <%= player_image(@player) %>
+      <!-- <#%= image_tag player_image(@player), alt: @player.name, class: 'player-avatar' %> -->
+      <div class="player-basic-info">
+        <h1><%= @player.name %></h1>
+        <div class="player-meta">
+          <span class="badge team-badge"><%= @team.team_name if @team %></span>
+          <span class="badge price-badge"><%= number_to_currency(@price, unit: @price < 1 ? "L" : "CR", precision: 2) %></span>
+          <span class="badge owner-badge">Owner: <%= @team.user.username if @team %></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-value"><%= @matches.size %></div>
+        <div class="stat-label">Matches</div>
+      </div>
+      <div class="stat-card highlight">
+        <div class="stat-value"><%= @total_points %></div>
+        <div class="stat-label">Total Points</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= @average_points %></div>
+        <div class="stat-label">Avg Points</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value"><%= @highest_score %></div>
+        <div class="stat-label">Highest</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Navigation -->
+  <nav class="stats-nav">
+    <div class="nav nav-tabs" id="playerStatsTabs" role="tablist">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#overview" type="button">Overview</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#matches" type="button">Matches</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#stats" type="button">Advanced Stats</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#graphs" type="button">Graphs</button>
+    </div>
+  </nav>
+
+  <!-- Stats Content -->
+  <div class="tab-content" id="playerStatsContent">
+    <!-- Overview Tab -->
+    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+      <%= render 'overview_tab' %>
+    </div>
+    
+    <!-- Matches Tab -->
+    <div class="tab-pane fade" id="matches" role="tabpanel">
+      <%= render 'matches_tab' %>
+    </div>
+    
+    <!-- Advanced Stats Tab -->
+    <div class="tab-pane fade" id="stats" role="tabpanel">
+      <%= render 'advanced_stats_tab' %>
+    </div>
+    
+    <!-- Graphs Tab -->
+    <div class="tab-pane fade" id="graphs" role="tabpanel">
+      <%= render 'graphs_tab' %>
+    </div>
+  </div>
+</div>

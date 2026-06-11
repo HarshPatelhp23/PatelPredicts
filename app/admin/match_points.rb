@@ -3,16 +3,18 @@
 # app/admin/match_point.rb
 
 ActiveAdmin.register MatchPoint do
-  permit_params :team_id, :total_points, :match_name
+  permit_params :team_id, :player_id, :total_points, :match_name
 
   index do
     selectable_column
     id_column
     column :match_name
+    column :match_date
     column :team do |t|
       t&.team&.team_name
     end
     column :total_points
+    column :total_bench_points
     actions
   end
 
@@ -25,4 +27,5 @@ ActiveAdmin.register MatchPoint do
     f.actions
   end
   filter :team, as: :select, collection: -> { Team.pluck(:team_name, :id) }, include_blank: 'Select Team'
+  # filter :player, as: :select, collection: -> { Player.pluck(:name, :id) }, include_blank: 'Select Player'
 end

@@ -5,7 +5,7 @@ class WelcomeMailer < ApplicationMailer
     @username = params[:username]
     @otp = params[:otp]
     mail(
-      from: 'noreply.patelpredicts@gmail.com',
+      from: email_address_with_name("noreplyypatelpredicts@gmail.com", "PatelPredicts"),
       to: params[:email],
       subject: 'Welcome To Patel-Predicts'
     )
@@ -15,7 +15,7 @@ class WelcomeMailer < ApplicationMailer
     @username = params[:username]
     @otp = params[:otp]
     mail(
-      from: 'noreply.patelpredicts@gmail.com',
+      from: email_address_with_name("noreplyypatelpredicts@gmail.com", "PatelPredicts"),
       to: params[:email],
       subject: 'Patel-Predicts OTP: Resend Request"'
     )

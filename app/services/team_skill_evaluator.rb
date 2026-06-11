@@ -80,6 +80,7 @@ class TeamSkillEvaluator
     end
 
     def price_ranges(base_price, m1, m2, m3)
+      base_price = base_price.to_i
       {
         steal_deal: base_price..(m1 * base_price).to_i,
         best_buy: ((m1 * base_price) + 1).to_i..(m2 * base_price).to_i,

@@ -27,8 +27,18 @@ ActiveAdmin.register AuctionRoom do
       f.input :amount_unit, as: :select, collection: AuctionRoom.amount_units.keys.map { |key|
                                                        [key.titleize, key]
                                                      }, label: 'Unit', prompt: 'Select Unit'
-      f.input :user_id, as: :select, collection: User.all.map { |user| [user.username, user.id] }
+      f.input :user_id, as: :select, collection: User.captains.map { |user| [user.username, user.id] }
     end
     f.actions
+  end
+
+  action_item :send_auction_email, only: :index do
+    link_to 'Send Auction Summary Email', send_email_admin_auction_rooms_path, method: :post
+  end
+
+  # Define a custom route to handle the email
+  collection_action :send_email, method: :post do
+    AuctionMailer.auction_summary_email.deliver_now
+    redirect_to admin_auction_rooms_path, notice: "Auction summary email sent successfully."
   end
 end

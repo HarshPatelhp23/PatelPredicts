@@ -15,6 +15,10 @@ class User < ApplicationRecord
   # has_many :notifications, as: :recipient, dependent: :destroy
   has_many :user_auctions
   has_many :auctions, through: :user_auctions
+  has_many :push_subscriptions, dependent: :destroy
+  has_many :device_tokens, dependent: :destroy
+  has_many :firebase_registrations, dependent: :destroy
+  has_one_attached :profile_picture
   # belongs_to :auction, optional: true
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, :timeoutable

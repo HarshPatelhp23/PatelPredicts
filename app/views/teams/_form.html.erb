@@ -3,9 +3,9 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <div class="container mt-5 playing11-bench-view">
   <!-- Alert Notice -->
-  <div id="alertDiv" class="alert alert-primary alert-dismissible fade show notice" role="alert" style="display:none;">
+  <!-- <div id="alertDiv" class="alert alert-primary alert-dismissible fade show notice" role="alert" style="display:none;">
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
+  </div> -->
 
   <div class="header-card">
     <h1 class="header-title">Playing-11 Breakdown</h1>
@@ -54,7 +54,7 @@
           <button class="view-players-btn" data-bs-toggle="modal" data-bs-target="#batsmanModal">
             <i class="fas fa-eye me-1"></i> View Players
           </button>
-          <span class="required-badge">Min Required: 2</span>
+          <span class="required-badge">Min Required: 3</span>
         </div>
       </div>
 
@@ -157,7 +157,7 @@
         </div>
         <div class="modal-footer">
          <!--  <#%= link_to 'Submit Team', submit_team_path, data: { turbo_method: :post }, class: 'btn btn-success text-white', style: 'text-decoration: none;' %> -->
-           <%= button_to 'Submit Team', submit_team_path(auction_id: params[:auction_id]), method: :post, class: 'btn btn-success text-white' %>
+           <%= button_to 'Submit Team', submit_team_path(auction_id: params[:auction_id]), method: :post,  class: 'btn btn-success text-white' %>
            
            <%= link_to 'View Bench Players', '#', class: 'btn btn-primary text-white', data: { bs_toggle: 'modal', bs_target: '#exampleModalToggle2' }, style: "text-decoration: none;" %>
         </div>
@@ -210,6 +210,11 @@
                 <div class="modal-player-item">
                   <span class="player-number"><%= index + 1 %>.</span>
                   <span><%= player.name %></span>
+                <% if player.foreigner %>
+                  <span class="overseas-badge-sm">
+                    <%= image_tag "overseas.png", style: "width: 20px; height: 20px; margin-left: 20px;" %>
+                  </span>
+                <% end %>
                 </div>
               <% end %>
             </div>
@@ -261,7 +266,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <% @team.players.where(role: 'wicket_keeper').each_with_index do |player, index| %>
+          <% @playing11_wicket_keepers.each_with_index do |player, index| %>
             <div class="modal-player-item">
               <span class="player-number"><%= index + 1 %>.</span>
               <span><%= player.name %></span>
@@ -284,7 +289,51 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <% @playing11_batsman.each_with_index do |player, index| %>
+          <% @playing11_batsmans.each_with_index do |player, index| %>
+            <div class="modal-player-item">
+              <span class="player-number"><%= index + 1 %>.</span>
+              <span><%= player.name %></span>
+            </div>
+          <% end %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="allrounderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">All Rounders</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <% @playing11_all_rounders.each_with_index do |player, index| %>
+            <div class="modal-player-item">
+              <span class="player-number"><%= index + 1 %>.</span>
+              <span><%= player.name %></span>
+            </div>
+          <% end %>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="bowlerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Bowlers</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <% @playing11_bowlers.each_with_index do |player, index| %>
             <div class="modal-player-item">
               <span class="player-number"><%= index + 1 %>.</span>
               <span><%= player.name %></span>

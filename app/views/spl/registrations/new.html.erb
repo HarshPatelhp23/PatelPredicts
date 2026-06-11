@@ -1,0 +1,222 @@
+<%# app/views/spl/registrations/new.html.erb %>
+
+<div class="spl-auth-screen"
+  data-controller="spl-registration"
+  data-spl-registration-send-otp-url-value="<%= send_otp_spl_user_registration_path %>"
+  data-spl-registration-verify-otp-url-value="<%= verify_otp_spl_user_registration_path %>">
+
+  <%# ── Cricket field SVG background ── %>
+  <div class="cricket-bg" aria-hidden="true">
+    <svg class="field-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="200" cy="200" rx="195" ry="195" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+      <ellipse cx="200" cy="200" rx="140" ry="140" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1.5"/>
+      <ellipse cx="200" cy="200" rx="60" ry="30" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>
+      <line x1="200" y1="5" x2="200" y2="395" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <line x1="5" y1="200" x2="395" y2="200" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+      <rect x="188" y="160" width="24" height="80" rx="2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+    </svg>
+    <div class="ball ball-1"></div>
+    <div class="ball ball-2"></div>
+    <div class="ball ball-3"></div>
+    <svg class="bat-silhouette" viewBox="0 0 60 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="22" y="0" width="16" height="120" rx="8" fill="rgba(255,255,255,0.06)"/>
+      <ellipse cx="30" cy="148" rx="22" ry="52" fill="rgba(255,255,255,0.04)"/>
+    </svg>
+    <div class="stumps" aria-hidden="true">
+      <div class="stump"></div><div class="stump"></div><div class="stump"></div>
+      <div class="bail"></div><div class="bail"></div>
+    </div>
+    <div class="score-ticker" aria-hidden="true">
+      <span class="ticker-text">SPL-9 Finals &nbsp;•&nbsp; SPARTANS XI vs STRIKERS XI &nbsp;•&nbsp; SPARTANS:- 81/4 (8.0ov) &nbsp;•&nbsp; STRIKERS:- 18(ALL-OUT) &nbsp;•&nbsp; SPARTANS WON BY 63 RUNS &nbsp;•&nbsp;</span>
+    </div>
+  </div>
+
+  <div class="auth-card">
+
+    <%# Logo %>
+    <div class="auth-logo-area">
+      <div class="logo-badge"><span class="logo-icon">🏏</span></div>
+      <h1 class="app-name">SPL Fantasy</h1>
+      <p class="app-tagline">Sugam Premier League</p>
+    </div>
+
+    <%# Step indicator %>
+    <div class="step-indicator">
+      <div class="step-dot active" data-spl-registration-target="stepDot" data-step="1"></div>
+      <div class="step-line"       data-spl-registration-target="stepLine"></div>
+      <div class="step-dot"        data-spl-registration-target="stepDot" data-step="2"></div>
+      <div class="step-line"       data-spl-registration-target="stepLine"></div>
+      <div class="step-dot"        data-spl-registration-target="stepDot" data-step="3"></div>
+    </div>
+    <div class="step-labels"><span>Details</span><span>Verify</span><span>Join</span></div>
+
+    <%# Flash %>
+    <% if flash[:alert].present? %>
+      <div class="flash-alert">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <%# ── STEP 1: Details ── %>
+    <div class="form-step active" data-spl-registration-target="step" data-step-index="1">
+      <h2 class="step-title">Create Account</h2>
+      <p class="step-subtitle">Pick your squad name & enter details</p>
+
+      <div class="field-group">
+        <label class="field-label" for="reg_name">Full Name</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="6" r="3.5"/><path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke-linecap="round"/></svg>
+          <input type="text" id="reg_name" class="spl-input" placeholder="e.g. Rahul Sharma"
+            data-spl-registration-target="nameField" autocomplete="name"/>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="reg_email">Email Address</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="14" height="10" rx="2"/><path d="M2 7l7 4 7-4" stroke-linecap="round"/></svg>
+          <input type="email" id="reg_email" class="spl-input" placeholder="you@example.com"
+            data-spl-registration-target="emailField" autocomplete="email"/>
+        </div>
+      </div>
+
+<!--       <div class="field-group">
+        <label class="field-label" for="reg_phone">Phone Number</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="1" width="8" height="16" rx="2"/><circle cx="9" cy="14" r="1" fill="currentColor"/></svg>
+          <input type="tel" id="reg_phone" class="spl-input" placeholder="+91 98765 43210" autocomplete="tel"/>
+        </div>
+      </div> -->
+
+      <button type="button" class="btn-primary"
+        data-action="click->spl-registration#sendOtp"
+        data-spl-registration-target="sendOtpBtn">
+        <span class="btn-text">Send OTP</span>
+        <span class="btn-loader hidden" data-spl-registration-target="sendOtpLoader"><span class="spinner"></span></span>
+        <svg class="btn-arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h10M9 4l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <%# ── STEP 2: OTP Verify ── %>
+    <div class="form-step" data-spl-registration-target="step" data-step-index="2">
+      <h2 class="step-title">Verify Email</h2>
+      <p class="step-subtitle">6-digit OTP sent to <strong data-spl-registration-target="otpEmailDisplay"></strong></p>
+
+      <div class="otp-boxes" data-action="paste->spl-registration#handleOtpPaste">
+        <% 6.times do |i| %>
+          <input type="text" inputmode="numeric" maxlength="1"
+            class="otp-box"
+            data-spl-registration-target="otpBox"
+            data-action="input->spl-registration#handleOtpInput keydown->spl-registration#handleOtpKeydown"
+            data-index="<%= i %>"
+            autocomplete="<%= i == 0 ? 'one-time-code' : 'off' %>"/>
+        <% end %>
+      </div>
+
+      <p class="resend-row">
+        Didn't receive it?
+        <button type="button" class="link-btn" data-action="click->spl-registration#resendOtp" data-spl-registration-target="resendBtn">Resend OTP</button>
+        <span class="countdown hidden" data-spl-registration-target="countdown">in <strong></strong>s</span>
+      </p>
+
+      <div class="error-msg hidden" data-spl-registration-target="otpError">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 4.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="7" cy="9.5" r=".75"/></svg>
+        <span data-spl-registration-target="otpErrorText"></span>
+      </div>
+
+      <button type="button" class="btn-primary"
+        data-action="click->spl-registration#verifyOtp"
+        data-spl-registration-target="verifyOtpBtn">
+        <span class="btn-text">Verify OTP</span>
+        <span class="btn-loader hidden" data-spl-registration-target="verifyLoader"><span class="spinner"></span></span>
+        <svg class="btn-arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h10M9 4l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <button type="button" class="btn-ghost" data-action="click->spl-registration#goBack">← Back</button>
+    </div>
+
+    <%# ── STEP 3: Password ── %>
+    <div class="form-step" data-spl-registration-target="step" data-step-index="3">
+      <h2 class="step-title">Set Password</h2>
+      <p class="step-subtitle">Almost there! Secure your account</p>
+
+      <%#
+        KEY CHANGE: data-action="submit->spl-registration#submitRegistration"
+        intercepts the form submit so Stimulus POSTs via fetch instead of
+        doing a normal HTML navigation (which would render the JSON response raw).
+      %>
+      <%= form_for(resource, as: resource_name,
+            url: registration_path(resource_name),
+            html: {
+              class: "devise-form",
+              data: {
+                spl_registration_target: "registrationForm",
+                action: "submit->spl-registration#submitRegistration"
+              }
+            }) do |f| %>
+
+        <%= f.hidden_field :name,  data: { spl_registration_target: "hiddenName" } %>
+        <%= f.hidden_field :email, data: { spl_registration_target: "hiddenEmail" } %>
+
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="8" width="10" height="8" rx="2"/><path d="M6 8V6a3 3 0 016 0v2" stroke-linecap="round"/></svg>
+            <%= f.password_field :password,
+                autocomplete: "new-password",
+                class: "spl-input",
+                placeholder: "Min 8 characters",
+                data: {
+                  spl_registration_target: "passwordField",
+                  action: "input->spl-registration#checkPasswordStrength"
+                } %>
+            <button type="button" class="toggle-eye"
+              data-action="click->spl-registration#togglePassword">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"
+                data-spl-registration-target="eyeIcon">
+                <path d="M1 9s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5z"/>
+                <circle cx="9" cy="9" r="2.5"/>
+              </svg>
+            </button>
+          </div>
+          <div class="strength-bar">
+            <div class="strength-fill" data-spl-registration-target="strengthFill"></div>
+          </div>
+          <p class="strength-label" data-spl-registration-target="strengthLabel"></p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Confirm Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="8" width="10" height="8" rx="2"/><path d="M6 8V6a3 3 0 016 0v2" stroke-linecap="round"/></svg>
+            <%#
+              KEY: data-spl-registration-target="confirmPasswordField"
+              so the controller can read this value for client-side mismatch check.
+            %>
+            <%= f.password_field :password_confirmation,
+                autocomplete: "new-password",
+                class: "spl-input",
+                placeholder: "Re-enter password",
+                data: { spl_registration_target: "confirmPasswordField" } %>
+          </div>
+        </div>
+
+        <%# Submit button — wired via the form's submit event, not directly %>
+        <button type="submit" class="btn-primary btn-success"
+          data-spl-registration-target="submitBtn">
+          <span class="btn-text">🏏 Join SPL Fantasy!</span>
+          <span class="btn-loader hidden" data-spl-registration-target="submitLoader"><span class="spinner"></span></span>
+        </button>
+
+      <% end %>
+
+      <button type="button" class="btn-ghost" data-action="click->spl-registration#goBack">← Back</button>
+    </div>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a href="<%= new_spl_user_session_path %>" class="auth-link">Sign In</a></p>
+    </div>
+
+  </div>
+</div>

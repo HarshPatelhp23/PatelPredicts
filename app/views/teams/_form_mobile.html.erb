@@ -1,0 +1,1032 @@
+<!-- /app/views/teams/_form_mobile.html.erb -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<div class="mobile-app-wrapper playing11-bench-view">
+  <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999; margin-top: max(16px, env(safe-area-inset-top));">
+    <div id="moveSuccessToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fas fa-check-circle me-2"></i>
+          <span id="toastMessage">Players moved successfully!</span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Header with Stats -->
+  <div class="mobile-header">
+    <div class="header-top">
+      <button class="back-btn-mobile" onclick="window.location.href='<%= after_login_path %>'">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="mobile-title">Playing XI</h1>
+      <button class="verify-btn-mobile pulse" data-bs-toggle="modal" data-bs-target="#verifyTeamModal">
+        <i class="fas fa-check-circle"></i>
+      </button>
+    </div>
+    
+    <!-- Quick Stats Bar -->
+    <div class="quick-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total</span>
+        <span class="stat-value" id="totalPlayingCount"><%= @playing_11_players.count %></span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-label">Indian</span>
+        <span class="stat-value indian" id="indianCount"><%= @playing_11_indian_players.count %></span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-label">Overseas</span>
+        <span class="stat-value overseas" id="overseasCount"><%= @playing_11_overseas_players.count %></span>
+      </div>
+    </div>
+
+    <!-- Role Summary Chips -->
+    <div class="role-chips">
+      <div class="role-chip wk" data-bs-toggle="modal" data-bs-target="#wkModal">
+        <i class="fas fa-user-shield"></i>
+        <span>WK <%= @wicket_keeper.count %></span>
+        <span class="min-req">1+</span>
+      </div>
+      <div class="role-chip wk" data-bs-toggle="modal" data-bs-target="#batsmanModal">
+        <i class="fas fa-baseball-ball"></i>
+        <span>BAT <%= @batsman.count %></span>
+        <span class="min-req">3+</span>
+      </div>
+      <div class="role-chip ar" data-bs-toggle="modal" data-bs-target="#allrounderModal">
+        <i class="fas fa-star"></i>
+        <span>AR <%= @all_rounder.count %></span>
+        <span class="min-req">1+</span>
+      </div>
+      <div class="role-chip bowl" data-bs-toggle="modal" data-bs-target="#bowlerModal">
+        <i class="fas fa-circle"></i>
+        <span>BOWL <%= @bowler.count %></span>
+        <span class="min-req">3+</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Tab Selector -->
+  <div class="floating-tabs">
+    <button class="tab-btn active" data-tab="playing11">
+      <i class="fas fa-users"></i>
+      <span>Playing 11</span>
+      <div class="tab-indicator"></div>
+    </button>
+    <button class="tab-btn" data-tab="bench">
+      <i class="fas fa-chair"></i>
+      <span>Bench</span>
+      <div class="tab-indicator"></div>
+    </button>
+  </div>
+
+  <!-- Move Selected Button (Floating) -->
+  <div class="floating-action-container" id="floatingActionContainer" style="display: none;">
+    <button class="floating-action-btn" id="moveSelectedPlayersBtn">
+      <i class="fas fa-exchange-alt"></i>
+      <span id="moveActionText">Move to Bench</span>
+      <span class="selected-count" id="selectedCount">0</span>
+    </button>
+  </div>
+
+  <!-- Content Container -->
+  <div class="mobile-content">
+    <!-- Playing 11 Tab -->
+    <div class="tab-content-mobile active" data-content="playing11">
+      <div class="players-grid">
+        <% sort_players_by_role(@squad).each do |player| %>
+          <% unless player.players_teams.where(team: @team)&.first.bench? %>
+            <%= render 'player_card_mobile', team: @team, player: player, 
+                week_start_date: @week_start_date, week_end_date: @week_end_date, 
+                next_week_start_date: @next_week_start_date, next_week_end_date: @next_week_end_date,
+                current_week_matches: @current_week_matches, next_week_matches: @next_week_matches %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Bench Tab -->
+    <div class="tab-content-mobile" data-content="bench">
+      <div class="players-grid">
+        <% sort_players_by_role(@squad).each do |player| %>
+          <% if player.players_teams.where(team: @team)&.first.bench? %>
+            <%= render 'player_card_mobile', team: @team, player: player %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Safe Area -->
+  <div class="bottom-safe-area"></div>
+</div>
+
+<!-- All Modals (Optimized for Mobile) -->
+<!-- Verify Team Modal -->
+<div class="modal fade mobile-modal" id="verifyTeamModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content mobile-modal-content">
+      <div class="modal-header mobile-modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-users me-2"></i>Your Playing 11
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body mobile-modal-body">
+        <% sort_players_by_role(@team_players).each_with_index do |player, index| %>
+          <div class="modal-player-card">
+            <span class="player-num"><%= index + 1 %></span>
+            <div class="player-info">
+              <span class="player-name"><%= player.name %></span>
+              <span class="player-role-badge <%= player.role %>"><%= player.role.titleize %></span>
+            </div>
+            <% if player.foreigner %>
+              <span class="overseas-badge-sm">
+                <%= image_tag "overseas.png", style: "width: 20px; height: 20px;" %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <div class="modal-footer mobile-modal-footer">
+        <%= button_to submit_team_path(auction_id: params[:auction_id]), method: :post, 
+            class: 'submit-btn-mobile' do %>
+          <i class="fas fa-check-circle me-2"></i>Submit Team
+        <% end %>
+        <button type="button" class="secondary-btn-mobile" data-bs-toggle="modal" data-bs-target="#benchPlayersModal">
+          <i class="fas fa-chair me-2"></i>View Bench
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bench Players Modal -->
+<div class="modal fade mobile-modal" id="benchPlayersModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content mobile-modal-content">
+      <div class="modal-header mobile-modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-chair me-2"></i>Bench Players
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body mobile-modal-body">
+        <% if @team_bench_players.any? %>
+          <% sort_players_by_role(@team_bench_players).each_with_index do |player, index| %>
+            <div class="modal-player-card">
+              <span class="player-num"><%= index + 1 %></span>
+              <div class="player-info">
+                <span class="player-name"><%= player.name %></span>
+                <span class="player-role-badge <%= player.role %>"><%= player.role.titleize %></span>
+              </div>
+              <% if player.foreigner %>
+                <span class="overseas-badge-sm">
+                  <%= image_tag "overseas.png", style: "width: 20px; height: 20px;" %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No bench players</p>
+          </div>
+        <% end %>
+      </div>
+      <div class="modal-footer mobile-modal-footer">
+        <button class="secondary-btn-mobile" data-bs-target="#verifyTeamModal" data-bs-toggle="modal">
+          <i class="fas fa-arrow-left me-2"></i>Back to Playing 11
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Role Modals -->
+<% 
+  roles = [
+    {id: 'wkModal', title: 'Wicket Keepers', icon: 'user-shield', players: @playing11_wicket_keepers},
+    {id: 'batsmanModal', title: 'Batsmen', icon: 'baseball-ball', players: @playing11_batsmans},
+    {id: 'allrounderModal', title: 'All Rounders', icon: 'star', players: @playing11_all_rounders},
+    {id: 'bowlerModal', title: 'Bowlers', icon: 'circle', players: @playing11_bowlers}
+  ]
+%>
+
+<% roles.each do |role| %>
+  <div class="modal fade mobile-modal" id="<%= role[:id] %>" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content mobile-modal-content">
+        <div class="modal-header mobile-modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-<%= role[:icon] %> me-2"></i><%= role[:title] %>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body mobile-modal-body">
+          <% if role[:players].any? %>
+            <% role[:players].each_with_index do |player, index| %>
+              <div class="modal-player-card">
+                <span class="player-num"><%= index + 1 %></span>
+                <div class="player-info">
+                  <span class="player-name"><%= player.name %></span>
+                  <span class="team-name-sm"><%= player.team_name %></span>
+                </div>
+                <% if player.foreigner %>
+                  <span class="overseas-badge-sm">
+                    <%= image_tag "overseas.png", style: "width: 20px; height: 20px;" %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="empty-state">
+              <i class="fas fa-<%= role[:icon] %>"></i>
+              <p>No <%= role[:title].downcase %> in Playing 11</p>
+            </div>
+          <% end %>
+        </div>
+        <div class="modal-footer mobile-modal-footer">
+          <button type="button" class="secondary-btn-mobile" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<style>
+/* Mobile App Wrapper */
+.mobile-app-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  padding-bottom: 80px;
+  position: relative;
+}
+
+#moveSuccessToast {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+  min-width: 280px;
+  animation: slideDown 0.4s ease;
+}
+
+#moveSuccessToast .toast-body {
+  padding: 16px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+#moveSuccessToast .toast-body i {
+  font-size: 18px;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Toast for errors */
+#moveSuccessToast.toast-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Sticky Header */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  padding-bottom: 12px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.back-btn-mobile {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.back-btn-mobile:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.mobile-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.verify-btn-mobile {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+  transition: all 0.3s ease;
+}
+
+.verify-btn-mobile:active {
+  transform: scale(0.95);
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4); }
+  50% { box-shadow: 0 4px 20px rgba(249, 115, 22, 0.8); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Quick Stats Bar */
+.quick-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 12px 16px 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+
+.stat-value.indian {
+  color: #60a5fa;
+}
+
+.stat-value.overseas {
+  color: #fbbf24;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Role Chips */
+.role-chips {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  align-items: center; /* Fix alignment */
+  flex-wrap: nowrap; /* Prevent wrapping */
+}
+
+.role-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.role-chip {
+  display: inline-flex; /* Changed from flex to inline-flex */
+  align-items: center;
+  justify-content: center; /* Added for better centering */
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Prevent chips from shrinking */
+  height: 36px; /* Fixed height for consistency */
+}
+
+.role-chip:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.role-chip i {
+  font-size: 14px;
+  line-height: 1; /* Better icon alignment */
+}
+
+.min-req {
+  background: rgba(239, 68, 68, 0.9);
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  margin-left: 4px;
+  line-height: 1.2; /* Better text alignment */
+}
+
+/* Floating Tabs */
+.floating-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 4px;
+  margin: 12px 16px 0;
+  position: relative;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.tab-btn.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tab-btn i {
+  font-size: 16px;
+}
+
+.tab-indicator {
+  display: none;
+}
+
+/* Mobile Content */
+.mobile-content {
+  padding: 16px 12px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.tab-content-mobile {
+  display: none;
+}
+
+.tab-content-mobile.active {
+  display: block;
+}
+
+/* Players Grid */
+.players-grid {
+  display: grid;
+  gap: 12px;
+}
+
+/* Floating Action Button */
+.floating-action-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.95) 50%, transparent 100%);
+  backdrop-filter: blur(10px);
+  z-index: 90;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.floating-action-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 16px;
+  padding: 16px 20px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-action-btn:active {
+  transform: scale(0.98);
+}
+
+.floating-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.floating-action-btn:active::before {
+  left: 100%;
+}
+
+.selected-count {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Bottom Safe Area */
+.bottom-safe-area {
+  height: max(60px, env(safe-area-inset-bottom));
+}
+
+/* Mobile Modals */
+.mobile-modal .modal-content {
+  border-radius: 24px 24px 0 0;
+  border: none;
+  background: #1e293b;
+  max-height: 85vh;
+}
+
+@media (max-width: 576px) {
+  .mobile-modal .modal-dialog {
+    margin: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+  
+  .mobile-modal .modal-fullscreen-sm-down {
+    max-width: 100%;
+  }
+}
+
+.mobile-modal-header {
+  background: linear-gradient(135deg, #1e3a8a, #1e40af);
+  color: white;
+  border-bottom: none;
+  padding: 20px;
+  border-radius: 24px 24px 0 0;
+}
+
+.mobile-modal-body {
+  padding: 20px;
+  max-height: 50vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mobile-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.mobile-modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 20px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Modal Player Card */
+.modal-player-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.modal-player-card:active {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(0.98);
+}
+
+.player-num {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.player-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-name {
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.player-role-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+
+.player-role-badge.wicket_keeper {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.player-role-badge.batsman {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.player-role-badge.all_rounder {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.player-role-badge.bowler {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.team-name-sm {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.overseas-badge-sm {
+  flex-shrink: 0;
+}
+
+/* Modal Buttons */
+.submit-btn-mobile {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  border-radius: 14px;
+  padding: 14px 20px;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+  transition: all 0.3s ease;
+}
+
+.submit-btn-mobile:active {
+  transform: scale(0.98);
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.secondary-btn-mobile {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 14px 20px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.secondary-btn-mobile:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.98);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+  .mobile-title {
+    font-size: 18px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .role-chip {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+/* iOS Safe Area Support */
+@supports (padding: max(0px)) {
+  .mobile-header .header-top {
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+  
+  .floating-action-container {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  
+  .mobile-modal-footer {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent Pull to Refresh on Mobile */
+body {
+  overscroll-behavior-y: contain;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+  // Tab Switching
+  $('.tab-btn').on('click', function() {
+    const tab = $(this).data('tab');
+    
+    // Update buttons
+    $('.tab-btn').removeClass('active');
+    $(this).addClass('active');
+    
+    // Update content
+    $('.tab-content-mobile').removeClass('active');
+    $(`.tab-content-mobile[data-content="${tab}"]`).addClass('active');
+    
+    // Update move button text
+    updateButtonText();
+    
+    // Hide floating button if no checkboxes are selected
+    updateButtonVisibility();
+  });
+
+  // Update button text based on active tab
+  function updateButtonText() {
+    const activeTab = $('.tab-btn.active').data('tab');
+    const buttonText = activeTab === 'playing11' ? 'Move to Bench' : 'Move to Playing 11';
+    $('#moveActionText').text(buttonText);
+  }
+
+  // Update button visibility and count
+  function updateButtonVisibility() {
+    const selectedCount = $('.player-checkbox:checked').length;
+    $('#selectedCount').text(selectedCount);
+    
+    if (selectedCount > 0) {
+      $('#floatingActionContainer').fadeIn(200);
+    } else {
+      $('#floatingActionContainer').fadeOut(200);
+    }
+  }
+
+  // Helper function to show toast
+  function showToast(message, type = 'success') {
+    const toastEl = document.getElementById('moveSuccessToast');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    // Update message
+    toastMessage.textContent = message;
+    
+    // Update icon based on type
+    const icon = toastMessage.previousElementSibling;
+    if (type === 'error') {
+      icon.className = 'fas fa-exclamation-circle me-2';
+      toastEl.classList.add('toast-error');
+    } else {
+      icon.className = 'fas fa-check-circle me-2';
+      toastEl.classList.remove('toast-error');
+    }
+    
+    // Show toast
+    const toast = new bootstrap.Toast(toastEl, {
+      autohide: true,
+      delay: 3000
+    });
+    toast.show();
+  }
+
+  // Helper function to reset move button
+  function resetMoveButton() {
+    const activeTab = $('.tab-btn.active').data('tab');
+    const buttonText = activeTab === 'playing11' ? 'Move to Bench' : 'Move to Playing 11';
+    $('#moveSelectedPlayersBtn').html(`<i class="fas fa-exchange-alt"></i> <span id="moveActionText">${buttonText}</span> <span class="selected-count" id="selectedCount">${$('.player-checkbox:checked').length}</span>`);
+    $('#moveSelectedPlayersBtn').prop('disabled', false);
+  }
+
+  // Check for success/error messages in sessionStorage on page load
+  const successMessage = sessionStorage.getItem('moveSuccessMessage');
+  const errorMessage = sessionStorage.getItem('moveErrorMessage');
+  
+  if (successMessage) {
+    showToast(successMessage, 'success');
+    sessionStorage.removeItem('moveSuccessMessage');
+  }
+  
+  if (errorMessage) {
+    showToast(errorMessage, 'error');
+    sessionStorage.removeItem('moveErrorMessage');
+  }
+
+  // Checkbox change handler
+  $(document).on('change', '.player-checkbox', function() {
+    updateButtonVisibility();
+    
+    // Add haptic feedback (vibration) on mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
+  });
+
+  // Move selected players
+  $('#moveSelectedPlayersBtn').on('click', function() {
+    const selectedPlayers = [];
+    $('.player-checkbox:checked').each(function() {
+      selectedPlayers.push($(this).val());
+    });
+    
+    const activeTab = $('.tab-btn.active').data('tab');
+    const actionName = activeTab === 'playing11' ? 'bench' : 'playing_11';
+    const actionText = activeTab === 'playing11' ? 'Bench' : 'Playing 11';
+
+    if (selectedPlayers.length > 0) {
+      // Show loading state
+      $(this).html('<i class="fas fa-spinner fa-spin"></i> Moving...');
+      $(this).prop('disabled', true);
+      
+      $.ajax({
+        url: '/teams/move_players',
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: { 
+          move_action: actionName, 
+          player_ids: selectedPlayers 
+        },
+        dataType: 'json',
+        success: function(response) {
+          if (response.success) {
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+              navigator.vibrate([50, 100, 50]);
+            }
+            
+            // Store success message in sessionStorage
+            const playerCount = selectedPlayers.length;
+            const message = `${playerCount} player${playerCount > 1 ? 's' : ''} moved to ${actionText} successfully!`;
+            sessionStorage.setItem('moveSuccessMessage', message);
+            
+            // Reload page - toast will show after reload
+            location.reload();
+          } else {
+            showToast(response.error || 'An error occurred', 'error');
+            resetMoveButton();
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'An error occurred while moving players';
+          showToast(errorMsg, 'error');
+          resetMoveButton();
+        }
+      });
+    }
+  });
+
+  // Initialize
+  updateButtonText();
+  updateButtonVisibility();
+
+  // Prevent zoom on double tap (iOS)
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+});
+</script>

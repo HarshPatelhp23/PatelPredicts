@@ -1,0 +1,314 @@
+<%# app/views/auctions/available_trades.html.erb %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Trades</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .trade-card { transition: all 0.3s ease; }
+    .trade-card:active { transform: scale(0.98); }
+    .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .batsman { background: #fef3c7; color: #92400e; }
+    .bowler { background: #dbeafe; color: #1e40af; }
+    .all_rounder { background: #d1fae5; color: #065f46; }
+    .wicket_keeper { background: #fce7f3; color: #9f1239; }
+    .expand-btn { transition: transform 0.3s ease; }
+    .expanded .expand-btn { transform: rotate(180deg); }
+    .slide-down { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .slide-down.open { max-height: 2000px; }
+    .filter-chip { transition: all 0.2s ease; }
+    .filter-chip.active { background: #667eea; color: white; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  
+  <!-- Header -->
+  <div class="gradient-bg text-white sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <%= link_to root_path, class: "p-2 hover:bg-white/10 rounded-lg transition" do %>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          <% end %>
+          <div>
+            <h1 class="text-xl font-bold">Trade Market</h1>
+            <p class="text-xs text-white/80">Find the perfect trade for <%= @team.team_name %></p>
+          </div>
+        </div>
+        <button onclick="toggleFilters()" class="p-2 hover:bg-white/10 rounded-lg transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+        </button>
+        <!-- Add this button in the header, next to the filter button -->
+        <%= link_to available_trades_path(format: :csv), 
+                    class: "p-2 hover:bg-white/10 rounded-lg transition flex items-center gap-1", 
+                    data: { no_loader: true },
+                    title: "Download CSV" do %>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="text-xs hidden sm:inline">CSV</span>
+        <% end %>
+      </div>
+      
+      <!-- Search Bar -->
+      <div class="mt-4">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="searchInput"
+            placeholder="Search your players..." 
+            class="w-full px-4 py-3 pl-11 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+            oninput="filterPlayers()"
+          >
+          <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Filter Panel -->
+      <div id="filterPanel" class="mt-3 overflow-hidden transition-all duration-300" style="max-height: 0;">
+        <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <button onclick="filterByRole('all')" class="filter-chip active px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium whitespace-nowrap">All</button>
+          <button onclick="filterByRole('batsman')" class="filter-chip px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium whitespace-nowrap">Batsman</button>
+          <button onclick="filterByRole('bowler')" class="filter-chip px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium whitespace-nowrap">Bowler</button>
+          <button onclick="filterByRole('allrounder')" class="filter-chip px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium whitespace-nowrap">All-Rounder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 py-4 pb-20">
+    
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="bg-white rounded-xl p-4 text-center card-shadow">
+        <div class="text-2xl font-bold text-gray-900"><%= @trade_opportunities.count %></div>
+        <div class="text-xs text-gray-500 mt-1">My Players</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 text-center card-shadow">
+        <div class="text-2xl font-bold text-green-600"><%= @trade_opportunities.sum { |t| t[:trade_count] } %></div>
+        <div class="text-xs text-gray-500 mt-1">Available</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 text-center card-shadow">
+        <div class="text-2xl font-bold text-purple-600">
+          <%= @trade_opportunities.count > 0 ? (@trade_opportunities.sum { |t| t[:trade_count] } / @trade_opportunities.count.to_f).round : 0 %>
+        </div>
+        <div class="text-xs text-gray-500 mt-1">Avg/Player</div>
+      </div>
+    </div>
+
+    <!-- Players List -->
+    <div id="playersList" class="space-y-3">
+      <% @trade_opportunities.each_with_index do |item, index| %>
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden trade-card" data-role="<%= item[:player].role %>">
+          <!-- Player Header -->
+          <div class="p-4 cursor-pointer" onclick="toggleTrades(<%= index %>)">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  <%= item[:player].name.first %>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-gray-900 text-sm truncate"><%= item[:player].name %></h3>
+                  <div class="flex items-center gap-2 mt-1">
+                    <%= render partial: 'role_badge', locals: { role: item[:player].role } %>
+                    <% if item[:player].foreigner %>
+                      <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">OS</span>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-2">
+                <div class="text-base font-bold text-purple-600"><%= item[:formatted_price] %></div>
+                <div class="text-xs text-gray-400"><%= item[:trade_count] %> trades</div>
+              </div>
+            </div>
+            
+            <!-- Price Range -->
+            <div class="mt-3 pt-3 border-t border-gray-100">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-500">Trade Range:</span>
+                <span class="font-medium text-gray-700">
+                  <%= item[:price_range][:formatted_min] %> - <%= item[:price_range][:formatted_max] %>
+                </span>
+              </div>
+            </div>
+            
+            <!-- Expand Button -->
+            <div class="flex items-center justify-center mt-3">
+              <button class="expand-btn text-gray-400 hover:text-gray-600 transition p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Trade Options -->
+          <div id="trades-<%= index %>" class="slide-down bg-gray-50">
+            <div class="p-4 space-y-2">
+              <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+                Available Trade Options
+              </h4>
+              
+              <% if item[:possible_trades].any? %>
+                <% item[:possible_trades].each do |trade| %>
+                  <div class="bg-white rounded-xl p-3 border border-gray-200 hover:border-purple-300 transition">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                          <%= trade.name.first %>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <h5 class="font-medium text-gray-900 text-sm"><%= trade.name %></h5>
+                          <div class="flex items-center gap-2 mt-0.5">
+                            <%= render partial: 'role_badge', locals: { role: trade.role } %>
+                          </div>
+                          <div class="text-xs text-gray-500 mt-1 truncate">
+                            <span class="font-medium"><%= trade.owner_team_name %></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-right flex-shrink-0 ml-2">
+                        <div class="text-sm font-bold text-indigo-600"><%= display_amount(trade.sold_price.to_f) %></div>
+                        <button onclick="proposeTrade(<%= item[:player].id %>, <%= trade.id %>)" 
+                                class="mt-2 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded-lg transition font-medium">
+                          Propose
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              <% else %>
+                <div class="text-center py-8 text-gray-400">
+                  <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                  </svg>
+                  <p class="text-sm">No trades available</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    
+    <% if @trade_opportunities.empty? %>
+      <div class="text-center py-12">
+        <svg class="w-20 h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="mt-4 text-gray-500 text-lg font-medium">No players in your team yet</p>
+        <p class="text-gray-400 text-sm mt-1">Build your team to see available trades</p>
+      </div>
+    <% end %>
+  </div>
+
+  <script>
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    function toggleTrades(index) {
+      const tradesDiv = document.getElementById(`trades-${index}`);
+      const card = tradesDiv.closest('.trade-card');
+      
+      if (tradesDiv.classList.contains('open')) {
+        tradesDiv.classList.remove('open');
+        card.classList.remove('expanded');
+      } else {
+        document.querySelectorAll('.slide-down.open').forEach(div => {
+          div.classList.remove('open');
+          div.closest('.trade-card').classList.remove('expanded');
+        });
+        
+        tradesDiv.classList.add('open');
+        card.classList.add('expanded');
+      }
+    }
+
+    function toggleFilters() {
+      const filterPanel = document.getElementById('filterPanel');
+      if (filterPanel.style.maxHeight === '0px' || !filterPanel.style.maxHeight) {
+        filterPanel.style.maxHeight = '100px';
+      } else {
+        filterPanel.style.maxHeight = '0px';
+      }
+    }
+
+    function filterByRole(role) {
+      currentFilter = role;
+      
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      const cards = document.querySelectorAll('.trade-card');
+      cards.forEach(card => {
+        const cardRole = card.dataset.role;
+        if (role === 'all' || cardRole === role) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function filterPlayers() {
+      searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.trade-card');
+      
+      cards.forEach(card => {
+        const playerName = card.querySelector('h3').textContent.toLowerCase();
+        const matchesSearch = playerName.includes(searchQuery);
+        const matchesRole = currentFilter === 'all' || card.dataset.role === currentFilter;
+        
+        card.style.display = (matchesSearch && matchesRole) ? 'block' : 'none';
+      });
+    }
+
+    function proposeTrade(myPlayerId, theirPlayerId) {
+      if (confirm('Are you sure you want to propose this trade?')) {
+        // Make AJAX call to your Rails backend
+        fetch('/trades/propose', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+          },
+          body: JSON.stringify({
+            my_player_id: myPlayerId,
+            their_player_id: theirPlayerId
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message || 'Trade proposal sent successfully!');
+        })
+        .catch(error => {
+          alert('Error proposing trade. Please try again.');
+          console.error('Error:', error);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

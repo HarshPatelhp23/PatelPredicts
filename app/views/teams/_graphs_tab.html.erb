@@ -1,0 +1,223 @@
+<div class="graphs-container">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Points Per Match</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="pointsChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Performance Trend</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="trendChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Points Distribution</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="distributionChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5>Contribution Types</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="contributionChart" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Points per match chart
+    const pointsCtx = document.getElementById('pointsChart').getContext('2d');
+    new Chart(pointsCtx, {
+      type: 'bar',
+      data: {
+        labels: <%= raw @points_data.map(&:first).to_json %>,
+        datasets: [{
+          label: 'Points',
+          data: <%= raw @points_data.map(&:last).to_json %>,
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + ' points';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Points'
+            }
+          }
+        }
+      }
+    });
+    
+    // Performance trend chart (line chart)
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: <%= raw @performance_trend.map { |d| d[0]&.strftime('%b %d') }.to_json %>,
+        datasets: [{
+          label: 'Points Trend',
+          data: <%= raw @performance_trend&.map(&:last)&.to_json %>,
+          fill: false,
+          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          tension: 0.3,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Points'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Match Date'
+            }
+          }
+        }
+      }
+    });
+    
+    // Points distribution chart (pie chart)
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+      type: 'pie',
+      data: {
+        labels: ['0-10 points', '11-20 points', '21-30 points', '31+ points'],
+        datasets: [{
+          data: <%= raw [
+            @matches.where('points <= 10').count,
+            @matches.where('points > 10 AND points <= 20').count,
+            @matches.where('points > 20 AND points <= 30').count,
+            @matches.where('points > 30').count
+          ].to_json %>,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'right'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const value = context.raw;
+                const percentage = Math.round((value / total) * 100);
+                return `${context.label}: ${value} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // Contribution types chart (doughnut chart)
+    const contributionCtx = document.getElementById('contributionChart').getContext('2d');
+    new Chart(contributionCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Batting', 'Bowling', 'Fielding', 'Captaincy'],
+        datasets: [{
+          data: <%= raw [40,50,60,70
+            # @matches.sum(:batting_points),
+            # @matches.sum(:bowling_points),
+            # @matches.sum(:fielding_points),
+            # @matches.sum(:captaincy_bonus)
+          ].to_json %>,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'right'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const value = context.raw;
+                const percentage = Math.round((value / total) * 100);
+                return `${context.label}: ${value} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+<style>
+  @media (max-width: 768px) {
+  .graphs-container canvas {
+    height: 200px !important;
+  }
+}
+</style>

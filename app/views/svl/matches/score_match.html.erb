@@ -1,0 +1,1127 @@
+<%# app/views/svl/matches/score_match.html.erb %>
+<% provide(:title, "SVL Scorer") %>
+
+<script>
+  const SVL_TEAMS = <%= raw @teams.map { |t|
+    slug = t.name.to_s.downcase.gsub(/\s+/, '_')
+    image_url = %w[png jpg jpeg webp svg].lazy.map { |ext|
+      path = Rails.root.join("app", "assets", "images", "v_#{slug}.#{ext}")
+      File.exist?(path) ? asset_path("v_#{slug}.#{ext}") : nil
+    }.find(&:itself)
+    { id: t.id, name: t.name, image: image_url }
+  }.to_json %>;
+  const SVL_SEASON   = <%= raw({ id: @season&.id, name: @season&.name }.to_json) %>;
+  const SVL_SAVE_URL = "<%= svl_save_match_path %>";
+  const SVL_CSRF     = "<%= form_authenticity_token %>";
+</script>
+
+<style>
+/* ─── SVL Scorer — scoped styles ─── */
+.svl-scorer-wrap {
+  min-height: 100dvh;
+  background: #0a0f1a;
+  font-family: 'Nunito', sans-serif;
+  color: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── TOP BAR ── */
+.svl-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  background: rgba(10,15,26,0.95);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+.svl-topbar-back {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  color: #94a3b8; cursor: pointer; text-decoration: none;
+  transition: background .15s;
+}
+.svl-topbar-back:hover { background: rgba(255,255,255,0.1); }
+.svl-topbar-title { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #f59e0b; letter-spacing: .5px; }
+.svl-topbar-sub { font-size: 9px; color: #64748b; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-top: 1px; }
+.svl-topbar-right { width: 36px; }
+
+/* ── SCREENS ── */
+.svl-screen { display: none; flex: 1; flex-direction: column; }
+.svl-screen.active { display: flex; }
+
+/* ════════════════════════
+   SCREEN 1 — TEAM SELECT
+════════════════════════ */
+.svl-select-body {
+  flex: 1; padding: 24px 16px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.svl-select-label {
+  font-size: 11px; font-weight: 700; color: #64748b;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.svl-team-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.svl-team-btn {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px;
+  padding: 18px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 16px; cursor: pointer;
+  transition: all .18s; color: #f1f5f9;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 600; letter-spacing: .3px;
+  text-align: center; min-height: 80px;
+  position: relative;
+}
+.svl-team-btn:active { transform: scale(.97); }
+.svl-team-btn.selected-a {
+  background: rgba(16,185,129,0.12);
+  border-color: #10b981;
+  color: #34d399;
+}
+.svl-team-btn.selected-b {
+  background: rgba(245,158,11,0.12);
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+.svl-team-av {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700;
+  background: rgba(255,255,255,0.08); color: #94a3b8;
+}
+.svl-team-av-img {
+  background: rgba(255,255,255,0.06) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  padding: 0;
+}
+
+.svl-team-btn-name {
+  font-size: 12px; font-weight: 600;
+  color: inherit; text-align: center;
+  line-height: 1.3; letter-spacing: .2px;
+  max-width: 100%; word-break: break-word;
+}
+.svl-team-btn.selected-a .svl-team-av { background: rgba(16,185,129,0.2); color: #34d399; }
+.svl-team-btn.selected-b .svl-team-av { background: rgba(245,158,11,0.2); color: #fbbf24; }
+.svl-team-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #10b981; color: #fff;
+  display: none; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+}
+.svl-team-btn.selected-a .svl-team-check,
+.svl-team-btn.selected-b .svl-team-check { display: flex; }
+.svl-team-btn.selected-b .svl-team-check { background: #f59e0b; }
+
+.svl-role-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 20px; margin-bottom: 4px;
+}
+.badge-a { background: rgba(16,185,129,0.15); color: #34d399; }
+.badge-b { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+.svl-divider-vs {
+  text-align: center;
+  font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700;
+  color: #475569;
+  display: flex; align-items: center; gap: 10px;
+}
+.svl-divider-vs::before, .svl-divider-vs::after {
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07);
+}
+/* ── Match type selector ── */
+.svl-match-type-wrap {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.svl-match-type-label {
+  font-size: 11px; font-weight: 700; color: #64748b;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.svl-match-type-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+}
+.svl-type-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 8px;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 12px; cursor: pointer;
+  transition: all .18s; text-align: center;
+}
+.svl-type-btn:active { transform: scale(.97); }
+.svl-type-btn.active {
+  background: rgba(245,158,11,0.12);
+  border-color: #f59e0b;
+}
+.svl-type-icon { font-size: 20px; line-height: 1; }
+.svl-type-name {
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700;
+  color: #94a3b8; letter-spacing: .3px;
+}
+.svl-type-btn.active .svl-type-name { color: #fbbf24; }
+.svl-type-sub { font-size: 9px; color: #475569; letter-spacing: .5px; }
+.svl-type-btn.active .svl-type-sub { color: rgba(245,158,11,0.6); }
+
+/* Knockout badge on scorer screen */
+.svl-knockout-badge {
+  display: none; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(185,28,28,0.08));
+  border-bottom: 1px solid rgba(239,68,68,0.2);
+  font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700;
+  color: #f87171; letter-spacing: 1.5px; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.svl-knockout-badge.show { display: flex; }
+.svl-knockout-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #f87171;
+  animation: setpulse 1s infinite;
+}
+.svl-start-btn {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff; font-family: 'Rajdhani', sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: .5px;
+  border: none; border-radius: 14px; cursor: pointer;
+  transition: all .15s; margin-top: auto;
+  box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+  opacity: .4; pointer-events: none;
+}
+.svl-start-btn.ready { opacity: 1; pointer-events: all; }
+.svl-start-btn.ready:active { transform: scale(.98); }
+
+/* ════════════════════════
+   SCREEN 2 — LIVE SCORER
+════════════════════════ */
+.svl-scorer-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Set progress bar */
+.svl-set-bar {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.svl-set-pip {
+  height: 4px; border-radius: 2px;
+  flex: 1; max-width: 60px;
+  background: rgba(255,255,255,0.1);
+  transition: background .3s;
+  position: relative; overflow: hidden;
+}
+.svl-set-pip.done-a { background: #10b981; }
+.svl-set-pip.done-b { background: #f59e0b; }
+.svl-set-pip.active {
+  background: rgba(255,255,255,0.15);
+  animation: setpulse 1.2s ease-in-out infinite;
+}
+@keyframes setpulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+.svl-set-label {
+  font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700;
+  color: #64748b; letter-spacing: 1.5px; text-transform: uppercase;
+  min-width: 50px; text-align: center;
+}
+
+/* Score display */
+.svl-score-display {
+  display: flex; align-items: stretch;
+  flex: 1; position: relative;
+  min-height: 0;
+}
+.svl-score-half {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; padding: 20px 12px;
+  position: relative; cursor: pointer;
+  user-select: none; -webkit-user-select: none;
+  transition: background .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.svl-score-half:active { background: rgba(255,255,255,0.03); }
+
+.svl-score-half.team-a { border-right: 1px solid rgba(255,255,255,0.06); }
+
+.svl-team-name-score {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  opacity: .6;
+}
+.team-a .svl-team-name-score { color: #34d399; }
+.team-b .svl-team-name-score { color: #fbbf24; }
+
+.svl-big-score {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 96px; font-weight: 700;
+  line-height: 1; color: #fff;
+  transition: transform .1s ease, color .15s;
+  will-change: transform;
+}
+.team-a .svl-big-score { color: #34d399; }
+.team-b .svl-big-score { color: #fbbf24; }
+
+.svl-big-score.bump {
+  animation: scoreBump .18s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes scoreBump {
+  0%  { transform: scale(1); }
+  50% { transform: scale(1.18); }
+  100%{ transform: scale(1); }
+}
+
+.svl-tap-hint {
+  font-size: 10px; color: #475569; letter-spacing: 1px;
+  text-transform: uppercase; margin-top: 4px;
+}
+
+/* Undo row */
+.svl-undo-row {
+  display: flex; gap: 10px; padding: 10px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+.svl-undo-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 12px;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 10px; cursor: pointer; color: #f87171;
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: .5px; transition: all .15s;
+}
+.svl-undo-btn:active { background: rgba(239,68,68,0.15); transform: scale(.98); }
+.svl-undo-btn:disabled { opacity: .3; pointer-events: none; }
+
+/* Live set scoreboard */
+.svl-set-scores {
+  display: flex; gap: 6px; padding: 10px 16px;
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  overflow-x: auto; scrollbar-width: none;
+  flex-shrink: 0;
+}
+.svl-set-scores::-webkit-scrollbar { display: none; }
+.svl-set-score-chip {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 8px 14px; flex-shrink: 0; min-width: 64px;
+}
+.svl-set-score-chip.won-a { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.07); }
+.svl-set-score-chip.won-b { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.07); }
+.svl-set-chip-label { font-size: 9px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.svl-set-chip-score { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #f1f5f9; }
+.svl-set-chip-score span:first-child { color: #34d399; }
+.svl-set-chip-score .sep { color: #475569; margin: 0 2px; font-size: 14px; }
+.svl-set-chip-score span:last-child { color: #fbbf24; }
+
+/* Action buttons */
+.svl-actions {
+  display: flex; gap: 10px; padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  background: rgba(10,15,26,0.9); border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+.svl-end-set-btn {
+  flex: 1; padding: 14px;
+  background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3);
+  color: #60a5fa; font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: .5px;
+  border-radius: 12px; cursor: pointer; transition: all .15s;
+}
+.svl-end-set-btn:active { background: rgba(59,130,246,0.2); transform: scale(.98); }
+.svl-end-match-btn {
+  flex: 1; padding: 14px;
+  background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(185,28,28,0.1));
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171; font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: .5px;
+  border-radius: 12px; cursor: pointer; transition: all .15s;
+}
+.svl-end-match-btn:active { background: rgba(239,68,68,0.25); transform: scale(.98); }
+
+/* ════════════════════════
+   SCREEN 3 — MATCH RESULT
+════════════════════════ */
+.svl-result-body {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; padding: 24px 20px;
+  overflow-y: auto; gap: 20px;
+}
+.svl-result-trophy {
+  font-size: 64px; line-height: 1;
+  animation: trophySpin .6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes trophySpin {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.svl-result-winner {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 28px; font-weight: 700; color: #f59e0b;
+  text-align: center; letter-spacing: .5px;
+}
+.svl-result-sub { font-size: 13px; color: #64748b; text-align: center; }
+
+.svl-result-card {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; overflow: hidden;
+}
+.svl-result-card-hdr {
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  font-size: 10px; font-weight: 700; color: #64748b;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.svl-result-set-row {
+  display: flex; align-items: center;
+  padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.05);
+}
+.svl-result-set-num {
+  font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700;
+  color: #64748b; letter-spacing: 1px; width: 40px; text-transform: uppercase;
+}
+.svl-result-set-score {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.svl-rss-a { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: #34d399; }
+.svl-rss-b { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: #fbbf24; }
+.svl-rss-sep { font-family: 'Rajdhani', sans-serif; font-size: 16px; color: #475569; }
+.svl-result-set-winner { font-size: 10px; color: #64748b; width: 60px; text-align: right; }
+
+.svl-result-totals {
+  width: 100%; display: flex; gap: 10px;
+}
+.svl-result-total-card {
+  flex: 1; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 16px; text-align: center;
+}
+.svl-result-total-card.winner {
+  background: rgba(245,158,11,0.08);
+  border-color: rgba(245,158,11,0.3);
+}
+.svl-rtc-name {
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: .5px; color: #94a3b8; margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.svl-result-total-card.winner .svl-rtc-name { color: #fbbf24; }
+.svl-rtc-pts { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; color: #f1f5f9; }
+.svl-rtc-lbl { font-size: 10px; color: #64748b; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+.svl-rtc-sets { font-size: 12px; color: #64748b; margin-top: 6px; }
+
+.svl-save-btn {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #0f172a; font-family: 'Rajdhani', sans-serif;
+  font-size: 17px; font-weight: 700; letter-spacing: .5px;
+  border: none; border-radius: 14px; cursor: pointer;
+  transition: all .15s; box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+}
+.svl-save-btn:active { transform: scale(.98); }
+.svl-save-btn:disabled { opacity: .5; pointer-events: none; }
+
+.svl-discard-btn {
+  width: 100%; padding: 14px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.1);
+  color: #64748b; font-size: 14px; border-radius: 12px;
+  cursor: pointer; transition: all .15s;
+}
+.svl-discard-btn:hover { border-color: rgba(255,255,255,0.2); color: #94a3b8; }
+
+/* ── Overlay / sheet ── */
+.svl-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 200; display: flex; align-items: flex-end;
+  justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+  backdrop-filter: blur(4px);
+}
+.svl-overlay.open { opacity: 1; pointer-events: all; }
+.svl-sheet {
+  width: 100%; max-width: 480px;
+  background: #131e2e; border-radius: 24px 24px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 20px 20px 36px;
+  transform: translateY(100%); transition: transform .28s cubic-bezier(0.4,0,0.2,1);
+}
+.svl-overlay.open .svl-sheet { transform: translateY(0); }
+.svl-sheet-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 16px; }
+.svl-sheet-title { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+.svl-sheet-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+.svl-sheet-btns { display: flex; flex-direction: column; gap: 8px; }
+.svl-sheet-confirm {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #fff; font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 700;
+  border: none; border-radius: 12px; cursor: pointer; transition: all .15s;
+}
+.svl-sheet-confirm.blue {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+.svl-sheet-confirm:active { transform: scale(.98); }
+.svl-sheet-cancel {
+  width: 100%; padding: 13px;
+  background: transparent; border: 1px solid rgba(255,255,255,0.1);
+  color: #64748b; font-size: 14px; border-radius: 12px; cursor: pointer; transition: all .15s;
+}
+.svl-sheet-cancel:hover { color: #94a3b8; border-color: rgba(255,255,255,0.2); }
+
+/* Floating score ripple */
+.svl-score-ripple {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; z-index: 5;
+  animation: ripple .5s ease-out forwards;
+}
+@keyframes ripple {
+  from { transform: scale(0); opacity: .4; }
+  to   { transform: scale(3); opacity: 0; }
+}
+
+/* Floating +1 animation */
+.svl-plus-float {
+  position: absolute; pointer-events: none; z-index: 10;
+  font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700;
+  animation: floatUp .7s ease-out forwards;
+}
+@keyframes floatUp {
+  0%   { transform: translateY(0) scale(.8); opacity: 1; }
+  100% { transform: translateY(-60px) scale(1.1); opacity: 0; }
+}
+
+/* Toast */
+.svl-toast {
+  position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(15,23,42,0.95); border: 1px solid #10b981;
+  color: #34d399; font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 600;
+  padding: 10px 20px; border-radius: 24px; z-index: 999;
+  white-space: nowrap; transition: all .25s ease;
+  opacity: 0; pointer-events: none;
+}
+.svl-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.svl-toast.err { border-color: #ef4444; color: #f87171; }
+</style>
+
+<div class="svl-scorer-wrap">
+
+  <!-- TOP BAR -->
+  <div class="svl-topbar">
+    <a href="<%= spl_dashboard_path %>" class="svl-topbar-back">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </a>
+    <div>
+      <div class="svl-topbar-title">SVL SCORER</div>
+      <div class="svl-topbar-sub" id="scorer-subtitle">Sugam Volleyball League</div>
+    </div>
+    <div class="svl-topbar-right"></div>
+  </div>
+
+  <!-- ════ SCREEN 1: TEAM SELECT ════ -->
+  <div class="svl-screen active" id="screen-select">
+    <div class="svl-select-body">
+
+      <div>
+        <div class="svl-select-label">Select Team A</div>
+        <div class="svl-team-grid" id="team-grid-a"></div>
+      </div>
+
+      <div class="svl-divider-vs">VS</div>
+
+      <div>
+        <div class="svl-select-label">Select Team B</div>
+        <div class="svl-team-grid" id="team-grid-b"></div>
+      </div>
+
+      <!-- Match type selector -->
+      <div class="svl-match-type-wrap">
+        <div class="svl-match-type-label">Match Type</div>
+        <div class="svl-match-type-grid">
+          <div class="svl-type-btn active" data-type="league" onclick="selectMatchType('league', this)">
+            <div class="svl-type-icon">🏐</div>
+            <div class="svl-type-name">League</div>
+            <div class="svl-type-sub">Affects points table</div>
+          </div>
+          <div class="svl-type-btn" data-type="semi_final" onclick="selectMatchType('semi_final', this)">
+            <div class="svl-type-icon">⚡</div>
+            <div class="svl-type-name">Semi Final</div>
+            <div class="svl-type-sub">Top 2 advance</div>
+          </div>
+          <div class="svl-type-btn" data-type="eliminator" onclick="selectMatchType('eliminator', this)">
+            <div class="svl-type-icon">🔥</div>
+            <div class="svl-type-name">Eliminator</div>
+            <div class="svl-type-sub">Loser is eliminated</div>
+          </div>
+          <div class="svl-type-btn" data-type="final" onclick="selectMatchType('final', this)">
+            <div class="svl-type-icon">🏆</div>
+            <div class="svl-type-name">Final</div>
+            <div class="svl-type-sub">Championship match</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="svl-start-btn" id="start-match-btn" onclick="startMatch()">
+        Start Match →
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ════ SCREEN 2: LIVE SCORER ════ -->
+  <div class="svl-screen" id="screen-scorer">
+    <div class="svl-scorer-body">
+      <div class="svl-knockout-badge" id="knockout-badge">
+        <div class="svl-knockout-dot"></div>
+        <span id="knockout-badge-label">Semi Final</span>
+        &nbsp;· Does not affect points table
+      </div>
+
+      <!-- Set progress -->
+      <div class="svl-set-bar">
+        <div class="svl-set-label" id="set-label">SET 1</div>
+        <div class="svl-set-pip active" id="pip-0"></div>
+        <div class="svl-set-pip" id="pip-1"></div>
+        <div class="svl-set-pip" id="pip-2"></div>
+      </div>
+
+      <!-- Big score counters -->
+      <div class="svl-score-display">
+
+        <div class="svl-score-half team-a" id="tap-a" onclick="addPoint('a', event)">
+          <div class="svl-team-name-score" id="score-name-a">TEAM A</div>
+          <div class="svl-big-score" id="score-a">0</div>
+          <div class="svl-tap-hint">TAP TO SCORE</div>
+        </div>
+
+        <div class="svl-score-half team-b" id="tap-b" onclick="addPoint('b', event)">
+          <div class="svl-team-name-score" id="score-name-b">TEAM B</div>
+          <div class="svl-big-score" id="score-b">0</div>
+          <div class="svl-tap-hint">TAP TO SCORE</div>
+        </div>
+
+      </div>
+
+      <!-- Undo row -->
+      <div class="svl-undo-row">
+        <button class="svl-undo-btn" id="undo-a" onclick="undoPoint('a')" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+          Undo <span id="undo-a-name">A</span>
+        </button>
+        <button class="svl-undo-btn" id="undo-b" onclick="undoPoint('b')" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+          Undo <span id="undo-b-name">B</span>
+        </button>
+      </div>
+
+      <!-- Completed set scores -->
+      <div class="svl-set-scores" id="set-scores-bar">
+        <div style="font-size:11px;color:#475569;display:flex;align-items:center;padding:0 4px">No completed sets yet</div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="svl-actions">
+        <button class="svl-end-set-btn" onclick="openEndSetSheet()">End Set</button>
+        <button class="svl-end-match-btn" onclick="openEndMatchSheet()">End Match</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════ SCREEN 3: RESULT ════ -->
+  <div class="svl-screen" id="screen-result">
+    <div class="svl-result-body">
+      <div class="svl-result-trophy">🏐</div>
+      <div class="svl-result-winner" id="result-winner-name">—</div>
+      <div class="svl-result-sub" id="result-sub">wins the match</div>
+
+      <!-- Set breakdown -->
+      <div class="svl-result-card" style="width:100%">
+        <div class="svl-result-card-hdr">Set Breakdown</div>
+        <div id="result-sets-list"></div>
+      </div>
+
+      <!-- Totals -->
+      <div class="svl-result-totals">
+        <div class="svl-result-total-card" id="rtc-a">
+          <div class="svl-rtc-name" id="rtc-a-name">Team A</div>
+          <div class="svl-rtc-pts" id="rtc-a-pts">0</div>
+          <div class="svl-rtc-lbl">Total Points</div>
+          <div class="svl-rtc-sets" id="rtc-a-sets">0 sets won</div>
+        </div>
+        <div class="svl-result-total-card" id="rtc-b">
+          <div class="svl-rtc-name" id="rtc-b-name">Team B</div>
+          <div class="svl-rtc-pts" id="rtc-b-pts">0</div>
+          <div class="svl-rtc-lbl">Total Points</div>
+          <div class="svl-rtc-sets" id="rtc-b-sets">0 sets won</div>
+        </div>
+      </div>
+
+      <button class="svl-save-btn" id="save-match-btn" onclick="saveMatch()">
+        💾 Save Match
+      </button>
+      <button class="svl-discard-btn" onclick="discardMatch()">Discard & Play Again</button>
+    </div>
+  </div>
+
+</div><!-- /svl-scorer-wrap -->
+
+<!-- END SET CONFIRMATION SHEET -->
+<div class="svl-overlay" id="end-set-overlay">
+  <div class="svl-sheet">
+    <div class="svl-sheet-handle"></div>
+    <div class="svl-sheet-title" id="end-set-title">End Set 1?</div>
+    <div class="svl-sheet-sub" id="end-set-sub">Loading...</div>
+    <div class="svl-sheet-btns">
+      <button class="svl-sheet-confirm blue" onclick="confirmEndSet()">Confirm End Set</button>
+      <button class="svl-sheet-cancel" onclick="closeSheet('end-set-overlay')">Cancel — Keep Playing</button>
+    </div>
+  </div>
+</div>
+
+<!-- END MATCH CONFIRMATION SHEET -->
+<div class="svl-overlay" id="end-match-overlay">
+  <div class="svl-sheet">
+    <div class="svl-sheet-handle"></div>
+    <div class="svl-sheet-title">End Match?</div>
+    <div class="svl-sheet-sub" id="end-match-sub">This will finalise the match result.</div>
+    <div class="svl-sheet-btns">
+      <button class="svl-sheet-confirm" onclick="confirmEndMatch()">Yes, End Match</button>
+      <button class="svl-sheet-cancel" onclick="closeSheet('end-match-overlay')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="svl-toast" id="svl-toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   SVL SCORER — State & Logic
+══════════════════════════════════════════ */
+
+const TEAMS = SVL_TEAMS;
+let teamA = null, teamB = null;
+
+// Match state
+let currentSet = 1;
+let scoreA = 0, scoreB = 0;
+let historyA = [], historyB = []; // per-current-set undo stacks
+let completedSets = []; // [{a, b, winner}]
+
+
+/* ─── Match type ─── */
+let selectedMatchType = 'league';
+
+function selectMatchType(type, btn) {
+  selectedMatchType = type;
+  document.querySelectorAll('.svl-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Show knockout badge on scorer screen when not a league match
+function updateKnockoutBadge() {
+  const badge = document.getElementById('knockout-badge');
+  const label = document.getElementById('knockout-badge-label');
+  if (selectedMatchType !== 'league') {
+    const labels = { semi_fnal: 'Semi-Final', eliminator: 'ELIMINATOR', final: 'FINAL' };
+    label.textContent = labels[selectedMatchType] || selectedMatchType.toUpperCase();
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+/* ─── Team selection ─── */
+function buildTeamGrids() {
+  ['a','b'].forEach(side => {
+    const grid = document.getElementById(`team-grid-${side}`);
+    grid.innerHTML = '';
+    TEAMS.forEach(t => {
+      const btn = document.createElement('div');
+      btn.className = 'svl-team-btn';
+      btn.dataset.id   = t.id;
+      btn.dataset.name = t.name;
+
+      const avatarHtml = t.image
+        ? `<div class="svl-team-av svl-team-av-img">
+             <img src="${t.image}" alt="${t.name}"
+               onerror="this.parentElement.innerHTML='<span>${initials(t.name)}</span>'"
+               style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+           </div>`
+        : `<div class="svl-team-av">${initials(t.name)}</div>`;
+
+      btn.innerHTML = `
+        ${avatarHtml}
+        <div class="svl-team-btn-name">${t.name}</div>
+        <div class="svl-team-check">✓</div>`;
+      btn.onclick = () => selectTeam(side, t, btn);
+      grid.appendChild(btn);
+    });
+  });
+}
+
+function selectTeam(side, team, btn) {
+  // Deselect all in this grid
+  document.querySelectorAll(`#team-grid-${side} .svl-team-btn`).forEach(b => {
+    b.classList.remove('selected-a', 'selected-b');
+  });
+  btn.classList.add(side === 'a' ? 'selected-a' : 'selected-b');
+  if (side === 'a') teamA = team;
+  else              teamB = team;
+  checkStartReady();
+}
+
+function checkStartReady() {
+  const btn = document.getElementById('start-match-btn');
+  const ready = teamA && teamB && teamA.id !== teamB.id;
+  btn.classList.toggle('ready', ready);
+  if (teamA && teamB && teamA.id === teamB.id) {
+    showToast('Pick two different teams', 'err');
+  }
+}
+
+function startMatch() {
+  if (!teamA || !teamB || teamA.id === teamB.id) return;
+  document.getElementById('score-name-a').textContent = teamA.name.toUpperCase();
+  document.getElementById('score-name-b').textContent = teamB.name.toUpperCase();
+  document.getElementById('undo-a-name').textContent  = teamA.name.split(' ')[0];
+  document.getElementById('undo-b-name').textContent  = teamB.name.split(' ')[0];
+  document.getElementById('scorer-subtitle').textContent = `${teamA.name} vs ${teamB.name}`;
+  updateKnockoutBadge();
+  resetCurrentSet();
+  showScreen('screen-scorer');
+}
+
+/* ─── Scoring ─── */
+function addPoint(side, event) {
+  if (side === 'a') {
+    scoreA++;
+    historyA.push(1);
+    animateScore('score-a', event, '#34d399');
+  } else {
+    scoreB++;
+    historyB.push(1);
+    animateScore('score-b', event, '#fbbf24');
+  }
+  updateScoreDisplay();
+  updateUndoBtns();
+}
+
+function undoPoint(side) {
+  if (side === 'a' && historyA.length > 0) {
+    historyA.pop(); scoreA = Math.max(0, scoreA - 1);
+  } else if (side === 'b' && historyB.length > 0) {
+    historyB.pop(); scoreB = Math.max(0, scoreB - 1);
+  }
+  updateScoreDisplay();
+  updateUndoBtns();
+}
+
+function updateScoreDisplay() {
+  document.getElementById('score-a').textContent = scoreA;
+  document.getElementById('score-b').textContent = scoreB;
+}
+
+function updateUndoBtns() {
+  document.getElementById('undo-a').disabled = historyA.length === 0;
+  document.getElementById('undo-b').disabled = historyB.length === 0;
+}
+
+function animateScore(elId, event, color) {
+  const el = document.getElementById(elId);
+  el.classList.remove('bump');
+  void el.offsetWidth; // reflow
+  el.classList.add('bump');
+
+  // Ripple
+  const half = el.closest('.svl-score-half');
+  const rect = half.getBoundingClientRect();
+  const ripple = document.createElement('div');
+  ripple.className = 'svl-score-ripple';
+  const size = 80;
+  const x = (event?.clientX ?? rect.left + rect.width/2) - rect.left - size/2;
+  const y = (event?.clientY ?? rect.top  + rect.height/2) - rect.top  - size/2;
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;background:${color};`;
+  half.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 500);
+
+  // +1 float
+  const float = document.createElement('div');
+  float.className = 'svl-plus-float';
+  float.style.cssText = `left:${x+size/2}px;top:${y}px;color:${color};`;
+  float.textContent = '+1';
+  half.appendChild(float);
+  setTimeout(() => float.remove(), 700);
+
+  // Remove bump class after animation
+  setTimeout(() => el.classList.remove('bump'), 200);
+}
+
+/* ─── Set management ─── */
+function resetCurrentSet() {
+  scoreA = 0; scoreB = 0;
+  historyA = []; historyB = [];
+  updateScoreDisplay();
+  updateUndoBtns();
+}
+
+function openEndSetSheet() {
+  const setDoc = document.getElementById('end-set-title');
+  const setSub = document.getElementById('end-set-sub');
+  setDoc.textContent = `End Set ${currentSet}?`;
+
+  const aName = teamA?.name || 'Team A';
+  const bName = teamB?.name || 'Team B';
+
+  if (scoreA === scoreB) {
+    setSub.textContent = `Score is tied ${scoreA} – ${scoreB}. You can still end the set.`;
+  } else {
+    const winner = scoreA > scoreB ? aName : bName;
+    setSub.textContent = `Current score: ${aName} ${scoreA} – ${scoreB} ${bName}. ${winner} wins this set.`;
+  }
+  openSheet('end-set-overlay');
+}
+
+function confirmEndSet() {
+  closeSheet('end-set-overlay');
+  const winner = scoreA > scoreB ? 'a' : scoreB > scoreA ? 'b' : null;
+  completedSets.push({ a: scoreA, b: scoreB, winner });
+
+  // Update pip
+  const pip = document.getElementById(`pip-${currentSet - 1}`);
+  if (winner === 'a') pip.classList.add('done-a');
+  else if (winner === 'b') pip.classList.add('done-b');
+  else { pip.classList.remove('active'); pip.style.background = 'rgba(255,255,255,0.25)'; }
+
+  renderSetScoresBar();
+
+  // Check if match is decided (best of 3: first to 2 set wins)
+  const setsWonA = completedSets.filter(s => s.winner === 'a').length;
+  const setsWonB = completedSets.filter(s => s.winner === 'b').length;
+  const matchDecided = setsWonA === 2 || setsWonB === 2;
+
+  if (currentSet < 3 && !matchDecided) {
+    currentSet++;
+    document.getElementById('set-label').textContent = `SET ${currentSet}`;
+    const nextPip = document.getElementById(`pip-${currentSet - 1}`);
+    if (nextPip) nextPip.classList.add('active');
+    resetCurrentSet();
+    showToast(`Set ${currentSet - 1} done! Starting Set ${currentSet}`);
+  } else {
+    // Go to result
+    showResult();
+  }
+}
+
+function openEndMatchSheet() {
+  const aName = teamA?.name || 'Team A';
+  const bName = teamB?.name || 'Team B';
+  const setsWonA = completedSets.filter(s => s.winner === 'a').length;
+  const setsWonB = completedSets.filter(s => s.winner === 'b').length;
+  document.getElementById('end-match-sub').textContent =
+    `${completedSets.length} set(s) completed. ${aName}: ${setsWonA} sets, ${bName}: ${setsWonB} sets.`;
+  openSheet('end-match-overlay');
+}
+
+function confirmEndMatch() {
+  closeSheet('end-match-overlay');
+  // Save current set if there are any points
+  if (scoreA > 0 || scoreB > 0) {
+    const winner = scoreA > scoreB ? 'a' : scoreB > scoreA ? 'b' : null;
+    completedSets.push({ a: scoreA, b: scoreB, winner });
+    renderSetScoresBar();
+  }
+  showResult();
+}
+
+/* ─── Result screen ─── */
+function showResult() {
+  const aName = teamA?.name || 'Team A';
+  const bName = teamB?.name || 'Team B';
+  const setsWonA = completedSets.filter(s => s.winner === 'a').length;
+  const setsWonB = completedSets.filter(s => s.winner === 'b').length;
+  const totalA   = completedSets.reduce((sum, s) => sum + s.a, 0);
+  const totalB   = completedSets.reduce((sum, s) => sum + s.b, 0);
+
+  // Determine match winner
+  let matchWinner = null;
+  if (setsWonA > setsWonB)       matchWinner = 'a';
+  else if (setsWonB > setsWonA)  matchWinner = 'b';
+
+  document.getElementById('result-winner-name').textContent =
+    matchWinner === 'a' ? aName : matchWinner === 'b' ? bName : 'Match Tied';
+  document.getElementById('result-sub').textContent =
+    matchWinner ? `wins the match ${setsWonA > setsWonB ? setsWonA+'-'+setsWonB : setsWonB+'-'+setsWonA}` : 'No winner';
+
+  // Set breakdown
+  const setsList = document.getElementById('result-sets-list');
+  setsList.innerHTML = '';
+  completedSets.forEach((s, i) => {
+    const winnerName = s.winner === 'a' ? aName : s.winner === 'b' ? bName : 'Tied';
+    const row = document.createElement('div');
+    row.className = 'svl-result-set-row';
+    row.innerHTML = `
+      <div class="svl-result-set-num">SET ${i+1}</div>
+      <div class="svl-result-set-score">
+        <span class="svl-rss-a">${s.a}</span>
+        <span class="svl-rss-sep">–</span>
+        <span class="svl-rss-b">${s.b}</span>
+      </div>
+      <div class="svl-result-set-winner" style="color:${s.winner==='a'?'#34d399':s.winner==='b'?'#fbbf24':'#64748b'}">${winnerName}</div>`;
+    setsList.appendChild(row);
+  });
+
+  // Totals
+  document.getElementById('rtc-a-name').textContent = aName;
+  document.getElementById('rtc-b-name').textContent = bName;
+  document.getElementById('rtc-a-pts').textContent  = totalA;
+  document.getElementById('rtc-b-pts').textContent  = totalB;
+  document.getElementById('rtc-a-sets').textContent = `${setsWonA} set${setsWonA!==1?'s':''} won`;
+  document.getElementById('rtc-b-sets').textContent = `${setsWonB} set${setsWonB!==1?'s':''} won`;
+
+  // Highlight winner card
+  const rtcA = document.getElementById('rtc-a');
+  const rtcB = document.getElementById('rtc-b');
+  rtcA.classList.toggle('winner', matchWinner === 'a');
+  rtcB.classList.toggle('winner', matchWinner === 'b');
+
+  showScreen('screen-result');
+}
+
+/* ─── Save to server ─── */
+function saveMatch() {
+  const btn = document.getElementById('save-match-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const setsWonA = completedSets.filter(s => s.winner === 'a').length;
+  const setsWonB = completedSets.filter(s => s.winner === 'b').length;
+  const winningTeamId  = setsWonA > setsWonB ? teamA.id : teamB.id;
+  const losingTeamId   = setsWonA > setsWonB ? teamB.id : teamA.id;
+
+  // Build sets array: scores from winner's perspective
+  const setsPayload = completedSets.map(s => {
+    if (setsWonA >= setsWonB) {
+      // teamA is winner
+      return { winning_score: s.a, losing_score: s.b };
+    } else {
+      // teamB is winner
+      return { winning_score: s.b, losing_score: s.a };
+    }
+  });
+
+  fetch(SVL_SAVE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': SVL_CSRF },
+    body: JSON.stringify({
+      season_id:       SVL_SEASON.id,
+      winning_team_id: winningTeamId,
+      losing_team_id:  losingTeamId,
+      match_type:      selectedMatchType,
+      sets:            setsPayload
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      showToast('✓ Match saved!');
+      setTimeout(() => window.location.href = '/spl/dashboard', 1200);
+    } else {
+      showToast(data.error || 'Save failed', 'err');
+      btn.disabled = false;
+      btn.textContent = '💾 Save Match';
+    }
+  })
+  .catch(() => {
+    showToast('Network error', 'err');
+    btn.disabled = false;
+    btn.textContent = '💾 Save Match';
+  });
+}
+
+function discardMatch() {
+  teamA = null; teamB = null;
+  currentSet = 1;
+  completedSets = [];
+  scoreA = 0; scoreB = 0;
+  historyA = []; historyB = [];
+
+  // Reset pips
+  [0,1,2].forEach(i => {
+    const pip = document.getElementById(`pip-${i}`);
+    pip.className = 'svl-set-pip';
+    pip.style.background = '';
+    if (i === 0) pip.classList.add('active');
+  });
+  document.getElementById('set-label').textContent = 'SET 1';
+  document.getElementById('set-scores-bar').innerHTML =
+    '<div style="font-size:11px;color:#475569;display:flex;align-items:center;padding:0 4px">No completed sets yet</div>';
+  document.getElementById('scorer-subtitle').textContent = 'Sugam Volleyball League';
+
+  // Deselect teams
+  document.querySelectorAll('.svl-team-btn').forEach(b => b.classList.remove('selected-a','selected-b'));
+  document.getElementById('start-match-btn').classList.remove('ready');
+
+  showScreen('screen-select');
+}
+
+/* ─── Set scores bar ─── */
+function renderSetScoresBar() {
+  const bar = document.getElementById('set-scores-bar');
+  if (!completedSets.length) {
+    bar.innerHTML = '<div style="font-size:11px;color:#475569;display:flex;align-items:center;padding:0 4px">No completed sets yet</div>';
+    return;
+  }
+  bar.innerHTML = '';
+  completedSets.forEach((s, i) => {
+    const chip = document.createElement('div');
+    const wonClass = s.winner === 'a' ? 'won-a' : s.winner === 'b' ? 'won-b' : '';
+    chip.className = `svl-set-score-chip ${wonClass}`;
+    chip.innerHTML = `
+      <div class="svl-set-chip-label">SET ${i+1}</div>
+      <div class="svl-set-chip-score">
+        <span>${s.a}</span><span class="sep">–</span><span>${s.b}</span>
+      </div>`;
+    bar.appendChild(chip);
+  });
+}
+
+/* ─── Helpers ─── */
+function showScreen(id) {
+  document.querySelectorAll('.svl-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function openSheet(id)  { document.getElementById(id).classList.add('open'); }
+function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+function initials(n) { return n.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase(); }
+function showToast(msg, type) {
+  const t = document.getElementById('svl-toast');
+  t.textContent = msg;
+  t.className = 'svl-toast show' + (type ? ' '+type : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ─── Boot ─── */
+document.addEventListener('DOMContentLoaded', buildTeamGrids);
+</script>

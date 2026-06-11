@@ -1,225 +1,337 @@
+// app/javascript/channels/auction_room_channel.js
+//
+// ── DUPLICATE SUBSCRIPTION ROOT CAUSE ────────────────────────────────────
+// Your compiled application.js already contains this file (confirmed in the
+// bundle you shared). So when the page loads, DOMContentLoaded fires
+// auctionRoomChannel.init() from the bundle = subscription #1.
+//
+// A second subscription forms if ANY of these are true:
+//   a) A <script> tag on the page imports this file again
+//   b) application.js imports it AND a separate pack also imports it
+//   c) Turbo Drive navigates without a full page reload, causing
+//      DOMContentLoaded to fire a second time on some setups
+//
+// The `if (this.subscription) return` guard below stops multiple
+// subscriptions from forming regardless of cause.
+//
+// ACTION REQUIRED: search your codebase for any extra
+//   import './channels/auction_room_channel'
+// or <script> tags pointing to this file and remove duplicates.
+// ─────────────────────────────────────────────────────────────────────────
+
 import consumer from "./consumer";
 
-const auctionRoomChannel = consumer.subscriptions.create("AuctionRoomChannel", {
-  connected() {
-    console.log("Connected to AuctionRoomChannel");
-  },
 
-  disconnected() {
-    console.log("Disconnected from AuctionRoomChannel");
-  },
+const RANK_LABELS  = ["🥇 1st", "🥈 2nd", "🥉 3rd", "4th", "5th"];
+const RANK_COLORS  = ["gold-team", "silver-team", "bronze-team", "green-team", ""];
+const RANK_CLASSES = ["gold-rank", "silver-rank", "bronze-rank", "green-rank", ""];
 
-  received(data) {
-    console.log("Received data:=====", data);
-    const { player_name, notification, player_html, user_id, remaining_purse, batting, bowling, purchase_insight, winning_percentage, max_bid } = data;
-    console.log('value of max bid is:-', max_bid)
+const auctionRoomChannel = {
+  subscription: null,
 
-    // Locate the user card in the DOM
-    const userCardContainer = document.querySelector(`[data-user-id='${user_id}']`);
-    if (!userCardContainer) {
-      // console.error(`User card container not found for User ID: ${user_id}`);
+  init() {
+    if (this.subscription) {
+      console.warn("AuctionRoomChannel: subscription already exists, skipping duplicate init");
       return;
     }
+    this.subscription = consumer.subscriptions.create("AuctionRoomChannel", {
 
-    // Locate the players list in the user's card
-    const playersList = userCardContainer.querySelector(".list-group");
-    if (!playersList) {
-      // console.error("Players list not found in the user's card.");
-      return;
-    }
+      connected() {
+        document.body.classList.add("cable-connected");
+      },
 
-    const regex = /₹\d+\.\d{2} \(\w+\)/;
-    const match = player_html.match(regex);
+      disconnected() {
+        document.body.classList.remove("cable-connected");
+      },
 
-    const existingPlayer = playersList.querySelector(`[data-player-name='${player_name}']`);
-    if (existingPlayer) {
-      // console.log("Player card already exists, skipping creation.");
-      return;
-    }
+      received(data) {
+        this.handleDataUpdate(data);
+      },
 
-    // Create a new list item for the player
-    const newPlayerItem = document.createElement("li");
-    newPlayerItem.classList.add(
-      "list-group-item",
-      "auction-player-item",
-      "d-flex",
-      "align-items-center",
-      "justify-content-between",
-      "border",
-      "rounded",
-      "shadow-sm",
-      "mb-2"
-      // "ml-4"
-    );
-    newPlayerItem.setAttribute("data-player-name", player_html.trim().split(" - ")[0]);
-    newPlayerItem.style.padding = "10px";
-
-    newPlayerItem.innerHTML = `
-      <div class="d-flex w-100 justify-content-between align-items-center">
-        <!-- Section 1: Image, Name, and Price -->
-        <div class="d-flex align-items-center" style="flex: 1; margin-right: 20px;">
-          <img src="/assets/default_player_image.jpeg" 
-               class="player-image rounded-circle"
-               alt="default_player_image.jpeg"
-               style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #007bff; margin-right: 15px;">
-          <div>
-            <div class="fw-bold">${player_html.trim().split(" - ")[0]}</div>
-            <div class="text-muted fw-bold">
-              ${
-                match && match[0] === "₹0.00 (crores)"
-                  ? `<span class="captain-badge">👑 Captain</span>`
-                  : `${match ? match[0] : "👑 Captain"}`
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 2: Batting and Bowling Progress Bars -->
-        <div class="progress-section d-flex flex-column text-center" style="flex: 1; margin-right: 20px; margin-right: 30px;">
-          <div class="mb-2">
-            <span class="small text-muted">Batting:</span>
-            <div class="progress" style="height: 18px;">
-              <div class="progress-bar bg-success" style="width: ${batting}%;">${batting}%</div>
-            </div>
-          </div>
-          <div>
-            <span class="small text-muted">Bowling:</span>
-            <div class="progress" style="height: 18px;">
-              <div class="progress-bar bg-warning" style="width: ${bowling}%;">${bowling}%</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 3: Insight Image -->
-        <div style="flex: 0 0 50px; display: flex; justify-content: center; align-items: center;">
-          <img src="/assets/${purchase_insight}.jpeg"
-               alt="${purchase_insight}" 
-               class="rounded-circle shadow-sm"
-               style="width: 50px; height: 50px;">
-        </div>
-      </div>
-    `;
-
-    // Append the new player to the list
-    playersList.appendChild(newPlayerItem);
-
-    // Update remaining purse on the user's original card
-    const remainingPurseElement = userCardContainer.querySelector(".remaining-purse");
-    if (remainingPurseElement) {
-      remainingPurseElement.textContent = remaining_purse;
-    }
-
-    // Update winning percentage in the user's original card
-    Object.entries(winning_percentage).forEach(([id, percentage]) => {
-      const userCardContainer = document.querySelector(`[data-user-id='${id}']`);
-      if (userCardContainer) {
-        const winningChancesElement = userCardContainer.querySelector(".winning-chances");
-        if (winningChancesElement) {
-          winningChancesElement.textContent = `${percentage}`;
+      // ─────────────────────────────────────────────────────────────────
+      // DISPATCH
+      // ─────────────────────────────────────────────────────────────────
+      handleDataUpdate(data) {
+        // 1. Update buying team's purse + skill bars (in place, no reorder)
+        if (data.user_id) {
+          this.updateTeamCard(data);
         }
-      } else {
-        console.error(`User card container not found for User ID: ${id}`);
+
+        // 2. Update win % numbers on every team card (in place, no reorder)
+        if (data.winning_percentage) {
+          this.updateAllWinPercentages(data.winning_percentage);
+        }
+
+        // 3. Reorder the TOP rankings strip by win % (highest first)
+        //    The main team feed cards stay in their fixed DOM positions.
+        if (data.rankings && data.rankings.length > 0) {
+          this.reorderRankingsStrip(data.rankings);
+        }
+
+        // 4. Insert new player card into buying team's squad grid
+        if (data.player_name && data.user_id) {
+          this.handleNewPlayer(data);
+        }
+
+        // 5. Show toast
+        if (data.notification) {
+          this.showNotification(data.notification);
+        }
+      },
+
+      // ─────────────────────────────────────────────────────────────────
+      // 1. UPDATE ONE TEAM CARD — purse + skill bars only, no DOM move
+      // Scoped to #team-{id} to avoid matching rank strip cards.
+      // ─────────────────────────────────────────────────────────────────
+      updateTeamCard(data) {
+        const card = document.querySelector(`#team-${data.user_id}`);
+        if (!card) return;
+
+        if (data.remaining_purse != null) {
+          const el = card.querySelector("[data-remaining-purse]");
+          if (el) el.textContent = data.remaining_purse;
+        }
+
+        if (data.team_batting != null) {
+          const bar = card.querySelector("[data-bat-bar]");
+          if (bar) {
+            bar.style.width = `${data.team_batting}%`;
+            const lbl = bar.querySelector("[data-bat-bar-label]");
+            if (lbl) lbl.textContent = `${data.team_batting}%`;
+          }
+        }
+
+        if (data.team_bowling != null) {
+          const bar = card.querySelector("[data-bowl-bar]");
+          if (bar) {
+            bar.style.width = `${data.team_bowling}%`;
+            const lbl = bar.querySelector("[data-bowl-bar-label]");
+            if (lbl) lbl.textContent = `${data.team_bowling}%`;
+          }
+        }
+      },
+
+      // ─────────────────────────────────────────────────────────────────
+      // 2. UPDATE WIN % NUMBERS on every team card + sidebar (no reorder)
+      // winMap = { "user_id_string": float, ... }
+      // ─────────────────────────────────────────────────────────────────
+      updateAllWinPercentages(winMap) {
+        Object.entries(winMap).forEach(([userId, pct]) => {
+          const val = parseFloat(pct);
+          if (isNaN(val)) return;
+
+          const pct1 = val.toFixed(1);   // "41.8"
+          const pct0 = Math.round(val);  // 42
+
+          // Main team card
+          const teamCard = document.querySelector(`#team-${userId}`);
+          if (teamCard) {
+            const n = teamCard.querySelector("[data-win-pct-num]");
+            if (n) n.textContent = `${pct1}%`;
+            const c = teamCard.querySelector("[data-win-chance]");
+            if (c) c.textContent = `${pct1}%`;
+          }
+
+          // Sidebar
+          const sidebarItem = document.querySelector(`#nav-${userId}`);
+          if (sidebarItem) {
+            const p = sidebarItem.querySelector("[data-sidebar-pct]");
+            if (p) p.textContent = `${pct1}% win`;
+            const b = sidebarItem.querySelector("[data-sidebar-bar]");
+            if (b) b.style.width = `${val}%`;
+          }
+
+          // Rankings strip ring (number only — % sign is a sibling span)
+          const rankCard = document.querySelector(`#at-rankings-grid [data-user-id="${userId}"]`);
+          if (rankCard) {
+            const fill = rankCard.querySelector("[data-ring-fill]");
+            if (fill) fill.setAttribute("stroke-dasharray", `${val}, 100`);
+            const num = rankCard.querySelector("[data-win-pct]");
+            if (num) num.textContent = pct0;
+          }
+        });
+      },
+
+      // ─────────────────────────────────────────────────────────────────
+      // 3. REORDER THE TOP RANKINGS STRIP by win % (highest = position 1)
+      //
+      // rankings = [{ user_id, rank, winning_percentage }, ...]
+      // already sorted highest-first from the server.
+      //
+      // We physically reorder the small rank cards in #at-rankings-grid
+      // AND update their colour classes and ring values.
+      //
+      // The MAIN TEAM FEED CARDS are NOT moved — they stay in the
+      // order the server rendered them (your fixed team order).
+      // ─────────────────────────────────────────────────────────────────
+      reorderRankingsStrip(rankings) {
+        const grid = document.getElementById("at-rankings-grid");
+        if (!grid) return;
+
+        // Build lookup: user_id → ranking data
+        const rankMap = {};
+        rankings.forEach(r => { rankMap[String(r.user_id)] = r; });
+
+        // Grab all current rank cards
+        const cards = Array.from(grid.querySelectorAll(".at-rank-card"));
+
+        // Sort them by the new rank
+        cards.sort((a, b) => {
+          const ra = rankMap[a.dataset.userId]?.rank ?? 999;
+          const rb = rankMap[b.dataset.userId]?.rank ?? 999;
+          return ra - rb;
+        });
+
+        // Clear and re-insert in new order
+        grid.innerHTML = "";
+
+        cards.forEach((card, i) => {
+          const rd = rankMap[card.dataset.userId];
+          if (!rd) {
+            grid.appendChild(card);
+            return;
+          }
+
+          const pctFloat = parseFloat(rd.winning_percentage);
+
+          // Update rank label (#1, #2 …)
+          const rankLabel = card.querySelector("[data-rank-label]");
+          if (rankLabel) rankLabel.textContent = `#${rd.rank}`;
+
+          // Update ring fill
+          const ringFill = card.querySelector("[data-ring-fill]");
+          if (ringFill) ringFill.setAttribute("stroke-dasharray", `${pctFloat}, 100`);
+
+          // Update ring number (number span only, not the % span)
+          const winNum = card.querySelector("[data-win-pct]");
+          if (winNum) winNum.textContent = Math.round(pctFloat);
+
+          // Swap colour class to match new position
+          card.classList.remove(...RANK_CLASSES);
+          if (RANK_CLASSES[i]) card.classList.add(RANK_CLASSES[i]);
+
+          // Animate in staggered
+          card.style.opacity   = "0";
+          card.style.transform = "translateY(10px)";
+          grid.appendChild(card);
+
+          setTimeout(() => {
+            card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+            card.style.opacity    = "1";
+            card.style.transform  = "translateY(0)";
+          }, i * 60);
+        });
+      },
+
+      // ─────────────────────────────────────────────────────────────────
+      // 4. ADD NEW PLAYER CARD
+      // Always builds locally with at- classes (never uses server HTML
+      // because _auction_room partial used old class names).
+      // ─────────────────────────────────────────────────────────────────
+      handleNewPlayer(data) {
+        const teamCard = document.querySelector(`#team-${data.user_id}`);
+        if (!teamCard) return;
+
+        const grid = teamCard.querySelector("[data-players-grid]");
+        if (!grid) return;
+
+        const name = data.player_name || "";
+
+        // Duplicate guard
+        if (grid.querySelector(`[data-player="${CSS.escape(name)}"]`)) return;
+
+        const card = this.buildPlayerCard(data);
+        if (!card) return;
+
+        card.style.opacity   = "0";
+        card.style.transform = "translateY(14px)";
+        grid.appendChild(card);
+
+        requestAnimationFrame(() => {
+          card.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+          card.style.opacity    = "1";
+          card.style.transform  = "translateY(0)";
+        });
+
+        // Bump squad count badge
+        const countEl = teamCard.querySelector("[data-squad-count]");
+        if (countEl) {
+          const n = parseInt(countEl.textContent) || 0;
+          countEl.textContent = `${n + 1} Players`;
+        }
+      },
+
+      buildPlayerCard(data) {
+        const isCaptain  = !!data.is_captain;
+        const insight    = isCaptain ? "captain" : (data.purchase_insight || "worst_buy");
+        const bat        = data.batting  ?? 0;
+        const bowl       = data.bowling  ?? 0;
+        const price      = isCaptain
+          ? `<span class="at-captain-pill">Captain</span>`
+          : (data.price_display || "");
+
+        const card = document.createElement("div");
+        card.className      = "at-player-card";
+        card.dataset.player = data.player_name;
+
+        card.innerHTML = `
+          <div class="at-player-insight">
+            <img src="/assets/${insight}.jpeg" class="at-insight-img" alt="${insight}">
+          </div>
+          <div class="at-player-av-wrap">
+            <img src="/assets/default_player_image.jpeg" class="at-player-av" alt="${data.player_name}">
+            ${isCaptain ? '<div class="at-captain-badge">👑</div>' : ""}
+          </div>
+          <div class="at-player-info">
+            <div class="at-player-name">${data.player_name}</div>
+            <div class="at-player-price">${price}</div>
+          </div>
+          <div class="at-player-skills">
+            <div class="at-mini-skill">
+              <div class="at-mini-track">
+                <div class="at-mini-bar bat-mini" style="width:${bat}%"></div>
+              </div>
+              <div class="at-mini-label">Bat ${bat}%</div>
+            </div>
+            <div class="at-mini-skill">
+              <div class="at-mini-track">
+                <div class="at-mini-bar bowl-mini" style="width:${bowl}%"></div>
+              </div>
+              <div class="at-mini-label">Bowl ${bowl}%</div>
+            </div>
+          </div>
+        `;
+        return card;
+      },
+
+      // ─────────────────────────────────────────────────────────────────
+      // 5. TOAST NOTIFICATION
+      // ─────────────────────────────────────────────────────────────────
+      showNotification(message) {
+        const container = document.getElementById("at-notifications");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = "at-toast";
+        toast.innerHTML = `
+          <div class="at-toast-icon">🔔</div>
+          <div class="at-toast-text">${message}</div>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.animation = "at-toast-out 0.3s ease-out forwards";
+          setTimeout(() => toast.remove(), 320);
+        }, 5000);
       }
     });
+  }
+};
 
-    // Update captain's max bid in the user's original card
-    Object.entries(max_bid).forEach(([id, max_bid]) => {
-      const userCardContainer = document.querySelector(`[data-user-id='${id}']`);
-      if (userCardContainer) {
-        const wmaxBidElement = userCardContainer.querySelector(".max-bid");
-        if (wmaxBidElement) {
-          wmaxBidElement.textContent = `${max_bid}`;
-        }
-      } else {
-        console.error(`User card container not found for User ID: ${id}`);
-      }
-    });
-
-    // Update team batting percentage
-    const teamBatting = document.querySelector(`.team-batting[data-user-id="${user_id}"]`);
-    if (teamBatting) {
-      teamBatting.style.width = `${data.team_batting}%`;
-      teamBatting.textContent = `${data.team_batting}%`;
-    }
-
-    // Update team bowling percentage
-    const teamBowling = document.querySelector(`.team-bowling[data-user-id="${user_id}"]`);
-    if (teamBowling) {
-      teamBowling.style.width = `${data.team_bowling}%`;
-      teamBowling.textContent = `${data.team_bowling}%`;
-    }
-
-    // Update team rankings dynamically
-  const updateRankings = () => {
-    const rankingsContainer = document.querySelector(".team-rankings-container");
-    if (!rankingsContainer) return;
-
-    // Sort users based on their winning percentages
-    const sortedUsers = Object.entries(winning_percentage)
-      .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1])); // Sort descending
-
-    // Clear existing rankings
-    rankingsContainer.innerHTML = "";
-
-    // Re-render the rankings dynamically
-    const colorClasses = ["text-bg-primary", "text-bg-success", "text-bg-warning", "text-bg-danger"];
-
-    sortedUsers.forEach(([id, percentage], index) => {
-      // Find the user card in the DOM
-      const userCard = document.querySelector(`[data-user-id='${id}']`);
-      const username = userCard?.querySelector(".card-title")?.textContent || "Unknown";
-
-      // Get a color class based on the index (cyclically)
-      const badgeColor = colorClasses[index % colorClasses.length];
-
-      const rankingItem = `
-        <div class="col-3 text-center mb-2">
-          <div class="card shadow-sm border-0" style="border-radius: 10px;">
-            <div class="card-body p-2">
-              <h6><span class="fw-bold mb-0 badge badge-sm ${badgeColor} text-uppercase">${username.split(" ").pop()}</span></h6>
-              <p class="small mb-1 text-muted">Rank ${index + 1}</p>
-              <p class="fw-bold text-danger mb-0">${percentage}</p>
-            </div>
-          </div>
-        </div>
-      `;
-
-      // Insert the new ranking card into the rankings container
-      const rankingsContainer = document.querySelector(".team-rankings-container");
-      console.log('value of ranking', rankingsContainer)
-      rankingsContainer.insertAdjacentHTML("beforeend", rankingItem);
-    });
-  };
-
-  updateRankings();
-
-    // Function to display a toast notification
-    const createToast = (message, type = "success") => {
-      const container = document.getElementById("notifications");
-      if (!container) return;
-
-      const toast = document.createElement("div");
-      toast.classList.add("notification-toast", type);
-      toast.innerHTML = `
-        <div>
-          <img src="/assets/default_player_image.jpeg" alt="icon" style="width: 24px; height: 24px;">
-        </div>
-        <div class="notification-text">${message}</div>
-      `;
-
-      container.appendChild(toast);
-
-      // Auto-remove the toast after 4 seconds
-      setTimeout(() => {
-        toast.remove();
-      }, 8000);
-    };
-
-    // Display a notification if provided
-    if (notification) {
-      createToast(notification, "success");
-    }
-  },
+// ── BOOT ──────────────────────────────────────────────────────────────────
+// DOMContentLoaded fires once per page load from the compiled bundle.
+// The subscription guard inside init() stops any accidental second call.
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM ready — init AuctionRoomChannel");
+  auctionRoomChannel.init();
 });
-
-export default auctionRoomChannel;

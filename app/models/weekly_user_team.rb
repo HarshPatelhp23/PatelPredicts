@@ -8,7 +8,7 @@ class WeeklyUserTeam < ApplicationRecord
   validates :week_start_date, uniqueness: { scope: :team_id }
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[bench created_at id playing11 updated_at user_id week_end_date week_start_date week]
+    %w[bench created_at id updated_at user_id week_end_date week_start_date week]
   end
 
   def self.current_week_changes(user, team, week, auction)
@@ -32,6 +32,17 @@ class WeeklyUserTeam < ApplicationRecord
       playing_11_changed_player_id = all_weekly_user_teams.last.playing11
       bench_changed_player_id = all_weekly_user_teams.last.bench
       [playing_11_changed_player_id, bench_changed_player_id]
+    end
+  end
+
+  def self.current_week_team_submitted?(user)
+    current_date = Time.now.to_date
+    if current_date.saturday? || current_date.sunday?
+      next_sunday = current_date.next_week.end_of_week
+      user.weekly_user_teams.exists?(week_end_date: next_sunday)
+    else
+      current_sunday = current_date.end_of_week
+      user.weekly_user_teams.exists?(week_end_date: current_sunday)
     end
   end
 
@@ -72,18 +83,61 @@ class WeeklyUserTeam < ApplicationRecord
   #   [playing_11_changed_player_id, bench_changed_player_id]
   # end
 
+
   private
 
   def update_team_changes
-    return unless new_record?
+    if new_record?
+      self.week = next_week_number
+      first_week_team = self.class.where(team:, user:).order(week: :desc)&.first || []
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "VALUE OF WEEK:- #{week}"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      puts "+++++++++++++++++++++++++++++++++++++++++++++"
+      if week == 1
+        playing11_changes  = playing11
+        bench_changes  = bench
+      else
+        playing11_changes  = first_week_team&.playing11 - playing11
+        bench_changes  = first_week_team&.bench - bench
+      end
+      team_changes = {}
+      team_changes[:playing11_changes] = playing11_changes
+      team_changes[:bench_changes] = bench_changes
+      self.team_changes = team_changes
+    else
+      week_team = self.class.where(team:, user:).order(created_at: :desc)&.second || []
+      playing11_changes  =  week_team&.playing11- playing11
+      bench_changes  = week_team&.bench - bench
+      team_changes = {}
+      team_changes[:playing11_changes] = playing11_changes
+      team_changes[:bench_changes] = bench_changes
+      self.team_changes = team_changes
+      # self.update_columns(team_changes:)
+    end
+  end
 
-    playing11_changes  = self.class.where(team:, user:).order(week_start_date: :desc)&.last.playing11 - playing11
-    bench_changes  = self.class.where(team:, user:).order(week_start_date: :desc)&.last.bench - bench
-    team_changes = {}
-    team_changes[:playing11_changes] = playing11_changes
-    team_changes[:bench_changes] = bench_changes
-    last_week = self.class.where(team:, user:).order(week_start_date: :desc)&.first.week
-    self.team_changes = team_changes
-    self.week = last_week + 1
+  def next_week_number
+    ipl_start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y')
+    current_date = Date.current
+    
+    return 1 if current_date < ipl_start_date
+    
+    days_elapsed = (current_date - ipl_start_date).to_i
+    (days_elapsed / 7) + 1 + 1
+    #(start counting weeks from 1 instead of 0) + (for next week)
   end
 end

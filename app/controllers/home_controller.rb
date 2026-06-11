@@ -59,32 +59,41 @@ class HomeController < ApplicationController
       @current_auction = params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last
       @default_team = current_user.teams.where(auction: @current_auction).first
 
+      if @default_team.nil?
+        @today_matches = []
+        @matches = []
+        @match_points = []
+        @user_data = {}
+        @current_rank = nil
+        return
+      end
+
       # Fetch players with preloaded associations
       # @players = @default_team.players.includes(:some_association)
 
       @today_matches = MatchSchedule.where(match_date: Date.current)
 
       # Fetch matches and match_points with caching
-      @matches = Rails.cache.fetch("matches_#{@default_team.id}", expires_in: 1.hour) do
+      @matches = Rails.cache.fetch("matches_#{@default_team&.id}", expires_in: 1.hour) do
         Match.where(team: @default_team).order(created_at: :desc).distinct
       end
 
       @pagy, @match_points = pagy(
-        Rails.cache.fetch("match_points_#{@default_team.id}", expires_in: 1.hour) do
+        Rails.cache.fetch("match_points_#{@default_team&.id}", expires_in: 1.hour) do
           # Subquery to get the latest created_at record for each match_name
           # latest_match_points = default_team.match_points
           #                                  .select('DISTINCT ON (match_name) match_points.*')
           #                                  .order(match_name: :asc, created_at: :desc)
 
-          latest_match_points = @default_team.match_points
-                                 .joins("INNER JOIN matches ON matches.match_name = match_points.match_name")
-                                 .select('DISTINCT ON (match_points.match_name) match_points.*, matches.match_date')
-                                 .order('match_points.match_name ASC, match_points.created_at DESC, matches.match_date DESC')
+          latest_match_points = @default_team&.match_points
+                                 &.joins("INNER JOIN matches ON matches.match_name = match_points.match_name")
+                                 &.select('DISTINCT ON (match_points.match_name) match_points.*, matches.match_date')
+                                 &.order('match_points.match_name ASC, match_points.created_at DESC, matches.match_date DESC')
 
           # Order the results by created_at in descending order
-          @default_team.match_points
-                      .where(id: latest_match_points.pluck(:id))
-                      .order(created_at: :desc)
+          @default_team&.match_points
+                      &.where(id: latest_match_points&.pluck(:id))
+                      &.order(created_at: :desc)
         end
       )
 
@@ -111,28 +120,30 @@ class HomeController < ApplicationController
   end
 
    def fetch_match_data_for_team(team_id, auction)
-  # Subquery to calculate rankings for all teams
-  subquery = MatchPoint
-    .joins(:team)
-    .where(teams: { auction_id: auction.id })
-    .select(
-      'match_points.match_name',
-      'match_points.team_id',
-      'match_points.total_points',
-      'RANK() OVER (PARTITION BY match_points.match_name ORDER BY match_points.total_points DESC) AS ranking'
-    ).to_sql
+    # Subquery to calculate rankings for all teams
+    subquery = MatchPoint
+      .joins(:team)
+      .where(teams: { auction_id: auction.id })
+      .order(created_at: :desc)
+      .select(
+        'match_points.match_name',
+        'match_points.team_id',
+        'match_points.total_points',
+        'match_points.match_date',
+        'RANK() OVER (PARTITION BY match_points.match_name ORDER BY match_points.total_points DESC) AS ranking'
+      ).to_sql
 
-  # Use Arel.sql to wrap the subquery correctly
-  ranked_match_points = "(#{subquery}) AS ranked_match_points"
+    # Use Arel.sql to wrap the subquery correctly
+    ranked_match_points = "(#{subquery}) AS ranked_match_points"
 
-  # Query from the subquery and filter by team_id
-  MatchPoint
-    .unscoped
-    .from(ranked_match_points)
-    .select('ranked_match_points.*')
-    .where('ranked_match_points.team_id = ?', team_id)
-    .order('ranked_match_points.match_name, ranked_match_points.ranking')
-end
+    # Query from the subquery and filter by team_id
+    MatchPoint
+      .unscoped
+      .from(ranked_match_points)
+      .select('ranked_match_points.*')
+      .where('ranked_match_points.team_id = ?', team_id)
+      .order('ranked_match_points.match_date, ranked_match_points.match_name, ranked_match_points.ranking')
+  end
 
   # ===============================================================================
 
@@ -186,44 +197,115 @@ end
   def compute_match_team_points
     @data = {}
     @points_data = {}
+    @bench_points_data = {}
     @auction = Auction.find(params[:auction_id])
     @user = @auction.users.where(slug: params[:user])&.first || @auction.users.where(username: params[:user])&.first
-    # @user = Team.find_by(team_name: params[:user][0])&.user || Team.find_by(team_name: params[:user]).user # temp solution for client
-    # @user = User.find_by(username: params[:user][0])
+    
     return if @user.blank?
 
     @default_team = @user.teams.where(auction: @auction)&.first
-    @selected_user_team = @user.teams.where(auction: @auction)&.first
-    matches = @default_team.matches.where(match_name: params[:match_name])
+    return render_error("User doesn't have a team in this auction") if @default_team.blank?
 
-    #CHAGE FFIRST TO LAST AFTER UPDATING THE POINTS
-    # playing11_player_ids = if @user.weekly_user_teams.count > 1
-    #                           @user.weekly_user_teams.where("week_end_date <= ?", Date.current)&.last
-    #                        else
-    #                         @user.teams.where(auction: default_auction)&.first.weekly_user_teams.last.playing11
-    #                        end
-    playing11_player_ids = @default_team.player_perfomace_points.where(match: matches.pluck(:match_name)).pluck(:player_id)
-    @players = @selected_user_team.players.where(team_name: params[:match_name].split(' vs '), id: playing11_player_ids)
-    result = {}
-    @auction = default_auction
-    return if @players.compact.blank?
-
-    # @players.each do |player|
-    #   result[player.name] = player.matches.where(match_name: params[:match_name]).first&.points
-    # end
-    # @players_hash = result
-
-    @players.each do |player|
-      pp_record = player.player_perfomace_points.where(match: params[:match_name], team: @selected_user_team)&.first
-      if pp_record.present?
-        @data[player.name] = player.player_perfomace_points.where(match: params[:match_name], team: @selected_user_team)&.first
-        @points_data[player.name] = player.matches.where(match_name: params[:match_name])&.first&.points
+    @selected_user_team = @default_team
+    
+    # Find the match - handle nil case
+    matche = @default_team.matches.where(match_name: params[:match_name]).order(match_date: :desc)&.first
+    
+    # If no match found, return empty data
+    if matche.blank?
+      @scoring_players = []
+      @data = {}
+      @points_data = {}
+      @bench_points_data = {}
+      return respond_to do |format|
+        format.html
+        format.js
       end
     end
-    # @data = @data.compact_blank
+    week = calculate_week_for_match(matche.match_date)
+    # Get current week's playing 11
+    current_week_player_ids = @selected_user_team.weekly_user_teams.where(week:)&.first&.playing11 || @selected_user_team.weekly_user_teams.last&.playing11
+    return render_error("No weekly team found") if current_week_player_ids.blank?
+
+    # Get player performance points for the match
+    timestamps = @default_team.player_perfomace_points
+              .where(match: matche.match_name, player_id: current_week_player_ids)
+              .pluck(:created_at)
+
+    # Handle empty timestamps
+    if timestamps.blank?
+      playing11_player_ids = []
+    else
+      grouped_by_date = timestamps.group_by { |t| t.to_date }
+      most_common_date = grouped_by_date.max_by { |_, v| v.size }[0]
+      playing11_player_ids = @default_team.player_perfomace_points
+        .where(match: matche.match_name)
+        .where("DATE(created_at) <= ?", most_common_date)
+        .pluck(:player_id)
+    end
+
+    # Get players who played in this match
+    team_names = params[:match_name].split(' vs ') rescue []
+    @players = @selected_user_team.players.where(id: playing11_player_ids)
+    @players = @players.where(team_name: team_names) if team_names.any?
+
+    @bench_player_ids = @selected_user_team.weekly_user_teams.where(week:)&.first&.bench || @selected_user_team.weekly_user_teams.last.bench
+    @bench_players = @selected_user_team.players.where(id: @bench_player_ids)
+    @bench_players = @bench_players.where(team_name: team_names) if team_names.any?
+    
+    # Handle case with no players
+    if @players.blank?
+      @scoring_players = []
+      @data = {}
+      @points_data = {}
+      @bench_points_data = {}
+      return respond_to do |format|
+        format.html
+        format.js
+      end
+    end
+
+    # Collect scoring data
+    @scoring_players = []
+    @players.each do |player|
+      pp_record = player.player_perfomace_points.where(match: params[:match_name], team: @selected_user_team).order(created_at: :desc)&.first
+      if pp_record.present? && pp_record.in_playing11 > 0
+        @data[player.name] = pp_record
+        match_points = player.matches.where(match_name: params[:match_name])&.order(match_date: :desc)&.first&.points
+        @points_data[player.name] = match_points || 0
+        @scoring_players << player
+      end
+    end
+
+    @scoring_bench_players = []
+    @bench_players.each do |player|
+      pp_record = player.player_perfomace_points.where(match: params[:match_name], team: @selected_user_team).order(created_at: :desc)&.first
+      if pp_record.present? && pp_record.in_playing11 > 0
+        @data[player.name] = pp_record
+        match_points = player.matches.where(match_name: params[:match_name])&.order(match_date: :desc)&.first&.bench_points
+        @bench_points_data[player.name] = match_points || 0
+        @scoring_bench_players << player
+      end
+    end
+
+    # If no scoring players found
+    if @scoring_players.blank?
+      @scoring_players = []
+      @data = {}
+      @points_data = {}
+      # @bench_points_data = {}
+    end
+
+    if @scoring_bench_players.blank?
+      @scoring_bench_players = []
+      # @data = {}
+      # @points_data = {}
+      @bench_points_data = {}
+    end
+
     respond_to do |format|
-      format.html # render the full HTML if needed
-      format.js   # handle AJAX request
+      format.html
+      format.js
     end
   end
 
@@ -250,8 +332,10 @@ end
     # @current_auction_teams = default_auction.teams.sort_by { |team| -team.grand_total }
     @team1, @team2 = @match.split(" vs ")
     @team_points = {}
+    @team_bench_points = {}
     default_auction.teams.each do|team|
-      @team_points[team.team_name] = MatchPoint.where(match_name: @match, team:)&.first&.total_points
+      @team_points[team.team_name] = MatchPoint.where(match_name: @match, team:).order(created_at: :desc)&.first&.total_points
+      @team_bench_points[team.team_name] = MatchPoint.where(match_name: @match, team:).order(created_at: :desc)&.first&.total_bench_points.to_i
     end
     @team_points = @team_points.transform_values { |points| points || 0 }
                            .sort_by { |_, points| -points }
@@ -268,7 +352,7 @@ end
     @best_batsman_pp_record = @best_batsman&.player_perfomace_points&.where(match: @match)&.last
     @best_batsman_total_points = @best_batsman&.matches&.where(match_name: @match)&.last&.points
     @best_bowler = Match.find_best_bowler(@match)
-    @best_bowler_total_points = @best_bowler&.matches.where(match_name: @match)&.last&.points
+    @best_bowler_total_points = @best_bowler&.matches&.where(match_name: @match)&.last&.points
     @best_bowler_pp_record = @best_bowler&.player_perfomace_points&.where(match: @match)&.last
     @current_user_batsmans = default_team.players
                                          .joins(:player_perfomace_points)
@@ -287,7 +371,7 @@ end
                                             0, 
                                             0
                                           )
-  end
+    end
 
     # @sorted_team_hash = team_hash.sort_by { |_team_name, total_points| - total_points }.to_h
     # return unless @sorted_team_hash.length < User.where(auction_id: current_user&.auction_id).count
@@ -305,35 +389,138 @@ end
   # end
 
   def points_table
-  auction = params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last
+    @default_auction = default_auction
+    # auction = params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last
 
-  # Calculate adjusted total (grand_total - penalty_point) for each team and order by it in descending order
-  @filtered_teams = auction.teams
-                           .select('teams.*, (teams.grand_total - COALESCE(teams.penalty_points, 0)) as adjusted_total')
-                           .order('adjusted_total DESC')
+    # Calculate adjusted total (grand_total - penalty_point) for each team and order by it in descending order
+    @filtered_teams = @default_auction.teams.select('teams.*, (teams.grand_total - COALESCE(teams.penalty_points, 0)) as adjusted_total')
+                                      .order('adjusted_total DESC')
 
-  @current_user_team = current_user.teams.where(auction: auction).first
-  @default_auction = default_auction
-end
+    @current_user_team = current_user.teams.where(auction: default_auction).first
+  end
+
+  def bench_points_table
+    @default_auction = default_auction
+    @filtered_teams = default_auction.teams
+                                     .select('teams.*, (teams.grand_total - COALESCE(teams.penalty_points, 0)) as adjusted_total')
+                                     .order('adjusted_total DESC')
+
+    @current_user_team = current_user.teams.where(auction: default_auction).first
+  end
 
   def edit_profile; end
 
   def update_profile
-    if current_user.update_profile_count >= 10
-      redirect_to after_login_path,
-                  alert: 'Your Update Profile count had been exceeded, To continue updating, please pay another 600 to admin.'
-      return
-    end
-
-    current_update_profile_count = current_user.update_profile_count
-    return unless params[:username]
-
-    current_user.update(username: params[:username],
-                        update_profile_count: current_update_profile_count + 1)
-    redirect_to after_login_path, notice: 'Username updated successfully'
+  # Check update limit
+  if current_user.update_profile_count >= 10
+    redirect_to after_login_path,
+                alert: 'Your Update Profile count had been exceeded, To continue updating, please pay another 600 to admin.'
+    return
   end
 
+  # Prepare update parameters
+  update_params = {
+    username: params[:username],
+    email: params[:email],
+    phone_number: params[:phone_number],
+    security_question: params[:security_question],
+    security_answer: params[:security_answer],
+    favorite_format: params[:favorite_format],
+    bio: params[:bio],
+    notifications_enabled: params[:notifications_enabled] == '1',
+    update_profile_count: current_user.update_profile_count + 1
+  }.compact
+  
+  # Handle password change
+  if params[:new_password].present? && params[:new_password] != ""
+    # Devise requires current_password to change password
+    if params[:current_password].present? && current_user.valid_password?(params[:current_password])
+      # Use update_with_password for password changes
+      if current_user.update_with_password(
+        current_password: params[:current_password],
+        password: params[:new_password],
+        password_confirmation: params[:new_password]
+      )
+        # Password updated successfully
+      else
+        redirect_to edit_profile_path, alert: current_user.errors.full_messages.join(', ')
+        return
+      end
+    else
+      redirect_to edit_profile_path, alert: 'Current password is incorrect'
+      return
+    end
+  end
+  
+  # Update other profile fields
+  if current_user.update(update_params)
+    redirect_to after_login_path, notice: 'Profile updated successfully'
+  else
+    redirect_to edit_profile_path, alert: current_user.errors.full_messages.join(', ')
+  end
+end
+
+  def update_profile_picture
+    if current_user.update(profile_picture: params[:profile_picture])
+      redirect_to edit_profile_path(current_user), notice: 'Profile picture updated'
+    else
+      redirect_to edit_profile_path, alert: 'Failed to update profile picture'
+    end
+  end
+
+  # def update_profile
+  #   if current_user.update_profile_count >= 10
+  #     redirect_to after_login_path,
+  #                 alert: 'Your Update Profile count had been exceeded, To continue updating, please pay another 600 to admin.'
+  #     return
+  #   end
+
+  #   current_update_profile_count = current_user.update_profile_count
+  #   return unless params[:username]
+
+  #   current_user.update(username: params[:username],
+  #                       update_profile_count: current_update_profile_count + 1)
+  #   redirect_to after_login_path, notice: 'Username updated successfully'
+  # end
+
   private
+
+  def calculate_week_for_match(match_date)
+    # Get the IPL start date
+    ipl_start_date = if defined?(Auction::IPL_FIRST_WEEK_DATE)
+      Date.parse(Auction::IPL_FIRST_WEEK_DATE)
+    else
+      # Fallback: Use the first match date or auction start date
+      @auction.matches.order(match_date: :asc)&.first&.match_date || @auction.start_date
+    end
+    
+    # Ensure match_date is a Date object
+    match_date = match_date.to_date if match_date.respond_to?(:to_date)
+    
+    # Calculate week number (assuming 7-day weeks)
+    # Week 1: Day 0-6, Week 2: Day 7-13, etc.
+    days_difference = (match_date - ipl_start_date).to_i
+    
+    # Week starts from 1
+    week_number = (days_difference / 7) + 1
+    
+    # Ensure week is at least 1
+    week_number = 1 if week_number < 1
+    
+    week_number
+  end
+
+  def render_error(message)
+    flash[:error] = message
+    @scoring_players = []
+    @data = {}
+    @points_data = {}
+    
+    respond_to do |format|
+      format.html
+      format.js
+    end
+  end
 
   def default_auction
     params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last

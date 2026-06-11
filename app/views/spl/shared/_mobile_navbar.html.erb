@@ -1,0 +1,19 @@
+<div class="spl-mobile-header">
+  <div class="spl-header-content">
+    <div class="spl-logo">
+      <i class="fas fa-trophy"></i>
+      <span>SPL</span>
+    </div>
+    <div class="spl-user-info">
+      <span class="spl-user-name"><%= current_spl_user&.name %></span>
+      <div class="spl-dropdown">
+        <i class="fas fa-user-circle"></i>
+        <div class="spl-dropdown-content">
+          <%= link_to 'Profile', edit_spl_user_registration_path %>
+          <%= link_to 'My Team', spl_fantasy_team_path(current_spl_user&.fantasy_team) %>
+          <%= link_to 'Logout', destroy_spl_user_session_path, method: :delete %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,16 +1,1103 @@
-<div class="container mt-5">
-  <div class="header">
-    <h1 class="text-center mb-4"><%= "#{current_user.username}'s Profile" %></h1>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <%= form_with(url: update_profile_path, method: :post, class: "edit-profile-form") do |form| %>
-        <div class="form-group">
-          <label for="username" class="form-label">Username:</label>
-          <%= form.text_field :username, value: current_user.username, class: "form-control username-input", required: true %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Fantasy Cricket</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cricket-green: #1B5E20;
+            --cricket-light-green: #4CAF50;
+            --cricket-gold: #FFD700;
+            --cricket-red: #D32F2F;
+            --cricket-blue: #0D47A1;
+            --cricket-cream: #FFF8E1;
+            --cricket-brown: #5D4037;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a2e0a 0%, #1a5a1a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #333;
+        }
+        
+        /* Cricket Field Background Animation */
+        .cricket-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 40% 80%, rgba(27, 94, 32, 0.1) 0%, transparent 20%);
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        /* Animated Cricket Ball */
+        .cricket-ball {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #FFD700, #FF9800);
+            border-radius: 50%;
+            animation: floatBall 20s infinite linear;
+            opacity: 0.6;
+            z-index: -1;
+        }
+        
+        .ball-1 {
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+        
+        .ball-2 {
+            top: 60%;
+            left: 80%;
+            animation-delay: 5s;
+        }
+        
+        .ball-3 {
+            top: 80%;
+            left: 20%;
+            animation-delay: 10s;
+        }
+        
+        /* Stumps Animation */
+        .stumps {
+            position: absolute;
+            width: 8px;
+            height: 60px;
+            background: var(--cricket-brown);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .stumps:before, .stumps:after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 60px;
+            background: var(--cricket-brown);
+        }
+        
+        .stumps:before {
+            left: -30px;
+        }
+        
+        .stumps:after {
+            left: 30px;
+        }
+        
+        .bails {
+            position: absolute;
+            width: 70px;
+            height: 8px;
+            background: var(--cricket-cream);
+            top: -4px;
+            left: -35px;
+        }
+        
+        .bails:after {
+            content: '';
+            position: absolute;
+            width: 70px;
+            height: 8px;
+            background: var(--cricket-cream);
+            top: 56px;
+        }
+        
+        @keyframes floatBall {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(100px, 100px) rotate(90deg);
+            }
+            50% {
+                transform: translate(0, 200px) rotate(180deg);
+            }
+            75% {
+                transform: translate(-100px, 100px) rotate(270deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+        
+        /* Header Styling */
+        .header {
+            text-align: center;
+            padding: 30px 0 10px;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            display: inline-block;
+            padding-bottom: 15px;
+        }
+        
+        .header h1:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 4px;
+            background: var(--cricket-gold);
+            border-radius: 2px;
+        }
+        
+        /* Profile Card - Desktop */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            margin: 30px auto;
+            max-width: 800px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .profile-card:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+        
+        .profile-card > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Profile Picture Section */
+        .profile-pic-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .profile-pic-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            padding: 8px;
+            background: linear-gradient(45deg, var(--cricket-green), var(--cricket-light-green));
+            box-shadow: 0 8px 20px rgba(27, 94, 32, 0.3);
+            margin-bottom: 20px;
+            animation: pulseBorder 3s infinite;
+        }
+        
+        @keyframes pulseBorder {
+            0%, 100% {
+                box-shadow: 0 8px 20px rgba(27, 94, 32, 0.3);
+            }
+            50% {
+                box-shadow: 0 8px 30px rgba(27, 94, 32, 0.6);
+            }
+        }
+        
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+        }
+        
+        .profile-pic-overlay {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background: var(--cricket-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid white;
+        }
+        
+        .profile-pic-overlay:hover {
+            transform: scale(1.1);
+            background: var(--cricket-light-green);
+        }
+        
+        .profile-pic-overlay i {
+            color: var(--cricket-green);
+            font-size: 20px;
+        }
+        
+        /* Form Styling */
+        .form-label {
+            font-weight: 600;
+            color: var(--cricket-green);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+        }
+        
+        .form-control:focus {
+            border-color: var(--cricket-light-green);
+            box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.25);
+            background-color: white;
+        }
+        
+        .input-group-text {
+            background-color: var(--cricket-green);
+            color: white;
+            border: 2px solid var(--cricket-green);
+            border-radius: 12px 0 0 12px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #e0e0e0;
+        }
+        
+        .form-section-title {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--cricket-green);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--cricket-gold);
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-section-title i {
+            margin-right: 10px;
+            color: var(--cricket-gold);
+        }
+        
+        /* Button Styling */
+        .btn-cricket {
+            background: linear-gradient(45deg, var(--cricket-green), var(--cricket-light-green));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 30px;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(27, 94, 32, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-cricket:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(27, 94, 32, 0.4);
+            color: white;
+            background: linear-gradient(45deg, var(--cricket-light-green), var(--cricket-green));
+        }
+        
+        .btn-cricket-secondary {
+            background: linear-gradient(45deg, #6c757d, #868e96);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+        
+        .btn-cricket-secondary:hover {
+            background: linear-gradient(45deg, #868e96, #6c757d);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+        
+        .btn-cricket-danger {
+            background: linear-gradient(45deg, var(--cricket-red), #f44336);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+        }
+        
+        .btn-cricket-danger:hover {
+            background: linear-gradient(45deg, #f44336, var(--cricket-red));
+            box-shadow: 0 8px 20px rgba(211, 47, 47, 0.4);
+        }
+        
+        /* Password Toggle */
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        /* Mobile Specific Styles */
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px 0 5px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+                padding-bottom: 10px;
+            }
+            
+            .header h1:after {
+                width: 100px;
+            }
+            
+            .profile-card {
+                padding: 25px 20px;
+                margin: 15px;
+                border-radius: 15px;
+            }
+            
+            .profile-pic-wrapper {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .profile-pic-overlay {
+                width: 40px;
+                height: 40px;
+                bottom: 5px;
+                right: 5px;
+            }
+            
+            .profile-pic-overlay i {
+                font-size: 16px;
+            }
+            
+            .form-section-title {
+                font-size: 18px;
+            }
+            
+            .form-control {
+                padding: 12px 15px;
+                font-size: 15px;
+            }
+            
+            .btn-cricket {
+                padding: 12px 20px;
+                font-size: 16px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .button-group {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Mobile Cricket Animation */
+            .cricket-ball {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .stumps, .stumps:before, .stumps:after {
+                height: 40px;
+                width: 6px;
+            }
+            
+            .bails, .bails:after {
+                width: 50px;
+                height: 6px;
+            }
+            
+            .bails:after {
+                top: 36px;
+            }
+        }
+        
+        /* Desktop Only Elements */
+        @media (min-width: 769px) {
+            .desktop-only {
+                display: block;
+            }
+            
+            .mobile-only {
+                display: none;
+            }
+            
+            .button-group {
+                display: flex;
+                justify-content: space-between;
+                gap: 15px;
+            }
+            
+            .btn-cricket {
+                flex: 1;
+            }
+        }
+        
+        /* Mobile Only Elements */
+        @media (max-width: 768px) {
+            .desktop-only {
+                display: none;
+            }
+            
+            .mobile-only {
+                display: block;
+            }
+            
+            /* Mobile Header Animation */
+            .mobile-header {
+                background: linear-gradient(to right, var(--cricket-green), var(--cricket-light-green));
+                color: white;
+                padding: 15px;
+                border-radius: 0 0 20px 20px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                position: relative;
+                overflow: hidden;
+                margin-bottom: 20px;
+            }
+            
+            .mobile-header:before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23FFD700' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+                opacity: 0.3;
+            }
+            
+            .mobile-header-content {
+                position: relative;
+                z-index: 1;
+                text-align: center;
+            }
+            
+            .mobile-header h2 {
+                font-size: 20px;
+                font-weight: 700;
+                margin-bottom: 5px;
+            }
+            
+            .mobile-header p {
+                font-size: 14px;
+                opacity: 0.9;
+                margin-bottom: 0;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--cricket-gold);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Success/Error Messages */
+        .alert-cricket {
+            border-radius: 12px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: var(--cricket-green);
+            border-left: 5px solid var(--cricket-light-green);
+        }
+        
+        .alert-danger {
+            background-color: rgba(211, 47, 47, 0.15);
+            color: var(--cricket-red);
+            border-left: 5px solid var(--cricket-red);
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #856404;
+            border-left: 5px solid #ffc107;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: var(--cricket-gold);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Payment Warning */
+        .payment-warning {
+            background: linear-gradient(45deg, #ff9800, #ff5722);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .payment-warning i {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cricket Field Background -->
+    <div class="cricket-field">
+        <div class="cricket-ball ball-1"></div>
+        <div class="cricket-ball ball-2"></div>
+        <div class="cricket-ball ball-3"></div>
+        <div class="stumps desktop-only">
+            <div class="bails"></div>
         </div>
-        <%= form.submit "Update Profile", class: "btn btn-primary update-profile-btn" %>
-      <% end %>
     </div>
-  </div>
-</div>
+    
+    <!-- Desktop Header -->
+    <div class="desktop-only">
+        <div class="header">
+            <h1><i class="fas fa-cricket"></i> EDIT YOUR CRICKET PROFILE</h1>
+            <p class="text-white mt-2">Update your details and dominate the fantasy league!</p>
+        </div>
+    </div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-only">
+        <div class="mobile-header">
+            <div class="mobile-header-content">
+                <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+                <p>Update your fantasy cricket account</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Profile Form -->
+    <div class="container">
+        <!-- Display flash messages from Rails -->
+        <% if flash[:alert] %>
+            <div class="alert-cricket alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> <%= flash[:alert] %>
+            </div>
+        <% end %>
+        
+        <% if flash[:notice] %>
+            <div class="alert-cricket alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i> <%= flash[:notice] %>
+            </div>
+        <% end %>
+        
+        <!-- Payment Limit Warning -->
+        <div id="paymentWarning" class="payment-warning" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <h5>Update Limit Reached!</h5>
+            <p>You have used all 10 profile updates. To continue updating, please pay 600 to admin.</p>
+            <a href="#" class="btn btn-warning btn-sm mt-2">Make Payment</a>
+        </div>
+        
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner"></div>
+            
+            <!-- Profile Picture Section -->
+            <div class="profile-pic-container">
+                <div class="profile-pic-wrapper">
+                    <!-- Use existing profile picture or default -->
+                    <% if current_user.profile_picture.attached? %>
+                        <%= image_tag current_user.profile_picture, class: "profile-pic", id: "profileImage" %>
+                    <% else %>
+                        <img src="https://ui-avatars.com/api/?name=<%= current_user.username %>&background=1B5E20&color=fff&size=200&font-size=0.5" 
+                             alt="Profile Picture" class="profile-pic" id="profileImage">
+                    <% end %>
+                    <div class="profile-pic-overlay" id="changePictureBtn">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold text-center"><%= current_user.username %></h5>
+                <p class="text-center text-muted">Member since <%= current_user.created_at.strftime("%Y") %></p>
+                <p class="text-center text-muted">
+                    <i class="fas fa-sync-alt"></i> Updates used: 
+                    <span class="fw-bold"><%= current_user.update_profile_count || 0 %>/10</span>
+                </p>
+            </div>
+            
+            <!-- Hidden File Input for Rails -->
+            <%= form_with(url: update_profile_picture_path, method: :post, multipart: true, id: "profilePictureForm") do |f| %>
+                <%= f.file_field :profile_picture, id: "profileImageInput", accept: "image/*", style: "display: none;" %>
+            <% end %>
+            
+            <!-- Profile Form -->
+            <%= form_with(url: update_profile_path, method: :post, class: "edit-profile-form", id: "profileForm") do |form| %>
+                <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+                
+                <!-- Personal Information Section -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-user"></i> Personal Information
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
+                                <%= form.text_field :username, value: current_user.username, 
+                                    class: "form-control", id: "username", required: true %>
+                            </div>
+                            <div class="form-text">This will be visible to other players</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <%= form.email_field :email, value: current_user.email, 
+                                    class: "form-control", id: "email", required: true %>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                <%= form.telephone_field :phone_number, value: current_user.phone_number || "", 
+                                    class: "form-control", id: "phone" %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Section -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-shield-alt"></i> Security Settings
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="current_password" class="form-label">Current Password</label>
+                            <div class="position-relative">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <%= form.password_field :current_password, 
+                                        class: "form-control", id: "current_password" %>
+                                </div>
+                                <button type="button" class="password-toggle" id="toggleCurrentPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Required to change password or email</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="new_password" class="form-label">New Password</label>
+                            <div class="position-relative">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                    <%= form.password_field :new_password, 
+                                        class: "form-control", id: "new_password" %>
+                                </div>
+                                <button type="button" class="password-toggle" id="toggleNewPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label">Confirm New Password</label>
+                            <div class="position-relative">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                                    <%= form.password_field :password_confirmation, 
+                                        class: "form-control", id: "confirm_password" %>
+                                </div>
+                                <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="security_question" class="form-label">Security Question</label>
+                            <select class="form-control" id="security_question" name="security_question">
+                                <option value="favorite_team" <%= 'selected' if current_user.security_question == 'favorite_team' %>>What is your favorite cricket team?</option>
+                                <option value="favorite_player" <%= 'selected' if current_user.security_question == 'favorite_player' %>>Who is your favorite cricket player?</option>
+                                <option value="first_team_name" <%= 'selected' if current_user.security_question == 'first_team_name' %>>What was your first fantasy cricket team name?</option>
+                                <option value="mother_maiden" <%= 'selected' if current_user.security_question == 'mother_maiden' %>>What is your mother's maiden name?</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="security_answer" class="form-label">Security Answer</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-question-circle"></i></span>
+                            <%= form.text_field :security_answer, value: current_user.security_answer || "", 
+                                class: "form-control", id: "security_answer", placeholder: "Your answer" %>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preferences Section -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-cog"></i> Preferences
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Favorite Cricket Format</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <%= form.radio_button :favorite_format, "T20", 
+                                        checked: (current_user.favorite_format == "T20" || current_user.favorite_format.blank?), 
+                                        class: "form-check-input", id: "formatT20" %>
+                                    <label class="form-check-label" for="formatT20">T20</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <%= form.radio_button :favorite_format, "ODI", 
+                                        checked: current_user.favorite_format == "ODI", 
+                                        class: "form-check-input", id: "formatODI" %>
+                                    <label class="form-check-label" for="formatODI">ODI</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <%= form.radio_button :favorite_format, "Test", 
+                                        checked: current_user.favorite_format == "Test", 
+                                        class: "form-check-input", id: "formatTest" %>
+                                    <label class="form-check-label" for="formatTest">Test</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="notifications" class="form-label">Notifications</label>
+                            <div class="form-check form-switch">
+                                <%= form.check_box :notifications_enabled, 
+                                    checked: current_user.notifications_enabled != false, 
+                                    class: "form-check-input", id: "notifications" %>
+                                <label class="form-check-label" for="notifications">Receive match alerts and updates</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Bio</label>
+                        <%= form.text_area :bio, value: current_user.bio || "", 
+                            class: "form-control", id: "bio", rows: "3", 
+                            placeholder: "Tell us about your cricket passion..." %>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="button-group mt-4">
+                    <%= link_to after_login_path, class: "btn btn-cricket-secondary", id: "cancelBtn" do %>
+                        <i class="fas fa-times"></i> Cancel
+                    <% end %>
+                    
+                    <button type="button" class="btn btn-cricket-danger" id="deleteBtn">
+                        <i class="fas fa-trash-alt"></i> Delete Account
+                    </button>
+                    
+                    <%= form.button type: "submit", class: "btn btn-cricket", id: "submitBtn" do %>
+                        <i class="fas fa-save"></i> Update Profile
+                    <% end %>
+                </div>
+            <% end %>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>© <%= Time.now.year %> Fantasy Cricket Premier League. All rights reserved. | 
+                <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Check if user has reached update limit
+        function checkUpdateLimit() {
+            const updateCount = <%= current_user.update_profile_count || 0 %>;
+            const maxUpdates = 10;
+            
+            if (updateCount >= maxUpdates) {
+                document.getElementById('paymentWarning').style.display = 'block';
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('submitBtn').innerHTML = '<i class="fas fa-ban"></i> Update Limit Reached';
+                return false;
+            }
+            return true;
+        }
+        
+        // Check limit on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUpdateLimit();
+            
+            // Highlight remaining updates
+            const updateCount = <%= current_user.update_profile_count || 0 %>;
+            const maxUpdates = 10;
+            const remaining = maxUpdates - updateCount;
+            
+            if (remaining <= 3 && remaining > 0) {
+                const warning = document.createElement('div');
+                warning.className = 'alert-cricket alert-warning mt-3';
+                warning.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> 
+                    You have ${remaining} profile update${remaining === 1 ? '' : 's'} remaining.`;
+                document.querySelector('.profile-pic-container').appendChild(warning);
+            }
+        });
+        
+        // DOM Elements
+        const profileForm = document.getElementById('profileForm');
+        const profileImage = document.getElementById('profileImage');
+        const profileImageInput = document.getElementById('profileImageInput');
+        const profilePictureForm = document.getElementById('profilePictureForm');
+        const changePictureBtn = document.getElementById('changePictureBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const paymentWarning = document.getElementById('paymentWarning');
+        
+        // Password toggle functionality
+        const toggleCurrentPassword = document.getElementById('toggleCurrentPassword');
+        const toggleNewPassword = document.getElementById('toggleNewPassword');
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, toggleBtn) {
+            const input = document.getElementById(inputId);
+            const icon = toggleBtn.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+        
+        // Event Listeners for Password Toggle
+        toggleCurrentPassword.addEventListener('click', () => {
+            togglePasswordVisibility('current_password', toggleCurrentPassword);
+        });
+        
+        toggleNewPassword.addEventListener('click', () => {
+            togglePasswordVisibility('new_password', toggleNewPassword);
+        });
+        
+        toggleConfirmPassword.addEventListener('click', () => {
+            togglePasswordVisibility('confirm_password', toggleConfirmPassword);
+        });
+        
+        // Change Profile Picture
+        changePictureBtn.addEventListener('click', () => {
+            profileImageInput.click();
+        });
+        
+        profileImageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    profileImage.src = e.target.result;
+                    // Add animation effect
+                    profileImage.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        profileImage.style.transform = 'scale(1)';
+                    }, 300);
+                };
+                
+                reader.readAsDataURL(this.files[0]);
+                
+                // Submit the form automatically when image is selected
+                setTimeout(() => {
+                    profilePictureForm.submit();
+                }, 500);
+            }
+        });
+        
+        // Form Submission
+        profileForm.addEventListener('submit', function(e) {
+            // Check update limit before submission
+            if (!checkUpdateLimit()) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return false;
+            }
+            
+            // Validate passwords match if new password is entered
+            const newPassword = document.getElementById('new_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (newPassword && newPassword !== confirmPassword) {
+                e.preventDefault();
+                alert('New passwords do not match!');
+                return false;
+            }
+            
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            // Form will submit normally to Rails
+            return true;
+        });
+        
+        // Delete Account Button
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('WARNING: This will permanently delete your account and all your data. This action cannot be undone. Are you sure?')) {
+                // Redirect to delete account path
+                window.location.href = '<%= root_path %>';
+            }
+        });
+        
+        // Add animation to form elements on focus
+        const formInputs = document.querySelectorAll('.form-control');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.parentElement.style.transform = 'translateY(-2px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Add cricket bat animation to submit button on hover
+        submitBtn.addEventListener('mouseenter', function() {
+            if (!this.disabled) {
+                this.innerHTML = '<i class="fas fa-baseball-bat-ball"></i> Saving Profile...';
+            }
+        });
+        
+        submitBtn.addEventListener('mouseleave', function() {
+            if (!this.disabled) {
+                this.innerHTML = '<i class="fas fa-save"></i> Update Profile';
+            }
+        });
+        
+        // Mobile-specific: Add swipe animation to profile picture
+        if (window.innerWidth <= 768) {
+            let startX = 0;
+            let endX = 0;
+            
+            profileImage.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+            });
+            
+            profileImage.addEventListener('touchend', function(e) {
+                endX = e.changedTouches[0].clientX;
+                const diffX = endX - startX;
+                
+                // If swiped left or right more than 50px
+                if (Math.abs(diffX) > 50) {
+                    // Add swing animation
+                    this.style.transform = `rotate(${diffX > 0 ? 15 : -15}deg)`;
+                    setTimeout(() => {
+                        this.style.transform = 'rotate(0deg)';
+                    }, 300);
+                    
+                    // If swiped right, trigger image change
+                    if (diffX > 50) {
+                        setTimeout(() => {
+                            profileImageInput.click();
+                        }, 300);
+                    }
+                }
+            });
+        }
+        
+        // Handle password change validation
+        const currentPassword = document.getElementById('current_password');
+        const emailField = document.getElementById('email');
+        const originalEmail = '<%= current_user.email %>';
+        
+        emailField.addEventListener('change', function() {
+            if (this.value !== originalEmail && !currentPassword.value) {
+                alert('Please enter your current password to change your email address.');
+                currentPassword.focus();
+            }
+        });
+        
+        document.getElementById('new_password').addEventListener('focus', function() {
+            if (!currentPassword.value) {
+                alert('Please enter your current password first.');
+                currentPassword.focus();
+            }
+        });
+    </script>
+</body>
+</html>

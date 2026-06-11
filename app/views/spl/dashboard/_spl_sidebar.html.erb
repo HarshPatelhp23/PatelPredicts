@@ -1,0 +1,120 @@
+<%# ══════════════════════════════════════════════════════════════
+    DESKTOP SIDEBAR — _spl_sidebar.html.erb
+    Include this partial INSIDE .spl-app-shell, BEFORE .app-topbar
+    Example: <%= render 'spl_sidebar' %>
+
+<aside class="spl-sidebar" id="spl-sidebar">
+
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <div class="sidebar-logo-mark">🏏</div>
+    <div class="sidebar-brand-text">
+      <div class="brand-name">SPL Fantasy</div>
+      <div class="brand-season"><%= Date.current.year %> Season</div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+
+    <!-- Main -->
+    <div class="sidebar-section-label">Navigation</div>
+
+    <div class="sidebar-nav-item active" id="snav-home" onclick="openPage('home')">
+      <div class="snav-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9,22 9,12 15,12 15,22"/>
+        </svg>
+      </div>
+      Home
+    </div>
+
+    <div class="sidebar-nav-item" id="snav-lb" onclick="openPage('leaderboard')">
+      <div class="snav-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+        </svg>
+      </div>
+      Leaderboard
+    </div>
+
+    <div class="sidebar-nav-item team-item" id="snav-team" onclick="openTeamModal()">
+      <div class="snav-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      My Team
+      <% if @existing_playing11.size < 11 %>
+        <span class="snav-badge">!</span>
+      <% end %>
+    </div>
+
+    <!-- SPL Features -->
+    <div class="sidebar-section-label">Features</div>
+
+    <%= link_to spl_insights_path, class: "sidebar-nav-item", data: { no_loader: true } do %>
+      <div class="snav-icon" style="background:rgba(59,130,246,0.12);color:#60a5fa">📊</div>
+      SPL Insights
+    <% end %>
+
+    <%= link_to spl_insights_path, class: "sidebar-nav-item", data: { no_loader: true } do %>
+      <div class="snav-icon" style="background:rgba(59,130,246,0.12);color:#60a5fa">📊</div>
+      SPL Insights
+    <% end %>
+
+    <%= link_to spl_orange_cap_path, class: "sidebar-nav-item", data: { no_loader: true } do %>
+      <div class="snav-icon" style="background:rgba(249,115,22,0.12);color:#fb923c">🧢</div>
+      Orange Cap
+    <% end %>
+
+    <%= link_to spl_purple_cap_path, class: "sidebar-nav-item", data: { no_loader: true } do %>
+      <div class="snav-icon" style="background:rgba(168,85,247,0.12);color:#c084fc">🎯</div>
+      Purple Cap
+    <% end %>
+
+    <%= link_to auction_table_path, class: "sidebar-nav-item", data: { no_loader: true } do %>
+      <div class="snav-icon" style="background:rgba(234,179,8,0.12);color:#facc15">🔨</div>
+      Auction Room
+    <% end %>
+
+    <% if Time.now < Time.new(2026, 5, 14) %>
+      <%= link_to hotpicks_path, class: "sidebar-nav-item", data: { no_loader: true } do %>
+        <div class="snav-icon" style="background:rgba(239,68,68,0.12);color:#f87171">🔥</div>
+        Auction HotPicks
+      <% end %>
+    <% else %>
+      <div class="sidebar-nav-item" style="opacity:0.45;cursor:default;pointer-events:none">
+        <div class="snav-icon" style="background:rgba(255,255,255,0.05)">🔥</div>
+        Auction HotPicks
+        <span class="snav-soon">Soon</span>
+      </div>
+    <% end %>
+
+  </nav>
+
+  <!-- User card at bottom -->
+  <div class="sidebar-user-card">
+    <div class="sidebar-user-av"><%= current_spl_user.name.to_s.first(2).upcase %></div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name"><%= @spl_user.name %></div>
+      <div class="sidebar-user-pts"><%= @spl_user.total_points %> pts · Rank #<%= @user_rank %></div>
+    </div>
+    <%= link_to destroy_spl_user_session_path,
+          class: "sidebar-signout",
+          method: :delete,
+          title: "Sign out",
+          data: { no_loader: true, turbo_method: :delete } do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16,17 21,12 16,7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    <% end %>
+  </div>
+
+</aside>

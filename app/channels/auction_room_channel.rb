@@ -2,7 +2,8 @@
 
 class AuctionRoomChannel < ApplicationCable::Channel
   def subscribed
-    stream_from 'auction_room_channel'
+    stream_from "auction_room_channel"
+    puts "Client subscribed to AuctionRoomChannel"
   end
 
   def unsubscribed

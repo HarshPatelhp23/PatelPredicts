@@ -14,6 +14,26 @@
     <!-- Player card will be rendered here -->
   </div>
 </div>
+<style>
+  .container.mt-5.team-performance {
+    margin-left: 0;
+  }
+
+  /* Apply margin only on screens wider than 768px (tablets and larger) */
+  @media (min-width: 768px) {
+    .container.mt-5.team-performance {
+      margin-left: 135px;
+    }
+  }
+
+  /* Optional: Adjust for even larger screens like desktop */
+  @media (min-width: 1024px) {
+    .container.mt-5.team-performance {
+      margin-left: 135px;
+    }
+  }
+
+</style>
 <script>
   $(document).ready(function () {
     const playerSearchInput = document.getElementById("player-search");
@@ -24,6 +44,7 @@
     // Function to fetch player performance data
     function fetchPlayerPerformance(playerId) {
       fetch(`/${playerId}/player_performance?auction_id=${auctionId}`)
+      // fetch(`/players/${playerId}?auction_id=${auctionId}`)
         .then(response => response.json())
         .then(data => {
           playerCardContainer.innerHTML = data.player_performance_card_html;

@@ -1,0 +1,52 @@
+<div class="matches-container">
+  <div class="matches-filter mb-3">
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-outline-primary active">All</button>
+      <button type="button" class="btn btn-outline-primary">>15 Points</button>
+      <button type="button" class="btn btn-outline-primary">>25 Points</button>
+      <button type="button" class="btn btn-outline-primary">Best</button>
+      <button type="button" class="btn btn-outline-primary">Worst</button>
+    </div>
+  </div>
+  
+  <div class="match-list">
+    <% @matches.each do |match| %>
+      <div class="match-card <%= match.points > 20 ? 'highlight' : '' %>">
+        <div class="match-header">
+          <div class="match-teams">
+            <span class="team"><%= 'match.home_team' %></span>
+            <span class="vs">vs</span>
+            <span class="team"><%= 'match.away_team' %></span>
+          </div>
+          <div class="match-date"><%= match&.match_date&.strftime('%b %d, %Y') %></div>
+        </div>
+        <div class="match-performance">
+          <div class="points-badge">
+            <span class="points"><%= match.points %></span>
+            <span class="points-label">points</span>
+          </div>
+          <div class="performance-details">
+            <div class="detail-row">
+              <span class="detail-label">Runs:</span>
+              <span class="detail-value"><%= 'match.runs' || '-' %></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Wickets:</span>
+              <span class="detail-value"><%= 'match.wickets' || '-' %></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Catches:</span>
+              <span class="detail-value"><%= 'match.catches' || '-' %></span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-sm match-details-btn" data-bs-toggle="collapse" data-bs-target="#matchDetails<%= 'match.id' %>">
+          View Details <i class="bi bi-chevron-down"></i>
+        </button>
+        <div class="collapse match-full-details" id="matchDetails<%= 'match.id' %>">
+          <!-- Additional match details would go here -->
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

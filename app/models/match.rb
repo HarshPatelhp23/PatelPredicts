@@ -25,12 +25,12 @@ class Match < ApplicationRecord
   end
 
   def self.find_best_batsman(match_name)
-    joins(:player).where(player: { role: 'batsman' })
-    where(match_name:).order(points: :desc).first&.player
+    joins(:player).where(player: { role: ['batsman','all_rounder','wicket_keeper' ]})
+    .where(match_name:).order(points: :desc).first&.player
   end
 
   def self.find_best_bowler(match)
-    joins(:player).where(player: { role: 'bowler' }).where(match_name: match).order(points: :desc).first&.player
+    joins(:player).where(player: { role: ['bowler', 'all_rounder'] }).where(match_name: match).order(points: :desc).first&.player
   end
 
   # def calculate_grand_total
@@ -63,7 +63,6 @@ class Match < ApplicationRecord
   private
 
   def assign_match_date_and_auction
-    self.match_date = set_match_details(match_name)[:match_date]
     self.auction = team.auction
   end
 

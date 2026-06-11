@@ -1,3 +1,57 @@
-<tr id="auction_room_<%= auction_room.id %>_user<%= auction_room.user_id %>">
-  <td><%= auction_room.player_name %> - ₹<%= number_to_currency(auction_room.amount, unit: "", delimiter: ",") %> (<%= auction_room.amount_unit %>) </td>
-</tr>
+<%# app/views/auctions/_auction_room.html.erb %>
+<%# This partial now uses at- CSS classes matching auction_table.html.erb %>
+<%# so server-rendered and JS-built cards look identical. %>
+
+<% buy_suggestion_image = TeamSkillEvaluator.categorize_buy(
+     auction_room.auction_player.base_price,
+     auction_room.auction_player.total_skill,
+     auction_room.current_integer_amount
+   ).presence || 'worst_buy' %>
+<% insight = auction_room.is_a_captain? ? 'captain' : buy_suggestion_image %>
+<% bat_pct  = auction_room.auction_player.batting %>
+<% bowl_pct = auction_room.auction_player.bowling %>
+
+<div class="at-player-card" data-player="<%= auction_room.player_name %>">
+
+  <!-- Insight badge -->
+  <div class="at-player-insight">
+    <%= image_tag "#{insight}.jpeg", class: "at-insight-img", alt: insight %>
+  </div>
+
+  <!-- Avatar -->
+  <div class="at-player-av-wrap">
+    <%= image_tag "default_player_image.jpeg", class: "at-player-av", alt: auction_room.player_name %>
+    <% if auction_room.is_a_captain? %>
+      <div class="at-captain-badge">👑</div>
+    <% end %>
+  </div>
+
+  <!-- Info -->
+  <div class="at-player-info">
+    <div class="at-player-name"><%= auction_room.player_name %></div>
+    <div class="at-player-price">
+      <% if auction_room.is_a_captain? %>
+        <span class="at-captain-pill">Captain</span>
+      <% else %>
+        <%= "₹#{auction_room.amount}#{auction_room.amount_unit == 'crores' ? 'CR' : 'L'}" %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Mini skill bars -->
+  <div class="at-player-skills">
+    <div class="at-mini-skill">
+      <div class="at-mini-track">
+        <div class="at-mini-bar bat-mini" style="width:<%= bat_pct %>%"></div>
+      </div>
+      <div class="at-mini-label">Bat <%= bat_pct %>%</div>
+    </div>
+    <div class="at-mini-skill">
+      <div class="at-mini-track">
+        <div class="at-mini-bar bowl-mini" style="width:<%= bowl_pct %>%"></div>
+      </div>
+      <div class="at-mini-label">Bowl <%= bowl_pct %>%</div>
+    </div>
+  </div>
+
+</div>

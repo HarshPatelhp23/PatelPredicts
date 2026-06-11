@@ -1,0 +1,26 @@
+<div class="spl-bottom-nav">
+  <%= link_to spl_dashboard_path, class: "bottom-nav-item #{'active' if current_page?(spl_dashboard_path)}" do %>
+    <i class="fas fa-home"></i>
+    <span>Home</span>
+  <% end %>
+  
+  <%= link_to spl_fantasy_team_path(current_spl_user&.fantasy_team), class: "bottom-nav-item #{'active' if current_page?(spl_fantasy_team_path(current_spl_user&.fantasy_team))}" do %>
+    <i class="fas fa-users"></i>
+    <span>My Team</span>
+  <% end %>
+  
+  <%= link_to "#", class: "bottom-nav-item" do %>
+    <i class="fas fa-chart-line"></i>
+    <span>Stats</span>
+  <% end %>
+  
+  <%= link_to "#", class: "bottom-nav-item" do %>
+    <i class="fas fa-crown"></i>
+    <span>Leaderboard</span>
+  <% end %>
+  
+  <%= link_to edit_spl_user_registration_path, class: "bottom-nav-item" do %>
+    <i class="fas fa-user"></i>
+    <span>Profile</span>
+  <% end %>
+</div>

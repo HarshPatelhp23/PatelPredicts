@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  email: MyString
+  otp_code: MyString
+  otp_sent_at: 2026-04-10 16:23:11
+  verified: false
+
+two:
+  email: MyString
+  otp_code: MyString
+  otp_sent_at: 2026-04-10 16:23:11
+  verified: false

@@ -1,0 +1,1191 @@
+<div class="container">
+  <header>
+    <h1>SPL Head-to-Head Comparison</h1>
+    <p class="subheading">Compare SPL players and analyze their statistics side by side</p>
+  </header>
+  
+  <div class="player-selection">
+    <div class="player-card">
+      <%= player_image(@player1) %>
+      <h2><%= @player1.name %></h2>
+      <p><%= @player1.batting > @player1.bowling ? "Batsman" : "Bowler" %></p>
+      
+      <%= form_tag spl_head_to_head_path, method: :get do %>
+        <%= select_tag :player1_id, 
+            options_from_collection_for_select(AuctionPlayer.all, "id", "name_with_role", @player1.id),
+            class: "player-select" %>
+      <% end %>
+    </div>
+    
+    <div class="vs-badge">VS</div>
+    
+    <div class="player-card">
+      <%= player_image(@player2) %>
+      <h2><%= @player2.name %></h2>
+      <p><%= @player2.batting > @player2.bowling ? "Batsman" : "Bowler" %></p>
+      
+      <%= form_tag spl_head_to_head_path, method: :get do %>
+        <%= select_tag :player2_id, 
+            options_from_collection_for_select(AuctionPlayer.all, "id", "name_with_role", @player2.id),
+            class: "player-select", onchange: "this.form.submit()" %>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Batsman vs Bowler Matchup Section -->
+  <div class="matchup-section">
+    <div class="matchup-header">
+      <div class="matchup-title">
+        <h2>Batsman vs Bowler Matchup</h2>
+        <div class="player-mini-card">
+          <%= player_image(@player1) %>
+          <div>
+            <div class="player-mini-name"><%= @player1.name %></div>
+            <div class="player-mini-role"><%= @player1.batting > @player1.bowling ? "Batsman" : "Bowler" %></div>
+          </div>
+        </div>
+        <span>against</span>
+        <div class="player-mini-card">
+          <%= player_image(@player2) %>
+          <div>
+            <div class="player-mini-name"><%= @player2.name %></div>
+            <div class="player-mini-role"><%= @player2.batting > @player2.bowling ? "Batsman" : "Bowler" %></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="matchup-selector">
+        <%= form_tag spl_head_to_head_path, method: :get do %>
+          <%= hidden_field_tag :player1_id, @player1.id %>
+          <%= hidden_field_tag :player2_id, @player2.id %>
+          <%= select_tag :season, 
+              options_for_select([['All SPLs', 'all']] + @spl_seasons.map { |s| ["SPL-#{s.last}", s] }, @selected_season),
+              class: "opponents-selector", onchange: "this.form.submit()" %>
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="format-select-row">
+      <%= form_tag spl_head_to_head_path, method: :get, class: "format-select-form" do %>
+        <%= hidden_field_tag :player1_id, @player1.id %>
+        <%= hidden_field_tag :player2_id, @player2.id %>
+        <button type="submit" name="season" value="all" class="format-select-btn <%= 'active' if @selected_season == 'all' %>">All SPLs</button>
+        <% @spl_seasons.each do |season| %>
+          <button type="submit" name="season" value="<%= season %>" class="format-select-btn <%= 'active' if @selected_season == season %>">SPL-<%= season.last %></button>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <div class="matchup-grid">
+      <div class="matchup-stat-card">
+        <div class="matchup-stat-label">Balls Faced</div>
+        <div class="matchup-stat-value"><%= @head_to_head_stats[:balls_faced] %></div>
+        <div class="matchup-stat-label">In <%= @head_to_head_stats[:by_season]&.sum { |k,v| v[:dismissals] } %> innings</div>
+      </div>
+      
+      <div class="matchup-stat-card">
+        <div class="matchup-stat-label">Runs Scored</div>
+        <div class="matchup-stat-value"><%= @head_to_head_stats[:runs_scored] %></div>
+        <div class="matchup-stat-label">Strike Rate: <%= @head_to_head_stats[:strike_rate] %></div>
+      </div>
+      
+      <div class="matchup-stat-card">
+        <div class="matchup-stat-label">Dismissals</div>
+        <div class="matchup-stat-value"><%= @head_to_head_stats[:dismissals] %></div>
+        <div class="matchup-stat-label">Average: <%= @head_to_head_stats[:average] %></div>
+      </div>
+      
+      <div class="matchup-stat-card">
+        <div class="matchup-stat-label">Boundaries</div>
+        <% boundaries = @head_to_head_stats.fetch(:boundaries, {}) %>
+        <div class="matchup-stat-value">
+          <%= boundaries.fetch(:fours, 0) + boundaries.fetch(:sixes, 0) %>
+        </div>
+        <div class="matchup-stat-label">
+          <%= boundaries.fetch(:fours, 0) %> Fours, <%= boundaries.fetch(:sixes, 0) %> Sixes
+        </div>
+      </div>
+    </div>
+    
+    <div class="stats-comparison">
+      <div class="stats-card">
+        <div class="stats-header">
+          <span>Matchup by Season</span>
+          <span><i class="fas fa-chart-line"></i></span>
+        </div>
+        
+        <table class="stats-table">
+          <tr>
+            <th>Season</th>
+            <th>Balls</th>
+            <th>Runs</th>
+            <th>Dismissals</th>
+            <th>Average</th>
+            <th>SR</th>
+            <th>4s/6s</th>
+          </tr>
+          <% if @head_to_head_stats[:by_season].present? %>
+            <% @head_to_head_stats[:by_season].each do |season, stats| %>
+              <tr>
+                <td>SPL-<%= season.last %></td>
+                <td><%= stats[:balls] %></td>
+                <td><%= stats[:runs] %></td>
+                <td><%= stats[:dismissals] %></td>
+                <td><%= stats[:average] %></td>
+                <td><%= stats[:strike_rate] %></td>
+                <td><%= stats[:fours] %>/<%= stats[:sixes] %></td>
+              </tr>
+            <% end %>
+          <% end %>
+          <tr class="metric-better">
+            <td><strong>Total</strong></td>
+            <td><strong><%= @head_to_head_stats[:balls_faced] || '-' %></strong></td>
+            <td><strong><%= @head_to_head_stats[:runs_scored] || '-' %></strong></td>
+            <td><strong><%= @head_to_head_stats[:dismissals] || '-' %></strong></td>
+            <td><strong><%= @head_to_head_stats[:average] || '-' %></strong></td>
+            <td><strong><%= @head_to_head_stats[:strike_rate] || '-' %></strong></td>
+            <td><strong><%= @head_to_head_stats[:boundaries]&[:fours] || 0 %>/<%= @head_to_head_stats[:boundaries]&[:sixes] || 0 %></strong></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <div class="innings-breakdown">
+      <h3>Innings Breakdown</h3>
+      <div class="innings-table-wrapper">
+        <table class="innings-table">
+          <tr>
+            <th>Date</th>
+            <th>Match</th>
+            <th>Season</th>
+            <th>Runs</th>
+            <th>Balls</th>
+            <th>4s</th>
+            <th>6s</th>
+            <th>SR</th>
+            <th>Phase</th>
+            <th>Result</th>
+          </tr>
+          <% if @head_to_head_stats[:innings_breakdown].present? %>
+            <% @head_to_head_stats[:innings_breakdown].each do |inning| %>
+              <tr>
+                <td><%= inning[:date] || '-' %></td>
+                <td><%= inning[:match] || '-' %></td>
+                <td>SPL-<%= inning[:format].last || '-' %></td>
+                <td><%= inning[:runs] || 0 %></td>
+                <td><%= inning[:balls] || '-' %></td>
+                <td><%= inning[:fours] || '-'%></td>
+                <td><%= inning[:sixes] || '-'%></td>
+                <td><%= inning[:strike_rate] || '-' %></td>
+                <td>
+                  <span class="batting-phase <%= case inning[:phase]
+                    when 'Power Play' then 'power-play'
+                    when 'Middle Overs' then 'middle-overs'
+                    when 'Death Overs' then 'death-overs'
+                    else ''
+                    end %>">
+                    <%= inning[:phase] %>
+                  </span>
+                </td>
+                <td class="<%= inning[:result] == 'Not Out' ? 'not-out' : 'dismissal' %>">
+                  <%= inning[:result] %>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </table>
+      </div>
+    </div>
+    
+    <div class="matchup-summary">
+      <h3>Matchup Summary</h3>
+      <p>
+        <% strike_rate = @head_to_head_stats.fetch(:strike_rate, nil) %>
+        <% if strike_rate.present? %>
+          <p>
+            <% if strike_rate > 120 %>
+              <span class="stats-pill stats-positive">Dominant</span> - <%= @player1.name %> has dominated this matchup with a strike rate of <%= strike_rate %>.
+            <% elsif strike_rate > 90 %>
+              <span class="stats-pill stats-neutral">Competitive</span> - This has been a fairly even contest with <%= @player1.name %> scoring at <%= strike_rate %> runs per 100 balls.
+            <% else %>
+              <span class="stats-pill stats-negative">Struggling</span> - <%= @player1.name %> has found it difficult against <%= @player2.name %>, scoring at just <%= strike_rate %> runs per 100 balls.
+            <% end %>
+          </p>
+        <% else %>
+          <p>
+            <span class="stats-pill stats-neutral">Data Missing</span> - Strike rate data is not available for this matchup.
+          </p>
+        <% end %>
+      </p>
+    </div>
+    
+    <div class="matchup-visualization">
+      <h3>Performance Visualization</h3>
+      <div class="chart-type-selector">
+        <button class="chart-type-btn active">Strike Rate by Season</button>
+        <button class="chart-type-btn">Runs vs Dismissals</button>
+        <button class="chart-type-btn">Phase-wise Performance</button>
+      </div>
+      
+      <div class="heatmap-container">
+        <p class="text-center">[Strike Rate Heatmap by Season would be displayed here]</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Player Career Stats Comparison -->
+  <div class="career-section">
+  <div class="career-header">
+    <h2>Career Statistics Comparison</h2>
+  </div>
+
+  <div class="format-tabs">
+    <div class="format-tab active" data-tab="batting">Batting</div>
+    <div class="format-tab" data-tab="bowling">Bowling</div>
+  </div>
+
+  <div class="stats-comparison">
+    <!-- Batting Section -->
+    <div class="stats-card format-content" id="batting-content">
+      <div class="stats-header">
+        <span>Batting Career</span>
+        <span><i class="fas fa-bat"></i></span>
+      </div>
+       <table class="stats-table">
+          <tr>
+            <th>Stat</th>
+            <th><%= @player1.name %></th>
+            <th><%= @player2.name %></th>
+          </tr>
+          <% if @player1_batting && @player2_batting %>
+            <tr>
+              <td>Matches</td>
+              <td><%= @player1_batting[:matches_played] %></td>
+              <td><%= @player2_batting[:matches_played] %></td>
+            </tr>
+            <tr>
+              <td>Innings</td>
+              <td><%= @player1_batting[:innings] %></td>
+              <td><%= @player2_batting[:innings] %></td>
+            </tr>
+            <tr>
+              <td>Runs</td>
+              <td class="<%= 'metric-better' if @player1_batting[:runs] > @player2_batting[:runs] %>"><%= @player1_batting[:runs] %></td>
+              <td class="<%= 'metric-better' if @player2_batting[:runs] > @player1_batting[:runs] %>"><%= @player2_batting[:runs] %></td>
+            </tr>
+            <tr>
+              <td>Average</td>
+              <td class="<%= 'metric-better' if @player1_batting[:avg].to_f > @player2_batting[:avg].to_f %>"><%= @player1_batting[:avg] %></td>
+              <td class="<%= 'metric-better' if @player2_batting[:avg].to_f > @player1_batting[:avg].to_f %>"><%= @player2_batting[:avg] %></td>
+            </tr>
+            <tr>
+              <td>Strike Rate</td>
+              <td class="<%= 'metric-better' if @player1_batting[:sr].to_f > @player2_batting[:sr].to_f %>"><%= @player1_batting[:sr] %></td>
+              <td class="<%= 'metric-better' if @player2_batting[:sr].to_f > @player1_batting[:sr].to_f %>"><%= @player2_batting[:sr] %></td>
+            </tr>
+            <tr>
+              <td>Highest</td>
+              <td class="<%= 'metric-better' if @player1_batting[:highest_score].to_i > @player2_batting[:highest_score].to_i %>"><%= @player1_batting[:highest_score] %></td>
+              <td class="<%= 'metric-better' if @player2_batting[:highest_score].to_i > @player1_batting[:highest_score].to_i %>"><%= @player2_batting[:highest_score] %></td>
+            </tr>
+            <tr>
+              <td>50s/100s</td>
+              <td class="<%= 'metric-better' if (@player1_batting[:fifties].to_i + @player1_batting[:hundreds].to_i) > (@player2_batting[:fifties].to_i + @player2_batting[:hundreds].to_i) %>">
+                <%= @player1_batting[:fifties] %>/<%= @player1_batting[:hundreds] %>
+              </td>
+              <td class="<%= 'metric-better' if (@player2_batting[:fifties].to_i + @player2_batting[:hundreds].to_i) > (@player1_batting[:fifties].to_i + @player1_batting[:hundreds].to_i) %>">
+                <%= @player2_batting[:fifties] %>/<%= @player2_batting[:hundreds] %>
+              </td>
+            </tr>
+          <% else %>
+            <tr>
+              <td colspan="3" class="text-center">Batting data not available for one or both players</td>
+            </tr>
+          <% end %>
+        </table>
+    </div>
+
+    <!-- Bowling Section -->
+    <div class="stats-card format-content hidden" id="bowling-content">
+      <div class="stats-header">
+        <span>Bowling Career</span>
+        <span><i class="fas fa-ball"></i></span>
+      </div>
+      <table class="stats-table">
+        <tr>
+          <th>Stat</th>
+          <th><%= @player1.name %></th>
+          <th><%= @player2.name %></th>
+        </tr>
+        <% if @player1_bowling && @player2_bowling %>
+          <tr>
+            <td>Matches</td>
+            <td><%= @player1_bowling[:matches_played] %></td>
+            <td><%= @player2_bowling[:matches_played] %></td>
+          </tr>
+          <tr>
+            <td>Innings</td>
+            <td><%= @player1_bowling[:innings] %></td>
+            <td><%= @player2_bowling[:innings] %></td>
+          </tr>
+          <tr>
+            <td>Overs</td>
+            <td><%= @player1_bowling[:overs] %></td>
+            <td><%= @player2_bowling[:overs] %></td>
+          </tr>
+          <tr>
+            <td>Runs Given</td>
+            <td class="<%= 'metric-better' if @player1_bowling[:runs_given] < @player2_bowling[:runs_given] %>"><%= @player1_bowling[:runs_given] %></td>
+            <td class="<%= 'metric-better' if @player2_bowling[:runs_given] < @player1_bowling[:runs_given] %>"><%= @player2_bowling[:runs_given] %></td>
+          </tr>
+          <tr>
+            <td>Wickets</td>
+            <td class="<%= 'metric-better' if @player1_bowling[:wickets] > @player2_bowling[:wickets] %>"><%= @player1_bowling[:wickets] %></td>
+            <td class="<%= 'metric-better' if @player2_bowling[:wickets] > @player1_bowling[:wickets] %>"><%= @player2_bowling[:wickets] %></td>
+          </tr>
+          <tr>
+            <td>Maidens</td>
+            <td><%= @player1_bowling[:maidens] %></td>
+            <td><%= @player2_bowling[:maidens] %></td>
+          </tr>
+          <tr>
+            <td>Economy</td>
+            <td class="<%= 'metric-better' if @player1_bowling[:econ].to_f < @player2_bowling[:econ].to_f %>"><%= @player1_bowling[:econ] %></td>
+            <td class="<%= 'metric-better' if @player2_bowling[:econ].to_f < @player1_bowling[:econ].to_f %>"><%= @player2_bowling[:econ] %></td>
+          </tr>
+        <% else %>
+          <tr>
+            <td colspan="3" class="text-center">Bowling data not available for one or both players</td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+  </div>
+</div>
+
+  
+  <footer>
+    <p>© Patel-Predicts<%= Time.now.year %> SPL Statistics. All rights reserved.</p>
+  </footer>
+</div>
+
+<style>
+    :root {
+      --primary-color: #1e3a8a;
+      --secondary-color: #0ea5e9;
+      --accent-color: #f59e0b;
+      --light-bg: #f1f5f9;
+      --dark-text: #1e293b;
+      --light-text: #f8fafc;
+      --border-color: #cbd5e1;
+      --success-color: #16a34a;
+      --danger-color: #dc2626;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--light-bg);
+      color: var(--dark-text);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      background-color: var(--primary-color);
+      color: var(--light-text);
+      padding: 20px 0;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    
+    .subheading {
+      font-style: italic;
+      opacity: 0.8;
+    }
+    
+    .player-selection {
+      display: flex;
+      justify-content: space-between;
+      margin: 30px 0;
+      gap: 20px;
+    }
+    
+    .player-card {
+      flex: 1;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .vs-badge {
+      background-color: var(--accent-color);
+      color: var(--light-text);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .player-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--secondary-color);
+      margin: 0 auto 15px auto;
+      display: block;
+    }
+    
+    .player-select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .stats-comparison {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stats-card {
+      flex: 1;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .stats-header {
+      background-color: var(--secondary-color);
+      color: var(--light-text);
+      padding: 10px 15px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .format-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+    
+    .format-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .format-tab.active {
+      border-bottom-color: var(--accent-color);
+      font-weight: bold;
+    }
+    
+    .format-tab:hover:not(.active) {
+      background-color: var(--light-bg);
+    }
+    
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .stats-table th, 
+    .stats-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .stats-table th {
+      background-color: var(--light-bg);
+      font-weight: 600;
+    }
+    
+    .stats-table tr:nth-child(even) {
+      background-color: rgba(0,0,0,0.02);
+    }
+   
+    .stats-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .metric-better {
+      color: #16a34a;
+      font-weight: bold;
+    }
+    
+    .chart-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .chart-container {
+      height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    
+    .chart-type-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .chart-type-btn {
+      padding: 6px 12px;
+      background-color: var(--light-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .chart-type-btn.active {
+      background-color: var(--primary-color);
+      color: var(--light-text);
+    }
+    
+    .head-to-head-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .record-card {
+      padding: 15px;
+      background-color: var(--light-bg);
+      border-radius: 6px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .record-info {
+      flex: 2;
+    }
+    
+    .record-date {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 5px;
+    }
+    
+    .record-match {
+      font-weight: bold;
+    }
+    
+    .player-stats {
+      flex: 1;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+    
+    .player-stat {
+      padding: 0 10px;
+    }
+    
+    .player-stat-value {
+      font-weight: bold;
+      font-size: 1.2rem;
+      display: block;
+    }
+    
+    .player-stat-label {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: var(--primary-color);
+      color: var(--light-text);
+      border-radius: 0 0 8px 8px;
+      margin-top: 20px;
+    }
+    
+    /* Styles for batsman vs bowler matchup */
+    .matchup-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .matchup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+    
+    .matchup-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .matchup-title h2 {
+      margin: 0;
+    }
+    
+    .player-mini-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: var(--light-bg);
+    }
+    
+    .player-mini-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--secondary-color);
+    }
+    
+    .player-mini-name {
+      font-weight: bold;
+    }
+    
+    .player-mini-role {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    
+    .matchup-selector {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .opponents-selector {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .matchup-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .matchup-stat-card {
+      background-color: var(--light-bg);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    
+    .matchup-stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    
+    .matchup-stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 10px 0;
+      color: var(--primary-color);
+    }
+    
+    .matchup-stat-label {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    
+    .innings-breakdown {
+      margin-top: 30px;
+    }
+    
+    .innings-table-wrapper {
+      overflow-x: auto;
+    }
+    
+    .innings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    
+    .innings-table th, 
+    .innings-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .innings-table th {
+      background-color: var(--light-bg);
+      color: var(--dark-text);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    
+    .innings-table tr:nth-child(even) {
+      background-color: rgba(0,0,0,0.02);
+    }
+    
+    .dismissal {
+      color: var(--danger-color);
+      font-weight: bold;
+    }
+    
+    .not-out {
+      color: var(--success-color);
+    }
+    
+    .batting-phase {
+      font-size: 0.85rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+    
+    .power-play {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .middle-overs {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+    
+    .death-overs {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .matchup-summary {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 30px;
+      position: relative;
+    }
+    
+    .matchup-summary::before {
+      content: '"';
+      font-size: 5rem;
+      position: absolute;
+      opacity: 0.1;
+      top: -20px;
+      left: 10px;
+      font-family: Georgia, serif;
+    }
+    
+    .matchup-visualization {
+      margin-top: 30px;
+    }
+    
+    .heatmap-container {
+      height: 300px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 15px;
+    }
+    
+    .radar-container {
+      height: 300px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 15px;
+    }
+    
+    .stats-pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      margin: 0 5px;
+    }
+    
+    .stats-neutral {
+      background-color: #e2e8f0;
+      color: #334155;
+    }
+    
+    .stats-positive {
+      background-color: #dcfce7;
+      color: #16a34a;
+    }
+    
+    .stats-negative {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .format-select-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .format-select-btn {
+      padding: 8px 15px;
+      background-color: var(--light-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .format-select-btn.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .wickets-breakdown {
+      margin-top: 30px;
+    }
+    
+    .wicket-chart-container {
+      height: 300px;
+      padding: 20px;
+      margin-top: 15px;
+    }
+    
+    .performance-metrics {
+      margin-top: 30px;
+    }
+    
+    .performance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .performance-card {
+      background-color: var(--light-bg);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .performance-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 8px 0;
+      color: var(--primary-color);
+    }
+    
+    .career-section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .career-header {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border-color);
+    }
+    
+    .career-timeline {
+      margin-top: 30px;
+      position: relative;
+      padding-left: 40px;
+    }
+    
+    .timeline-line {
+      position: absolute;
+      left: 12px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: var(--secondary-color);
+    }
+    
+    .timeline-item {
+      position: relative;
+      margin-bottom: 30px;
+    }
+    
+    .timeline-dot {
+      position: absolute;
+      left: -40px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      border: 4px solid var(--secondary-color);
+    }
+    
+    .timeline-content {
+      background-color: var(--light-bg);
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .timeline-date {
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    
+    .timeline-event {
+      margin-top: 5px;
+    }
+    
+    .player-achievements {
+      margin-top: 30px;
+    }
+    
+    .achievements-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .achievement-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px;
+      background-color: var(--light-bg);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    
+    .achievement-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--accent-color);
+      color: white;
+      border-radius: 50%;
+      font-size: 1.2rem;
+    }
+    
+    .achievement-details {
+      flex: 1;
+    }
+    
+    .achievement-title {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    
+    .achievement-desc {
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+    
+    /* New responsive styles */
+    @media (max-width: 992px) {
+      .stats-comparison {
+        flex-direction: column;
+      }
+      
+      .matchup-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .performance-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .player-selection {
+        flex-direction: column;
+        position: relative;
+      }
+      
+      .vs-badge {
+        position: static;
+        margin: 15px auto;
+        transform: none;
+      }
+      
+      .matchup-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .matchup-title {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .format-tabs {
+        justify-content: center;
+      }
+      
+      .format-tab {
+        flex: 1;
+        text-align: center;
+      }
+      
+      .chart-header {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .chart-type-selector {
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .matchup-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .performance-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .format-select-row {
+        flex-direction: column;
+      }
+      
+      .format-tab {
+        padding: 8px 10px;
+      }
+    }
+  </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Format tabs switching (e.g., Batting / Bowling)
+    const formatTabs = document.querySelectorAll('.format-tab');
+    const formatSections = document.querySelectorAll('.format-section');
+
+    formatTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Remove 'active' class from all tabs
+        formatTabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const selectedFormat = this.dataset.format; // e.g., 'batting' or 'bowling'
+
+        // Show/hide format sections
+        formatSections.forEach(section => {
+          if (section.dataset.format === selectedFormat) {
+            section.style.display = 'block';
+          } else {
+            section.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Chart type selector (e.g., bar, line)
+    const chartTypeBtns = document.querySelectorAll('.chart-type-btn');
+    const charts = document.querySelectorAll('.chart-canvas');
+
+    chartTypeBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        chartTypeBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const selectedType = this.dataset.chartType; // e.g., 'bar', 'line'
+
+        // Show only the selected chart type
+        charts.forEach(chart => {
+          if (chart.dataset.chartType === selectedType) {
+            chart.style.display = 'block';
+          } else {
+            chart.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Player select dropdowns
+    const playerSelects = document.querySelectorAll('.player-select');
+    playerSelects.forEach(select => {
+      select.addEventListener('change', function() {
+        // Optional: auto-submit parent form
+        const form = this.closest('form');
+        if (form) {
+          form.submit();
+        }
+      });
+    });
+  });
+  document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.format-tab');
+    const contents = {
+      batting: document.getElementById('batting-content'),
+      bowling: document.getElementById('bowling-content')
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function () {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const selected = this.dataset.tab;
+        Object.keys(contents).forEach(key => {
+          contents[key].classList.toggle('hidden', key !== selected);
+        });
+      });
+    });
+  });
+</script>

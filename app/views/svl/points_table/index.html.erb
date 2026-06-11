@@ -1,0 +1,1487 @@
+<%# app/views/svl/points_table/index.html.erb %>
+<% provide(:title, "SVL Points Table") %>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&family=Bebas+Neue&display=swap');
+
+:root {
+  --bg:      #07090f;
+  --bg2:     #0d1117;
+  --bg3:     #161b24;
+  --surface: #1a2035;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text:    #e8eaf0;
+  --text2:   #8892a4;
+  --text3:   #4a5568;
+  --gold:    #f59e0b;
+  --gold2:   #fbbf24;
+  --green:   #10b981;
+  --red:     #ef4444;
+  --fd: 'Rajdhani', sans-serif;
+  --fb: 'Nunito', sans-serif;
+  --fh: 'Bebas Neue', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); font-family: var(--fb); color: var(--text); overflow-x: hidden; }
+
+/* ══════════════════════════
+   BACK BAR
+══════════════════════════ */
+.pt-back-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(7,9,15,0.95);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 40;
+  backdrop-filter: blur(14px);
+}
+.pt-back-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); text-decoration: none; transition: background .15s; flex-shrink: 0;
+}
+.pt-back-btn:hover { background: rgba(255,255,255,0.1); }
+.pt-back-crumb { font-family: var(--fd); font-size: 14px; color: var(--text2); font-weight: 600; flex: 1; }
+.pt-back-crumb span { color: var(--text3); margin: 0 5px; }
+
+/* Patel-Predicts badge in topbar */
+.pt-pp-topbadge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 20px; padding: 4px 10px;
+  font-family: var(--fd); font-size: 10px; font-weight: 700;
+  color: var(--gold2); letter-spacing: .5px; white-space: nowrap; flex-shrink: 0;
+  text-decoration: none;
+}
+.pt-pp-topbadge:hover { background: rgba(245,158,11,0.18); }
+
+/* ══════════════════════════
+   HERO
+══════════════════════════ */
+.pt-hero {
+  position: relative; overflow: hidden;
+  padding: 24px 16px 20px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.pt-hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 80% at 5% 50%,  rgba(16,185,129,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 95% 20%,  rgba(245,158,11,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 100%, rgba(59,130,246,0.05) 0%, transparent 50%);
+}
+.pt-hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.pt-hero-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.pt-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 10px; font-weight: 700; color: #34d399;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;
+}
+.pt-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; animation: ptpulse 1.2s ease-in-out infinite; }
+@keyframes ptpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+.pt-hero-title { font-family: var(--fh); font-size: 40px; color: #fff; letter-spacing: 2px; line-height: 1; margin-bottom: 4px; }
+.pt-hero-season { font-family: var(--fd); font-size: 12px; color: var(--text2); letter-spacing: .5px; font-weight: 600; }
+
+.pt-hero-ball {
+  width: 66px; height: 66px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, #c8e6c9 20%, #1a7a4a 60%, #0d4a2a 100%);
+  box-shadow: 0 6px 24px rgba(16,185,129,0.25), inset 0 -3px 10px rgba(0,0,0,0.4);
+  animation: ballFloat 3s ease-in-out infinite; position: relative;
+}
+@keyframes ballFloat { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-5px) rotate(8deg)} }
+.pt-hero-ball::before { content:''; position:absolute; inset:5px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.25); }
+.pt-hero-ball::after  { content:''; position:absolute; top:50%; left:10%; right:10%; height:1.5px; background:rgba(255,255,255,0.2); transform:translateY(-50%); }
+
+/* Patel-Predicts hero marketing strip */
+.pt-pp-strip {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.04) 100%);
+  border: 1px solid rgba(245,158,11,0.2); border-radius: 12px;
+}
+.pt-pp-strip-left { display: flex; align-items: center; gap: 10px; }
+.pt-pp-logo-circle {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #d97706);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fh); font-size: 14px; color: #0f172a; letter-spacing: 1px; flex-shrink: 0;
+}
+.pt-pp-strip-text {}
+.pt-pp-strip-name { font-family: var(--fd); font-size: 14px; font-weight: 700; color: var(--gold2); letter-spacing: .5px; }
+.pt-pp-strip-sub  { font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+.pt-pp-strip-badges { display: flex; gap: 6px; }
+.pt-pp-role-badge {
+  font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+}
+.pt-pp-auction { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--gold2); }
+.pt-pp-tech    { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
+
+/* ══════════════════════════
+   PODIUM
+══════════════════════════ */
+.pt-podium-wrap {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 20px 16px 0; overflow: hidden; position: relative;
+}
+.pt-podium-title {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; text-align: center;
+}
+.pt-podium {
+  display: flex; align-items: flex-end; justify-content: center; gap: 6px;
+}
+.pt-pod-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  animation: podIn .5s cubic-bezier(0.34,1.56,0.64,1) both;
+  flex: 1; max-width: 110px;
+}
+.pt-pod-item:nth-child(1){animation-delay:.05s}
+.pt-pod-item:nth-child(2){animation-delay:0s}
+.pt-pod-item:nth-child(3){animation-delay:.1s}
+@keyframes podIn { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.pt-pod-rank-lbl { font-family:var(--fh); font-size:11px; letter-spacing:1px; }
+.pt-pod-img-wrap { position: relative; }
+.pt-pod-av {
+  border-radius: 16px;
+  border: 3px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-weight: 700; color: #fff;
+  overflow: hidden; flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.pt-pod-av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 13px;
+}
+
+.pt-pod-crown {
+  position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+  font-size: 14px; line-height: 1;
+}
+.pt-pod-name {
+  font-family: var(--fd); font-size: 11px; font-weight: 700;
+  color: var(--text); text-align: center; line-height: 1.2;
+  max-width: 90px; word-break: break-word;
+}
+.pt-pod-pts-row { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.pt-pod-pts { font-family: var(--fh); font-size: 20px; color: var(--gold2); letter-spacing: 1px; line-height: 1; }
+.pt-pod-pts-lbl { font-size: 8px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; }
+.pt-pod-block {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; border-radius: 8px 8px 0 0;
+  font-family: var(--fh); font-size: 20px; color: rgba(0,0,0,0.3); letter-spacing: 1px;
+}
+
+/* ══════════════════════════
+   STATS STRIP
+══════════════════════════ */
+.pt-stats-strip {
+  display: flex; overflow-x: auto; gap: 8px;
+  padding: 12px 14px; scrollbar-width: none;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.pt-stats-strip::-webkit-scrollbar { display: none; }
+.pt-stat-pill {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 9px 16px; flex-shrink: 0; min-width: 70px;
+}
+.pt-stat-val { font-family: var(--fh); font-size: 20px; color: var(--text); letter-spacing: 1px; line-height: 1; }
+.pt-stat-lbl { font-size: 8px; color: var(--text3); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
+
+/* ══════════════════════════
+   TEAM FILTER BAR
+══════════════════════════ */
+.pt-filter-bar {
+  display: flex; overflow-x: auto; gap: 8px;
+  padding: 10px 14px; scrollbar-width: none;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  position: sticky; top: 58px; z-index: 30;
+  backdrop-filter: blur(12px);
+}
+.pt-filter-bar::-webkit-scrollbar { display: none; }
+.pt-filter-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 20px; flex-shrink: 0;
+  font-family: var(--fd); font-size: 12px; font-weight: 600; letter-spacing: .3px;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  color: var(--text2); text-decoration: none; cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.pt-filter-chip:hover { background: var(--surface); border-color: var(--border2); color: var(--text); }
+.pt-filter-chip.active {
+  background: rgba(16,185,129,0.12);
+  border-color: rgba(16,185,129,0.4); color: #34d399;
+}
+.pt-filter-chip-av {
+  width: 20px; height: 20px;
+  border-radius: 6px;           /* was 50% — rounded square */
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; color: #fff; flex-shrink: 0;
+  overflow: hidden;
+}
+.pt-filter-chip-av img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+/* ══════════════════════════
+   MAIN LAYOUT
+══════════════════════════ */
+.pt-main { display: flex; flex-direction: column; }
+
+/* ══════════════════════════
+   STANDINGS TABLE — MOBILE FIRST
+══════════════════════════ */
+.pt-section-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 14px 10px;
+}
+.pt-section-title {
+  font-family: var(--fd); font-size: 10px; font-weight: 700;
+  color: var(--text3); letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* Column headers — mobile: tight */
+.pt-col-hdr {
+  display: grid;
+  grid-template-columns: 24px 1fr 26px 26px 26px 36px 36px 36px;
+  gap: 0; align-items: center;
+  padding: 7px 12px;
+  background: rgba(0,0,0,0.4); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  position: sticky; top: 105px; z-index: 20;
+}
+.pt-ch {
+  font-size: 8px; font-weight: 800; color: var(--text3);
+  letter-spacing: 1px; text-transform: uppercase; text-align: center;
+}
+.pt-ch:nth-child(2) { text-align: left; padding-left: 2px; }
+
+/* Team rows — KEY CHANGE: taller rows, team name BELOW image on mobile */
+.pt-team-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 26px 26px 26px 36px 36px 36px;
+  gap: 0; align-items: center;
+  padding: 8px 12px;
+  min-height: 68px;
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden; cursor: pointer;
+  transition: background .12s;
+  animation: rowIn .4s ease both;
+  text-decoration: none; color: inherit; display: grid;
+}
+@keyframes rowIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+.pt-team-row:hover, .pt-team-row:active { background: rgba(255,255,255,0.025); }
+.pt-team-row::before {
+  content: ''; position: absolute; left: 0; top: 8%; bottom: 8%;
+  width: 3px; border-radius: 0 2px 2px 0;
+  background: var(--row-accent, transparent);
+}
+.pt-team-row.rank-1 { background: rgba(255,215,0,0.025); }
+.pt-team-row.rank-1::before { background: #FFD700; }
+.pt-team-row.rank-2 { background: rgba(192,192,192,0.015); }
+.pt-team-row.rank-2::before { background: #C0C0C0; opacity: .6; }
+.pt-team-row.rank-3::before { background: #CD7F32; opacity: .6; }
+.pt-team-row.filtered { background: rgba(16,185,129,0.04); }
+.pt-team-row.filtered::before { background: #10b981; }
+
+/* Rank */
+.pt-rank { font-family: var(--fh); font-size: 16px; color: var(--text3); text-align: center; letter-spacing: 1px; line-height: 1; }
+.pt-rank.gold   { color: #FFD700; }
+.pt-rank.silver { color: #C0C0C0; }
+.pt-rank.bronze { color: #CD7F32; }
+
+/* Team cell — IMAGE on top, NAME below */
+.pt-team-cell {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 2px 4px;
+}
+.pt-team-av {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0; position: relative; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.pt-team-av::after {
+  content: ''; position: absolute; inset: 0; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 55%);
+  pointer-events: none;
+}
+.pt-team-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+.pt-team-name {
+  font-family: var(--fd); font-size: 10px; font-weight: 700;
+  color: var(--text); letter-spacing: .2px; line-height: 1.2;
+  text-align: center; max-width: 56px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Stat cells */
+.pt-cell {
+  font-family: var(--fd); font-size: 13px; font-weight: 600;
+  color: var(--text2); text-align: center; line-height: 1;
+}
+.pt-cell.pos  { color: #34d399; }
+.pt-cell.neg  { color: #f87171; }
+.pt-cell.zero { color: var(--text3); }
+
+/* Points badge */
+.pt-pts-cell { display: flex; align-items: center; justify-content: center; }
+.pt-pts-badge {
+  font-family: var(--fh); font-size: 17px; letter-spacing: 1px;
+  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 7px; padding: 3px 6px; color: var(--gold2);
+  min-width: 30px; text-align: center; transition: all .15s;
+}
+.pt-pts-badge.top { background: rgba(245,158,11,0.18); border-color: var(--gold2); }
+
+/* ── Empty state ── */
+.pt-empty {
+  text-align: center; padding: 48px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.pt-empty-icon { font-size: 44px; opacity: .4; }
+.pt-empty-title { font-family: var(--fd); font-size: 18px; color: var(--text2); font-weight: 700; }
+.pt-empty-sub { font-size: 12px; color: var(--text3); }
+
+/* ══════════════════════════
+   MATCHES SECTION
+══════════════════════════ */
+.pt-matches-section { border-top: 1px solid var(--border); }
+
+.pt-filter-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(16,185,129,0.07); border-bottom: 1px solid rgba(16,185,129,0.15);
+}
+.pt-filter-banner-text { font-family: var(--fd); font-size: 13px; font-weight: 700; color: #34d399; letter-spacing: .3px; }
+.pt-filter-clear {
+  font-size: 11px; color: var(--text3); text-decoration: none;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px; transition: all .15s;
+}
+.pt-filter-clear:hover { color: var(--text); border-color: var(--border2); }
+
+.pt-matches-list { display: flex; flex-direction: column; gap: 8px; padding: 0 12px 12px; }
+
+.pt-match-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  transition: all .15s; position: relative; overflow: hidden;
+  animation: rowIn .35s ease both;
+}
+.pt-match-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--green); border-radius: 0 2px 2px 0;
+}
+.pt-match-card:hover { background: var(--surface); border-color: var(--border2); }
+.pt-match-diffs {
+  display: flex; gap: 6px; margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.pt-match-diff-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px; padding: 3px 8px;
+  font-family: var(--fh); font-size: 11px; letter-spacing: .5px;
+}
+.pt-match-diff-lbl {
+  font-size: 8px; color: var(--text3); font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.pt-match-diff-val { font-weight: 700; }
+.pt-match-diff-val.pos { color: #34d399; }
+.pt-match-diff-val.neg { color: #f87171; }
+.pt-match-diff-val.zero { color: var(--text3); }
+.pt-match-date {
+  font-size: 9px; color: var(--text3); font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase;
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transform: rotate(180deg); flex-shrink: 0;
+}
+.pt-match-teams { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.pt-match-team-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pt-match-team-name {
+  font-family: var(--fd); font-size: 13px; font-weight: 700;
+  color: var(--text); letter-spacing: .2px; flex: 1;
+}
+.pt-match-team-name.winner { color: #34d399; }
+.pt-match-team-name.highlight { color: var(--gold2); }
+.pt-match-sets { display: flex; gap: 3px; align-items: center; }
+.pt-match-set-chip {
+  font-family: var(--fh); font-size: 12px; letter-spacing: .5px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 5px; padding: 2px 6px; color: var(--text2); white-space: nowrap;
+}
+.pt-match-set-chip.win { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #34d399; }
+.pt-match-total { font-family: var(--fh); font-size: 15px; color: var(--gold2); letter-spacing: 1px; flex-shrink: 0; text-align: right; }
+.pt-match-divider { height: 1px; background: var(--border); margin: 1px 0; }
+
+/* ══════════════════════════
+   FOOTER — Patel-Predicts
+══════════════════════════ */
+.pt-footer {
+  margin: 24px 14px 32px;
+  background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(16,185,129,0.04) 100%);
+  border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 18px; padding: 20px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+}
+.pt-footer-logo { display: flex; align-items: center; gap: 10px; }
+.pt-footer-logo-circle {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #d97706);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fh); font-size: 18px; color: #0f172a; letter-spacing: 1px;
+  box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+}
+.pt-footer-brand { font-family: var(--fh); font-size: 22px; color: var(--gold2); letter-spacing: 1.5px; }
+.pt-footer-tagline { font-size: 11px; color: var(--text3); letter-spacing: .5px; }
+.pt-footer-roles { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.pt-footer-role {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 20px;
+}
+.pt-footer-role.auction { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: var(--gold2); }
+.pt-footer-role.tech    { background: rgba(16,185,129,0.1);  border: 1px solid rgba(16,185,129,0.25); color: #34d399; }
+.pt-footer-divider { width: 100%; height: 1px; background: var(--border); }
+.pt-footer-copy { font-size: 10px; color: var(--text3); }
+
+/* ══════════════════════════
+   KNOCKOUT BRACKET
+══════════════════════════ */
+.pt-knockout-wrap {
+  border-top: 2px solid rgba(239,68,68,0.15);
+  background: linear-gradient(180deg, rgba(239,68,68,0.03) 0%, transparent 60%);
+  padding-bottom: 8px;
+}
+
+.pt-ko-stage { padding: 0 12px 12px; }
+.pt-ko-stage-label {
+  font-size: 9px; font-weight: 800; color: #f87171;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 8px 2px 8px; display: flex; align-items: center; gap: 8px;
+}
+.pt-ko-stage-label::after {
+  content: ''; flex: 1; height: 1px; background: rgba(239,68,68,0.15);
+}
+
+.pt-ko-card {
+  background: var(--bg3); border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 16px; padding: 14px 14px 12px;
+  margin-bottom: 8px; position: relative; overflow: hidden;
+}
+.pt-ko-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: rgba(239,68,68,0.4); border-radius: 0 2px 2px 0;
+}
+.pt-ko-card--played { border-color: rgba(245,158,11,0.2); }
+.pt-ko-card--played::before { background: var(--gold); }
+
+.pt-ko-card-date {
+  font-size: 9px; color: var(--text3); font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;
+}
+
+.pt-ko-teams {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 8px;
+}
+
+.pt-ko-team {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.pt-ko-team--right { align-items: center; }
+.pt-ko-team--loser { opacity: .55; }
+
+.pt-ko-av {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 13px; font-weight: 700; color: #fff;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.pt-ko-av--tbd {
+  background: rgba(255,255,255,0.05) !important;
+  border: 2px dashed rgba(255,255,255,0.1);
+  color: var(--text3); font-size: 18px;
+}
+.pt-ko-team-name {
+  font-family: var(--fd); font-size: 11px; font-weight: 700;
+  color: var(--text); letter-spacing: .2px; text-align: center;
+  max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pt-ko-winner-badge {
+  font-size: 8px; font-weight: 800; letter-spacing: 1.5px;
+  background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+  color: #34d399; padding: 2px 7px; border-radius: 20px;
+}
+
+/* Score middle column */
+.pt-ko-score-mid {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  min-width: 60px;
+}
+.pt-ko-vs {
+  font-family: var(--fh); font-size: 20px; color: var(--text3); letter-spacing: 2px;
+}
+.pt-ko-score-sets {
+  display: flex; align-items: center; gap: 4px;
+  font-family: var(--fh); font-size: 22px; letter-spacing: 1px;
+}
+.pt-ko-ss { color: var(--text2); }
+.pt-ko-ss.win { color: #34d399; }
+.pt-ko-ss-sep { color: var(--text3); font-size: 16px; }
+.pt-ko-score-pts {
+  font-family: var(--fd); font-size: 11px; font-weight: 600; color: var(--text3);
+  display: flex; align-items: center;
+}
+.pt-ko-set-row {
+  display: flex; align-items: center; gap: 3px; margin-top: 1px;
+}
+.pt-ko-set-chip {
+  font-family: var(--fh); font-size: 11px; letter-spacing: .5px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 5px; color: var(--text2);
+}
+.pt-ko-set-chip.win { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #34d399; }
+.pt-ko-set-sep { font-size: 9px; color: var(--text3); }
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .pt-ko-stage { padding: 0 40px 16px; }
+  .pt-ko-card { padding: 18px 20px 16px; }
+  .pt-ko-av { width: 52px; height: 52px; border-radius: 14px; }
+  .pt-ko-team-name { font-size: 13px; max-width: 100px; }
+  .pt-ko-score-sets { font-size: 28px; }
+  .pt-ko-vs { font-size: 24px; }
+  .pt-ko-score-mid { min-width: 80px; }
+}
+@media (min-width: 1100px) {
+  .pt-ko-stage { padding: 0 60px 16px; }
+}
+
+/* ══════════════════════════
+   DESKTOP — 768px+
+══════════════════════════ */
+@media (min-width: 768px) {
+  .pt-hero { padding: 36px 40px 28px; }
+  .pt-hero-title { font-size: 60px; }
+  .pt-hero-ball  { width: 90px; height: 90px; }
+  .pt-pp-strip   { margin-top: 20px; padding: 12px 18px; }
+  .pt-pp-strip-name { font-size: 16px; }
+
+  .pt-podium-wrap { padding: 24px 40px 0; }
+
+  .pt-stats-strip { padding: 14px 40px; gap: 12px; }
+  .pt-stat-pill   { padding: 11px 22px; min-width: 90px; }
+  .pt-stat-val    { font-size: 26px; }
+
+  .pt-filter-bar  { padding: 12px 40px; top: 62px; }
+  .pt-col-hdr     { padding: 9px 40px; grid-template-columns: 32px 1fr 42px 42px 42px 52px 52px 50px; top: 112px; }
+  .pt-ch          { font-size: 9px; }
+
+  .pt-section-hdr { padding: 18px 40px 12px; }
+
+  .pt-team-row {
+    grid-template-columns: 32px 1fr 42px 42px 42px 52px 52px 50px;
+    padding: 10px 40px; min-height: 76px;
+  }
+  /* Desktop: team cell goes back to horizontal row layout */
+  .pt-team-cell { flex-direction: row; align-items: center; gap: 12px; }
+  .pt-team-av   { width: 46px; height: 46px; border-radius: 14px; font-size: 14px; }
+  .pt-team-name { font-size: 16px; text-align: left; max-width: 180px; white-space: nowrap; }
+  .pt-cell      { font-size: 16px; }
+  .pt-rank      { font-size: 20px; }
+  .pt-pts-badge { font-size: 20px; padding: 4px 9px; min-width: 36px; }
+
+  /* Desktop: 2-col layout for table + matches */
+  .pt-main {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    align-items: start;
+  }
+  .pt-table-section { grid-column: 1; }
+  .pt-matches-section {
+    grid-column: 2; border-left: 1px solid var(--border); border-top: none;
+    position: sticky; top: 112px; max-height: calc(100dvh - 112px); overflow-y: auto;
+  }
+  .pt-matches-section .pt-section-hdr { padding: 18px 18px 12px; }
+  .pt-matches-list { padding: 0 14px 16px; }
+
+  .pt-footer { margin: 28px 40px 40px; flex-direction: row; text-align: left; padding: 22px 28px; }
+  .pt-footer-roles { justify-content: flex-start; }
+  .pt-footer-divider { display: none; }
+}
+
+@media (min-width: 1100px) {
+  .pt-hero { padding: 44px 60px 32px; }
+  .pt-hero-title { font-size: 76px; }
+  .pt-stats-strip { padding: 16px 60px; }
+  .pt-filter-bar  { padding: 12px 60px; }
+  .pt-col-hdr, .pt-team-row { padding-left: 60px; padding-right: 60px; }
+  .pt-section-hdr { padding-left: 60px; padding-right: 60px; }
+  .pt-footer { margin: 28px 60px 48px; }
+}
+
+/* ── STAGE FLOW BAR ── */
+.ko-flow {
+  display: flex; align-items: stretch;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid var(--border);
+}
+.ko-flow-step {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 10px 6px; gap: 3px;
+  border-right: 1px solid var(--border);
+  transition: background .15s;
+}
+.ko-flow-step:last-child { border-right: none; }
+.ko-flow-step.stage-done   { background: rgba(16,185,129,0.05); }
+.ko-flow-step.stage-live   { background: rgba(245,158,11,0.07); }
+.ko-flow-step.stage-locked { opacity: .45; }
+.ko-flow-icon  { font-size: 16px; line-height: 1; }
+.ko-flow-name  {
+  font-family: var(--fd); font-size: 10px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase; color: var(--text2);
+}
+.ko-flow-step.stage-done .ko-flow-name  { color: #34d399; }
+.ko-flow-step.stage-live .ko-flow-name  { color: var(--gold2); }
+.ko-flow-badge {
+  font-size: 8px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 10px;
+}
+.badge-ko-done { background: rgba(16,185,129,0.15); color: #34d399; }
+.badge-ko-live {
+  background: rgba(245,158,11,0.18); color: var(--gold2);
+  animation: ptpulse 1.2s ease-in-out infinite;
+}
+.badge-ko-next { background: rgba(255,255,255,0.06); color: var(--text3); }
+
+/* ── ADVANCEMENT TRACKER ── */
+.ko-advance-strip {
+  display: flex; gap: 8px; padding: 0 12px 14px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.ko-advance-strip::-webkit-scrollbar { display: none; }
+.ko-adv-card {
+  flex: 1; min-width: 80px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 8px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.ko-adv-card.direct-final {
+  background: rgba(245,158,11,0.07);
+  border-color: rgba(245,158,11,0.25);
+}
+.ko-adv-rank {
+  font-family: var(--fh); font-size: 16px; letter-spacing: .5px; color: var(--text2);
+}
+.ko-adv-card.direct-final .ko-adv-rank { color: var(--gold2); }
+.ko-adv-av {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 10px; font-weight: 700; color: #fff;
+  overflow: hidden;
+}
+.ko-adv-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.ko-adv-name {
+  font-family: var(--fd); font-size: 10px; font-weight: 700;
+  color: var(--text); text-align: center; letter-spacing: .2px;
+  max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ko-adv-label { font-size: 8px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.ko-adv-card.direct-final .ko-adv-label { color: rgba(245,158,11,0.6); }
+
+/* ── ELIMINATED STRIP ── */
+.ko-elim-strip {
+  margin: 0 12px 14px;
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 12px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.ko-elim-av {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 11px; font-weight: 700; color: #fff;
+  opacity: .5; filter: grayscale(1); overflow: hidden;
+}
+.ko-elim-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.ko-elim-name  { font-family: var(--fd); font-size: 13px; font-weight: 700; color: #f87171; opacity: .8; letter-spacing: .3px; }
+.ko-elim-sub   { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+/* ── STAGE LABEL ── */
+.ko-stage-lbl {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px 8px;
+  font-size: 9px; font-weight: 800; color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.ko-stage-lbl::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+.ko-stage-lbl.lbl-semi  { color: #c4b5fd; }
+.ko-stage-lbl.lbl-final { color: var(--gold2); }
+
+/* ── MATCH CARD ── */
+.ko2-cards { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px; }
+.ko2-card {
+  background: #141e2e; border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; position: relative;
+}
+.ko2-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.ko2-card.semi::before  { background: #a78bfa; }
+.ko2-card.final::before { background: var(--gold); }
+.ko2-card.played        { border-color: rgba(16,185,129,0.2); }
+.ko2-card.played.final  { border-color: rgba(245,158,11,0.2); }
+
+.ko2-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.badge-ko-semi  {
+  font-size: 8px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+  background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); color: #c4b5fd;
+}
+.badge-ko-final {
+  font-size: 8px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+  background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--gold2);
+}
+.badge-ko-tbd {
+  font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text3);
+}
+.ko2-card-date { font-size: 10px; color: var(--text3); letter-spacing: .5px; }
+
+.ko2-match-body {
+  padding: 12px 14px 14px; display: flex; align-items: center; gap: 10px;
+}
+.ko2-team-side {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;
+}
+.ko2-team-av {
+  width: 46px; height: 46px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 14px; font-weight: 700; color: #fff;
+  overflow: hidden; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+.ko2-team-av::after {
+  content: ''; position: absolute; inset: 0; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 55%);
+  pointer-events: none;
+}
+.ko2-team-av img  { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+.ko2-team-av.tbd  {
+  background: rgba(255,255,255,0.05) !important;
+  border: 2px dashed rgba(255,255,255,0.12);
+  font-size: 20px; color: var(--text3);
+}
+.ko2-team-name {
+  font-family: var(--fd); font-size: 12px; font-weight: 700;
+  color: var(--text); letter-spacing: .3px; text-align: center;
+  max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ko2-winner-tag {
+  font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 20px;
+  background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399;
+}
+.ko2-final-winner-tag {
+  background: rgba(245,158,11,0.18); border: 1px solid rgba(245,158,11,0.4); color: var(--gold2);
+}
+.ko2-loser-dim { opacity: .45; }
+.ko2-score-mid {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex-shrink: 0; min-width: 70px;
+}
+.ko2-vs  { font-family: var(--fh); font-size: 24px; color: var(--text3); letter-spacing: 2px; }
+.ko2-sets {
+  display: flex; align-items: center; gap: 4px;
+  font-family: var(--fh); font-size: 28px; letter-spacing: 1px;
+}
+.ko2-ss { color: var(--text2); }
+.ko2-ss.win { color: #34d399; }
+.ko2-ss-sep { color: var(--text3); font-size: 18px; }
+.ko2-pts {
+  font-family: var(--fd); font-size: 11px; font-weight: 600; color: var(--text2);
+  display: flex; align-items: center; gap: 2px;
+}
+.ko2-set-chips { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.ko2-set-row   { display: flex; align-items: center; gap: 3px; }
+.ko2-chip {
+  font-family: var(--fh); font-size: 11px; letter-spacing: .5px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px; padding: 1px 5px; color: var(--text2);
+}
+.ko2-chip.win { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #34d399; }
+.ko2-chip-sep { font-size: 9px; color: var(--text3); }
+
+/* ── LEGEND ── */
+.ko2-legend {
+  margin: 4px 12px 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ko2-legend-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text2);
+}
+.ko2-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Desktop */
+@media (min-width: 768px) {
+  .ko-advance-strip { padding: 0 40px 16px; }
+  .ko-elim-strip    { margin: 0 40px 16px; }
+  .ko-stage-lbl     { padding: 6px 40px 8px; }
+  .ko2-cards        { padding: 0 40px 14px; }
+  .ko2-legend       { margin: 4px 40px 20px; }
+  .ko2-team-av      { width: 54px; height: 54px; }
+  .ko2-team-name    { font-size: 14px; max-width: 90px; }
+  .ko2-sets         { font-size: 34px; }
+}
+@media (min-width: 1100px) {
+  .ko-advance-strip, .ko2-cards, .ko2-legend { padding-left: 60px; padding-right: 60px; }
+  .ko-elim-strip  { margin-left: 60px; margin-right: 60px; }
+  .ko-stage-lbl   { padding-left: 60px; padding-right: 60px; }
+}
+</style>
+
+<!-- Back nav -->
+<div class="pt-back-bar">
+  <a href="<%= spl_dashboard_path %>" class="pt-back-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+  </a>
+  <div class="pt-back-crumb">SVL <span>›</span> Points Table</div>
+  <a href="https://patelpredicts.com" target="_blank" class="pt-pp-topbadge">
+    🏏 PatelPredicts
+  </a>
+</div>
+
+<!-- ════ HERO ════ -->
+<div class="pt-hero">
+  <div class="pt-hero-inner">
+    <div>
+      <div class="pt-hero-badge">
+        <div class="pt-live-dot"></div>
+        <%= @season&.name || "Season" %>
+      </div>
+      <div class="pt-hero-title">POINTS<br>TABLE</div>
+      <div class="pt-hero-season">Sugam Volleyball League &nbsp;·&nbsp; <%= @teams.size %> Teams</div>
+    </div>
+    <div class="pt-hero-ball"></div>
+  </div>
+
+  <!-- Patel-Predicts marketing strip -->
+  <div class="pt-pp-strip">
+    <div class="pt-pp-strip-left">
+      <div class="pt-pp-logo-circle">PP</div>
+      <div class="pt-pp-strip-text">
+        <div class="pt-pp-strip-name">Patel-Predicts</div>
+        <div class="pt-pp-strip-sub">Official Partner · SVL <%= @season&.name %></div>
+      </div>
+    </div>
+    <div class="pt-pp-strip-badges">
+      <div class="pt-pp-role-badge pt-pp-auction">Auction</div>
+      <div class="pt-pp-role-badge pt-pp-tech">Tech</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ PODIUM (top 3) ════ -->
+<% if @teams.size >= 3 %>
+<div class="pt-podium-wrap">
+  <div class="pt-podium-title">Top 3 Teams</div>
+  <div class="pt-podium">
+    <%
+      pod_order   = [1, 0, 2]
+      pod_sizes   = { 0 => 72, 1 => 60, 2 => 52 }
+      pod_heights = { 0 => 60, 1 => 44, 2 => 34 }
+      pod_border  = { 0 => '#FFD700', 1 => '#C0C0C0', 2 => '#CD7F32' }
+    %>
+    <% pod_order.each do |idx| %>
+      <% t = @teams[idx]; next unless t %>
+      <% sz = pod_sizes[idx]; ht = pod_heights[idx]; bc = pod_border[idx]; tc = team_color(idx) %>
+      <% slug = t.name.to_s.downcase.gsub(/\s+/, '_') %>
+      <div class="pt-pod-item">
+        <div class="pt-pod-rank-lbl" style="color:<%= idx == 0 ? '#FFD700' : '#64748b' %>">#<%= idx + 1 %></div>
+        <div class="pt-pod-img-wrap">
+          <% if idx == 0 %><div class="pt-pod-crown">👑</div><% end %>
+          <div class="pt-pod-av" style="width:<%= sz %>px;height:<%= sz %>px;background:<%= tc %>;border-color:<%= bc %>;border-width:3px;border-style:solid">
+            <% img = svl_team_image(t.name, style: "width:100%;height:100%;object-fit:cover;border-radius:13px", alt: t.name) %>
+            <% if img %>
+              <%= img %>
+            <% else %>
+              <%= team_initials(t.name) %>
+            <% end %>
+          </div>
+        </div>
+        <div class="pt-pod-name"><%= t.name %></div>
+        <div class="pt-pod-pts-row">
+          <div class="pt-pod-pts"><%= t.points %></div>
+          <div class="pt-pod-pts-lbl">pts</div>
+        </div>
+        <div class="pt-pod-block" style="height:<%= ht %>px;background:<%= bc %>18;border:1px solid <%= bc %>35">
+          <%= idx + 1 %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+<% end %>
+
+<!-- ════ STATS STRIP ════ -->
+<% if @season %>
+<div class="pt-stats-strip">
+  <div class="pt-stat-pill">
+    <div class="pt-stat-val"><%= @teams.size %></div>
+    <div class="pt-stat-lbl">Teams</div>
+  </div>
+  <div class="pt-stat-pill">
+    <div class="pt-stat-val"><%= @all_matches.count rescue 0 %></div>
+    <div class="pt-stat-lbl">Matches</div>
+  </div>
+  <div class="pt-stat-pill">
+    <div class="pt-stat-val" style="color:#34d399"><%= @teams.max_by(&:points)&.points || 0 %></div>
+    <div class="pt-stat-lbl">Top Pts</div>
+  </div>
+  <div class="pt-stat-pill">
+    <div class="pt-stat-val" style="color:#fbbf24"><%= @teams.max_by { |t| t.set_diff }&.set_diff || 0 %></div>
+    <div class="pt-stat-lbl">Best SD</div>
+  </div>
+  <div class="pt-stat-pill">
+    <div class="pt-stat-val" style="color:#60a5fa"><%= @teams.sum(&:no_of_matches_played) / 2 rescue 0 %></div>
+    <div class="pt-stat-lbl">Played</div>
+  </div>
+</div>
+<% end %>
+
+<!-- ════ TEAM FILTER BAR ════ -->
+<div class="pt-filter-bar">
+  <%= link_to svl_points_table_path, class: "pt-filter-chip #{@filter_team.nil? ? 'active' : ''}" do %>
+    All Teams
+  <% end %>
+  <% @teams.each_with_index do |t, i| %>
+    <% slug = t.name.to_s.downcase.gsub(/\s+/, '_'); tc = team_color(i) %>
+    <%= link_to svl_points_table_path(team_id: t.id), class: "pt-filter-chip #{@filter_team&.id == t.id ? 'active' : ''}" do %>
+      <div class="pt-filter-chip-av" style="background:<%= tc %>">
+        <%= image_tag "v_#{slug}.png", onerror: "this.style.display='none';this.nextElementSibling.style.display='flex'", style: "width:100%;height:100%;object-fit:cover;border-radius:50%" rescue '' %>
+        <span style="display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff"><%= team_initials(t.name) %></span>
+      </div>
+      <%= t.name.split(' ').last %>
+    <% end %>
+  <% end %>
+</div>
+
+<!-- ════ MAIN CONTENT ════ -->
+<div class="pt-main">
+
+  <!-- TABLE SECTION -->
+  <div class="pt-table-section">
+    <div class="pt-section-hdr">
+      <div class="pt-section-title">
+        <% if @filter_team %>
+          <%= @filter_team.name %> — Matches
+        <% else %>
+          Standings
+        <% end %>
+      </div>
+      <div style="font-size:9px;color:var(--text3);letter-spacing:.5px">Updated live</div>
+    </div>
+
+    <!-- Column headers -->
+    <div class="pt-col-hdr">
+      <div class="pt-ch">#</div>
+      <div class="pt-ch" style="text-align:left">Team</div>
+      <div class="pt-ch">P</div>
+      <div class="pt-ch">W</div>
+      <div class="pt-ch">L</div>
+      <div class="pt-ch">PTS D</div>
+      <div class="pt-ch">SET D</div>
+      <div class="pt-ch">PTS</div>
+    </div>
+
+    <% if @teams.empty? %>
+      <div class="pt-empty">
+        <div class="pt-empty-icon">🏐</div>
+        <div class="pt-empty-title">No teams yet</div>
+        <div class="pt-empty-sub">Teams appear once the season begins.</div>
+      </div>
+    <% else %>
+      <% @teams.each_with_index do |team, i| %>
+        <%
+          rank     = i + 1
+          rank_cls = rank == 1 ? 'gold' : rank == 2 ? 'silver' : rank == 3 ? 'bronze' : ''
+          row_cls  = rank <= 3 ? "rank-#{rank}" : ''
+          row_cls  += ' filtered' if @filter_team&.id == team.id
+          tc       = team_color(i)
+          played   = team.no_of_matches_played
+          won      = team.no_of_matches_won
+          lost     = team.no_of_matches_lost
+          pd       = team.points_diff
+          sd       = team.set_diff
+          pts      = team.points
+          pd_cls   = pd > 0 ? 'pos' : pd < 0 ? 'neg' : 'zero'
+          sd_cls   = sd > 0 ? 'pos' : sd < 0 ? 'neg' : 'zero'
+          w_pct    = played > 0 ? (won.to_f / played * 100).round : 0
+          slug     = team.name.to_s.downcase.gsub(/\s+/, '_')
+          filter_url = @filter_team&.id == team.id ? svl_points_table_path : svl_points_table_path(team_id: team.id)
+        %>
+        <%= link_to filter_url, class: "pt-team-row #{row_cls}", style: "--row-accent:#{tc};animation-delay:#{i * 0.055}s" do %>
+
+          <!-- Rank -->
+          <div class="pt-rank <%= rank_cls %>"><%= rank %></div>
+
+          <!-- Team: image on top, name below (mobile) / side by side (desktop) -->
+          <div class="pt-team-cell">
+            <%# In the standings table rows — replace the pt-team-av content %>
+            <div class="pt-team-av" style="background:<%= tc %>">
+              <% img = svl_team_image(team.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: team.name) %>
+              <% if img %>
+                <%= img %>
+              <% else %>
+                <span style="font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:#fff">
+                  <%= team_initials(team.name) %>
+                </span>
+              <% end %>
+            </div>
+            <div class="pt-team-name"><%= team.name.split(' ').last %></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="pt-cell"><%= played %></div>
+          <div class="pt-cell" style="color:#34d399"><%= won %></div>
+          <div class="pt-cell" style="color:#f87171"><%= lost %></div>
+          <div class="pt-cell <%= pd_cls %>"><%= pd > 0 ? "+#{pd}" : pd %></div>
+          <div class="pt-cell <%= sd_cls %>"><%= sd > 0 ? "+#{sd}" : sd %></div>
+          <div class="pt-pts-cell">
+            <div class="pt-pts-badge <%= rank <= 3 ? 'top' : '' %>"><%= pts %></div>
+          </div>
+
+        <% end %>
+      <% end %>
+    <% end %>
+  </div><!-- /table-section -->
+
+  <!-- MATCHES SECTION -->
+  <div class="pt-matches-section">
+    <% if @filter_team %>
+      <div class="pt-filter-banner">
+        <div class="pt-filter-banner-text">🏐 <%= @filter_team.name %></div>
+        <%= link_to "✕ All Teams", svl_points_table_path, class: "pt-filter-clear" %>
+      </div>
+    <% end %>
+    <div class="pt-section-hdr">
+      <div class="pt-section-title">
+        <%= @filter_team ? "#{@filter_team.name} Matches" : "Recent Matches" %>
+      </div>
+    </div>
+
+    <div class="pt-matches-list">
+      <% if @matches.empty? %>
+        <div style="padding:24px 0;text-align:center;color:var(--text3);font-size:12px">
+          No matches yet
+        </div>
+      <% else %>
+        <% @matches.each_with_index do |match, mi| %>
+          <%
+            wt      = match.winning_team
+            lt      = match.losing_team
+            sets    = match.match_sets.order(:set_number)
+            w_pts   = match.winning_team_points
+            l_pts   = match.losing_team_points
+            pts_diff = w_pts - l_pts   # winner's points diff for this match
+            # Set diff for this match: winner always has positive set diff
+            w_sets_won = match.winning_team_sets
+            l_sets_won = match.losing_team_sets
+            set_diff_val = w_sets_won - l_sets_won  # e.g. +2 for 2-0, +1 for 2-1
+            pts_diff_cls = pts_diff > 0 ? 'pos' : pts_diff < 0 ? 'neg' : 'zero'
+            sd_cls = set_diff_val > 0 ? 'pos' : set_diff_val < 0 ? 'neg' : 'zero'
+            highlight_winner = @filter_team && @filter_team.id == wt&.id
+            highlight_loser  = @filter_team && @filter_team.id == lt&.id
+          %>
+          <div class="pt-match-card" style="animation-delay:<%= mi * 0.06 %>s">
+            <div class="pt-match-date"><%= match.played_on&.strftime('%d %b') || '—' %></div>
+            <div class="pt-match-teams">
+
+              <!-- Winner -->
+              <div class="pt-match-team-row">
+                <div class="pt-match-team-name winner <%= 'highlight' if highlight_winner %>">
+                  🏆 <%= wt&.name || '—' %>
+                </div>
+                <div class="pt-match-sets">
+                  <% sets.each do |s| %>
+                    <span class="pt-match-set-chip win"><%= s.winning_team_score %></span>
+                  <% end %>
+                </div>
+                <div class="pt-match-total"><%= w_pts %></div>
+              </div>
+
+              <div class="pt-match-divider"></div>
+
+              <!-- Loser -->
+              <div class="pt-match-team-row">
+                <div class="pt-match-team-name <%= 'highlight' if highlight_loser %>">
+                  <%= lt&.name || '—' %>
+                </div>
+                <div class="pt-match-sets">
+                  <% sets.each do |s| %>
+                    <span class="pt-match-set-chip"><%= s.losing_team_score %></span>
+                  <% end %>
+                </div>
+                <div class="pt-match-total" style="color:var(--text3)"><%= l_pts %></div>
+              </div>
+
+              <!-- Diff row -->
+              <div class="pt-match-diffs">
+                <div class="pt-match-diff-chip">
+                  <span class="pt-match-diff-lbl">SET D</span>
+                  <span class="pt-match-diff-val <%= sd_cls %>">
+                    <%= set_diff_val > 0 ? "+#{set_diff_val}" : set_diff_val %>
+                    /
+                    <%= set_diff_val < 0 ? "+#{set_diff_val.abs}" : "-#{set_diff_val.abs}" %>
+                  </span>
+                </div>
+                <div class="pt-match-diff-chip">
+                  <span class="pt-match-diff-lbl">PTS D</span>
+                  <span class="pt-match-diff-val <%= pts_diff_cls %>">
+                    +<%= pts_diff %> / -<%= pts_diff %>
+                  </span>
+                </div>
+                <div class="pt-match-diff-chip" style="margin-left:auto">
+                  <span class="pt-match-diff-lbl">SETS</span>
+                  <span class="pt-match-diff-val" style="color:var(--text2)">
+                    <%= w_sets_won %>–<%= l_sets_won %>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div><!-- /matches-section -->
+
+</div><!-- /pt-main -->
+
+<!-- ════ KNOCKOUT BRACKET ════ -->
+<% if @league_matches.count > 3 %>
+<div class="pt-knockout-wrap" style="border-top: 2px solid rgba(167,139,250,0.15); background: linear-gradient(180deg, rgba(167,139,250,0.03) 0%, transparent 60%); padding-bottom: 8px;">
+
+  <!-- Stage flow bar -->
+  <%
+    league_done    = @league_matches.any?
+    semi_played    = @semi_matches.any?(&:winning_team_id?)
+    final_played   = @final_matches.any?(&:winning_team_id?)
+    league_class   = 'stage-done'
+    semi_class     = semi_played ? 'stage-done' : (league_done ? 'stage-live' : 'stage-locked')
+    final_class    = final_played ? 'stage-done' : (semi_played ? 'stage-live' : 'stage-locked')
+    league_badge   = 'badge-ko-done'
+    semi_badge     = semi_played ? 'badge-ko-done' : (league_done ? 'badge-ko-live' : 'badge-ko-next')
+    final_badge    = final_played ? 'badge-ko-done' : (semi_played ? 'badge-ko-live' : 'badge-ko-next')
+    league_badge_t = 'Done'
+    semi_badge_t   = semi_played ? 'Done' : (league_done ? 'Live' : 'TBD')
+    final_badge_t  = final_played ? 'Done' : (semi_played ? 'Live' : 'TBD')
+  %>
+  <div class="ko-flow">
+    <div class="ko-flow-step <%= league_class %>">
+      <div class="ko-flow-icon">🏐</div>
+      <div class="ko-flow-name">League</div>
+      <div class="ko-flow-badge <%= league_badge %>"><%= league_badge_t %></div>
+    </div>
+    <div class="ko-flow-step <%= semi_class %>">
+      <div class="ko-flow-icon">⚡</div>
+      <div class="ko-flow-name">Semi</div>
+      <div class="ko-flow-badge <%= semi_badge %>"><%= semi_badge_t %></div>
+    </div>
+    <div class="ko-flow-step <%= final_class %>">
+      <div class="ko-flow-icon">🏆</div>
+      <div class="ko-flow-name">Final</div>
+      <div class="ko-flow-badge <%= final_badge %>"><%= final_badge_t %></div>
+    </div>
+  </div>
+
+  <!-- Section header -->
+  <div class="pt-section-hdr" style="padding-top:16px">
+    <div class="pt-section-title" style="color:#c4b5fd">
+      ⚡ Knockout Stage
+    </div>
+    <div style="font-size:9px;color:var(--text3)">Points table unaffected</div>
+  </div>
+
+  <!-- Advancement tracker (top 3) -->
+  <% if @teams.size >= 3 %>
+  <div class="ko-advance-strip">
+    <% @teams.first(3).each_with_index do |t, i| %>
+      <% tc = team_color(i) %>
+      <% adv_cls = i == 0 ? 'direct-final' : '' %>
+      <div class="ko-adv-card <%= adv_cls %>">
+        <div class="ko-adv-rank"><%= i == 0 ? '👑' : "##{i+1}" %></div>
+        <div class="ko-adv-av" style="background:<%= tc %>">
+          <% img = svl_team_image(t.name, style: "width:100%;height:100%;object-fit:cover;border-radius:8px", alt: t.name) %>
+          <% if img %><%= img %><% else %><%= team_initials(t.name) %><% end %>
+        </div>
+        <div class="ko-adv-name"><%= t.name.split(' ').last %></div>
+        <div class="ko-adv-label"><%= i == 0 ? 'Direct Final' : 'Semi-Final' %></div>
+      </div>
+    <% end %>
+  </div>
+  <% end %>
+
+  <!-- Eliminated teams -->
+  <% @eliminated_teams.each_with_index do |t, i| %>
+    <% tc = team_color(i + 3) %>
+    <div class="ko-elim-strip">
+      <div class="ko-elim-av" style="background:<%= tc %>">
+        <% img = svl_team_image(t.name, style: "width:100%;height:100%;object-fit:cover;border-radius:10px", alt: t.name) %>
+        <% if img %><%= img %><% else %><%= team_initials(t.name) %><% end %>
+      </div>
+      <div>
+        <div class="ko-elim-name">⛔ <%= t.name %></div>
+        <div class="ko-elim-sub">Eliminated · #{i + 4}th place · League stage</div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- SEMI-FINAL MATCHES -->
+  <% if @semi_matches.any? %>
+    <div class="ko-stage-lbl lbl-semi">Semi-Final</div>
+    <div class="ko2-cards">
+      <% @semi_matches.each do |match| %>
+        <% wt = match.winning_team; lt = match.losing_team %>
+        <% played = wt.present? && lt.present? %>
+        <% sets = match.match_sets.order(:set_number) %>
+        <div class="ko2-card semi <%= 'played' if played %>">
+          <div class="ko2-card-head">
+            <div class="badge-ko-semi">⚡ Semi-Final</div>
+            <div class="ko2-card-date"><%= match.played_on&.strftime('%d %b') || 'TBD' %></div>
+          </div>
+          <div class="ko2-match-body">
+            <!-- Winner / Team A -->
+            <div class="ko2-team-side <%= 'ko2-loser-dim' if played && wt.nil? %>">
+              <% if wt %>
+                <% idx = @teams.index { |t| t.id == wt.id } || 0 %>
+                <div class="ko2-team-av" style="background:<%= team_color(idx) %>">
+                  <% img = svl_team_image(wt.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: wt.name) %>
+                  <% if img %><%= img %><% else %><%= team_initials(wt.name) %><% end %>
+                </div>
+                <div class="ko2-team-name"><%= wt.name.split(' ').last %></div>
+                <div class="ko2-winner-tag">WIN →</div>
+              <% else %>
+                <div class="ko2-team-av tbd">?</div>
+                <div class="ko2-team-name" style="color:var(--text3)">TBD</div>
+              <% end %>
+            </div>
+            <!-- Score -->
+            <div class="ko2-score-mid">
+              <% if played %>
+                <div class="ko2-sets">
+                  <span class="ko2-ss win"><%= match.winning_team_sets %></span>
+                  <span class="ko2-ss-sep">–</span>
+                  <span class="ko2-ss"><%= match.losing_team_sets %></span>
+                </div>
+                <div class="ko2-pts">
+                  <span style="color:#34d399"><%= match.winning_team_points %></span>
+                  <span style="color:var(--text3);margin:0 2px">·</span>
+                  <span><%= match.losing_team_points %></span>
+                </div>
+                <div class="ko2-set-chips">
+                  <% sets.each do |s| %>
+                    <div class="ko2-set-row">
+                      <span class="ko2-chip win"><%= s.winning_team_score %></span>
+                      <span class="ko2-chip-sep">–</span>
+                      <span class="ko2-chip"><%= s.losing_team_score %></span>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="ko2-vs">VS</div>
+              <% end %>
+            </div>
+            <!-- Loser / Team B -->
+            <div class="ko2-team-side <%= 'ko2-loser-dim' if played %>">
+              <% if lt %>
+                <% idx = @teams.index { |t| t.id == lt.id } || 1 %>
+                <div class="ko2-team-av" style="background:<%= team_color(idx) %>">
+                  <% img = svl_team_image(lt.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: lt.name) %>
+                  <% if img %><%= img %><% else %><%= team_initials(lt.name) %><% end %>
+                </div>
+                <div class="ko2-team-name"><%= lt.name.split(' ').last %></div>
+              <% else %>
+                <div class="ko2-team-av tbd">?</div>
+                <div class="ko2-team-name" style="color:var(--text3)">TBD</div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- FINAL MATCH -->
+  <% if @final_matches.any? %>
+    <div class="ko-stage-lbl lbl-final">Final</div>
+    <div class="ko2-cards">
+      <% @final_matches.each do |match| %>
+        <% wt = match.winning_team; lt = match.losing_team %>
+        <% played = wt.present? && lt.present? %>
+        <% sets = match.match_sets.order(:set_number) %>
+        <div class="ko2-card final <%= 'played' if played %>">
+          <div class="ko2-card-head">
+            <div class="badge-ko-final">🏆 Final</div>
+            <div class="ko2-card-date"><%= match.played_on&.strftime('%d %b') || 'TBD' %></div>
+          </div>
+          <div class="ko2-match-body">
+            <div class="ko2-team-side">
+              <% if wt %>
+                <% idx = @teams.index { |t| t.id == wt.id } || 0 %>
+                <div class="ko2-team-av" style="background:<%= team_color(idx) %>">
+                  <% img = svl_team_image(wt.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: wt.name) %>
+                  <% if img %><%= img %><% else %><%= team_initials(wt.name) %><% end %>
+                </div>
+                <div class="ko2-team-name"><%= wt.name.split(' ').last %></div>
+                <% if played %><div class="ko2-winner-tag ko2-final-winner-tag">🏆 Champion</div><% end %>
+              <% else %>
+                <!-- Show rank-1 team as placeholder if not yet played -->
+                <% r1 = @league_rank_1 %>
+                <% if r1 %>
+                  <% idx = @teams.index { |t| t.id == r1.id } || 0 %>
+                  <div class="ko2-team-av" style="background:<%= team_color(idx) %>">
+                    <% img = svl_team_image(r1.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: r1.name) %>
+                    <% if img %><%= img %><% else %><%= team_initials(r1.name) %><% end %>
+                  </div>
+                  <div class="ko2-team-name"><%= r1.name.split(' ').last %></div>
+                  <div style="font-size:9px;color:rgba(245,158,11,0.6);letter-spacing:.5px;">#1 · Direct</div>
+                <% end %>
+              <% end %>
+            </div>
+            <div class="ko2-score-mid">
+              <% if played %>
+                <div class="ko2-sets">
+                  <span class="ko2-ss win"><%= match.winning_team_sets %></span>
+                  <span class="ko2-ss-sep">–</span>
+                  <span class="ko2-ss"><%= match.losing_team_sets %></span>
+                </div>
+                <div class="ko2-pts">
+                  <span style="color:#34d399"><%= match.winning_team_points %></span>
+                  <span style="color:var(--text3);margin:0 2px">·</span>
+                  <span><%= match.losing_team_points %></span>
+                </div>
+                <div class="ko2-set-chips">
+                  <% sets.each do |s| %>
+                    <div class="ko2-set-row">
+                      <span class="ko2-chip win"><%= s.winning_team_score %></span>
+                      <span class="ko2-chip-sep">–</span>
+                      <span class="ko2-chip"><%= s.losing_team_score %></span>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <div class="ko2-vs">VS</div>
+                <div class="badge-ko-tbd" style="margin-top:4px;font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text3)">Upcoming</div>
+              <% end %>
+            </div>
+            <div class="ko2-team-side">
+              <% if lt %>
+                <% idx = @teams.index { |t| t.id == lt.id } || 1 %>
+                <div class="ko2-team-av" style="background:<%= team_color(idx) %>">
+                  <% img = svl_team_image(lt.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: lt.name) %>
+                  <% if img %><%= img %><% else %><%= team_initials(lt.name) %><% end %>
+                </div>
+                <div class="ko2-team-name"><%= lt.name.split(' ').last %></div>
+                <% if played %><div style="opacity:.4;font-size:9px;color:var(--text3)">Runner-up</div><% end %>
+              <% else %>
+                <div class="ko2-team-av tbd">⚡</div>
+                <div class="ko2-team-name" style="color:var(--text3)">Semi winner</div>
+                <div style="font-size:9px;color:var(--text3);letter-spacing:.5px;">From semi</div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% elsif @semi_matches.any? %>
+    <%# Show a placeholder Final card if semi exists but final not created yet %>
+    <div class="ko-stage-lbl lbl-final">Final</div>
+    <div class="ko2-cards">
+      <div class="ko2-card final">
+        <div class="ko2-card-head">
+          <div class="badge-ko-final">🏆 Final</div>
+          <div class="ko2-card-date">TBD</div>
+        </div>
+        <div class="ko2-match-body">
+          <div class="ko2-team-side">
+            <% r1 = @league_rank_1 %>
+            <% if r1 %>
+              <% idx = @teams.index { |t| t.id == r1.id } || 0 %>
+              <div class="ko2-team-av" style="background:<%= team_color(idx) %>">
+                <% img = svl_team_image(r1.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: r1.name) %>
+                <% if img %><%= img %><% else %><%= team_initials(r1.name) %><% end %>
+              </div>
+              <div class="ko2-team-name"><%= r1.name.split(' ').last %></div>
+              <div style="font-size:9px;color:rgba(245,158,11,0.6);letter-spacing:.5px;">#1 · Direct</div>
+            <% end %>
+          </div>
+          <div class="ko2-score-mid">
+            <div class="ko2-vs">VS</div>
+            <div style="font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text3);margin-top:4px">Upcoming</div>
+          </div>
+          <div class="ko2-team-side">
+            <div class="ko2-team-av tbd">⚡</div>
+            <div class="ko2-team-name" style="color:var(--text3)">Semi winner</div>
+            <div style="font-size:9px;color:var(--text3)">From semi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Legend -->
+  <div class="ko2-legend">
+    <div class="ko2-legend-row">
+      <div class="ko2-legend-dot" style="background:var(--gold)"></div>
+      <span><strong>#1</strong> advances directly to the Final — no semi needed</span>
+    </div>
+    <div class="ko2-legend-row">
+      <div class="ko2-legend-dot" style="background:#a78bfa"></div>
+      <span><strong>#2 vs #3</strong> play a semi-final — winner reaches the Final</span>
+    </div>
+    <div class="ko2-legend-row">
+      <div class="ko2-legend-dot" style="background:var(--red)"></div>
+      <span><strong>#4</strong> is eliminated after the league stage</span>
+    </div>
+  </div>
+
+</div>
+<% end %>
+

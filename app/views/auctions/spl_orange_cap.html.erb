@@ -1,94 +1,408 @@
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard - SPL</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-      body {
-          background-color: #f4f4f4;
-          font-family: Arial, sans-serif;
-      }
+<%# app/views/spl/orange_cap.html.erb — Responsive desktop + mobile %>
+<% provide(:title, "Orange Cap") %>
 
-      .leaderboard {
-          background: white;
-          border-radius: 10px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-      }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
 
-      .table {
-          margin: 0;
-          border-collapse: collapse;
-      }
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+  --surface: #1e293b; --surface2: #243044;
+  --orange: #f97316; --orange2: #fb923c; --orange-dim: rgba(249,115,22,0.15);
+  --gold: #f59e0b; --green: #10b981; --red: #ef4444; --blue: #3b82f6;
+  --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+  --radius: 16px; --radius-sm: 10px;
+  --nav-h: 68px; --top-h: 58px;
+  --fd: 'Rajdhani', sans-serif; --fb: 'Nunito', sans-serif;
+}
 
-      .table th {
-          background-color: #007bff;
-          color: white;
-          text-align: center;
-      }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); font-family: var(--fb); color: var(--text); overflow-x: hidden; }
 
-      .table td, .table th {
-          text-align: center;
-          vertical-align: middle;
-      }
+/* ── SHELL ── */
+.oc-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
 
-      .player-name {
-          font-weight: bold;
-      }
+/* TOP BAR */
+.oc-topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px;
+  height: var(--top-h);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px);
+}
+.oc-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); cursor: pointer; flex-shrink: 0;
+  text-decoration: none; transition: all 0.15s;
+}
+.oc-back-btn:active { background: var(--bg3); }
+.oc-topbar-center { flex: 1; }
+.oc-brand { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--orange); letter-spacing: 0.5px; }
+.oc-season-sub { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.oc-cap-badge {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), #c2410c);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 16px rgba(249,115,22,0.4);
+  animation: capglow 2s ease-in-out infinite alternate;
+}
+@keyframes capglow {
+  from { box-shadow: 0 0 8px rgba(249,115,22,0.3); }
+  to   { box-shadow: 0 0 24px rgba(249,115,22,0.7); }
+}
 
-      .profile-pic {
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          border: 2px solid #ddd;
-      }
-  </style>
-</head>
-<body>
-  <div class="container my-5">
-    <div class="text-center mt-3">
-      <%= link_to 'Back', root_path, class:'btn btn-primary back-button theme-btn-back' %>
+/* SCROLL AREA */
+.oc-scroll {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 16px 20px 32px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+.oc-scroll::-webkit-scrollbar { width: 4px; }
+.oc-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* ── DESKTOP TWO-COLUMN LAYOUT ── */
+@media (min-width: 960px) {
+  .oc-scroll { padding: 24px 32px 40px; }
+
+  .oc-desktop-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* Hero spans full width */
+  .oc-hero { grid-column: 1 / -1; }
+  /* Season row spans full width */
+  .oc-season-row { grid-column: 1 / -1; }
+
+  /* Right column: stats + podium */
+  .oc-right-col {
+    position: sticky;
+    top: calc(var(--top-h) + 16px);
+  }
+}
+
+@media (max-width: 959px) {
+  .oc-desktop-grid { display: block; }
+  .oc-right-col { margin-bottom: 20px; }
+}
+
+/* HERO BANNER */
+.oc-hero {
+  background: linear-gradient(135deg, #431407 0%, #7c2d12 40%, #9a3412 100%);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(249,115,22,0.25);
+}
+@media (min-width: 960px) {
+  .oc-hero { padding: 28px 32px; margin-bottom: 0; }
+  .oc-hero-title { font-size: 34px !important; }
+}
+.oc-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(249,115,22,0.03) 0, rgba(249,115,22,0.03) 1px, transparent 1px, transparent 20px);
+  pointer-events: none;
+}
+.oc-hero-glow {
+  position: absolute; right: -30px; top: -30px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.35), transparent 70%);
+  pointer-events: none;
+}
+.oc-hero-content { position: relative; z-index: 1; }
+.oc-hero-label { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.oc-hero-title { font-family: var(--fd); font-size: 26px; font-weight: 700; color: #fff; line-height: 1.1; display: flex; align-items: center; gap: 10px; }
+.oc-hero-emoji { font-size: 30px; }
+.oc-hero-sub { font-size: 12px; color: var(--orange2); margin-top: 6px; font-weight: 600; letter-spacing: 0.5px; }
+
+/* SEASON PILL */
+.oc-season-row {
+  margin-bottom: 14px;
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;
+}
+.oc-season-row::-webkit-scrollbar { display: none; }
+.season-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 24px; font-size: 12px; font-weight: 600;
+  color: var(--text2); white-space: nowrap; cursor: pointer;
+  text-decoration: none; transition: all 0.15s; flex-shrink: 0;
+}
+.season-pill.active { background: var(--orange-dim); border-color: rgba(249,115,22,0.45); color: var(--orange2); }
+.season-pill:active { transform: scale(0.97); }
+@media (min-width: 960px) { .season-pill { font-size: 13px; padding: 8px 18px; } }
+
+/* SECTION LABEL */
+.section-label {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 10px; margin-top: 4px;
+}
+
+/* STATS GRID */
+.oc-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 16px;
+}
+@media (min-width: 960px) { .oc-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
+
+.oc-stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  position: relative; overflow: hidden; transition: all 0.15s;
+}
+.oc-stat-card:hover { border-color: rgba(249,115,22,0.3); transform: translateY(-1px); }
+.oc-stat-lbl { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.oc-stat-val { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--orange2); line-height: 1; margin-bottom: 2px; }
+.oc-stat-sub { font-size: 10px; color: var(--text3); }
+.oc-stat-icon { font-size: 22px; position: absolute; top: 12px; right: 12px; opacity: 0.35; }
+
+/* PODIUM */
+.oc-podium-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 12px 0; margin-bottom: 16px;
+}
+.oc-podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; }
+.pod-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pod-av { border-radius: 50%; border: 2.5px solid; display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-weight: 700; color: #fff; position: relative; }
+.pod-cap-emoji { position: absolute; top: -10px; font-size: 16px; }
+.pod-name { font-size: 11px; font-weight: 600; color: var(--text); max-width: 80px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pod-pts { font-size: 10px; color: var(--text3); }
+.pod-block { display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-size: 20px; font-weight: 700; border-radius: 6px 6px 0 0; color: rgba(0,0,0,0.4); }
+
+/* LEADERBOARD */
+.oc-lb-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 20px;
+}
+.oc-lb-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(249,115,22,0.18) 0%, rgba(194,65,12,0.1) 100%);
+  border-bottom: 1px solid rgba(249,115,22,0.2);
+}
+.oc-lb-header-icon { font-size: 20px; }
+.oc-lb-header-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--text); flex: 1; }
+
+/* Column headers */
+.oc-col-headers {
+  display: grid;
+  grid-template-columns: 36px 1fr 70px 44px 44px;
+  gap: 4px; padding: 8px 14px;
+  background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border);
+}
+.oc-col-hdr { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+.oc-col-hdr:nth-child(2) { text-align: left; }
+
+/* Player row */
+.oc-player-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 70px 44px 44px;
+  gap: 4px; align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s; position: relative;
+}
+.oc-player-row:last-child { border-bottom: none; }
+.oc-player-row:hover { background: var(--surface2); }
+.oc-player-row.rank-1 { background: rgba(249,115,22,0.07); border-left: 3px solid var(--orange); }
+.oc-player-row.rank-2 { background: rgba(203,213,225,0.04); border-left: 3px solid #94a3b8; }
+.oc-player-row.rank-3 { background: rgba(205,127,50,0.05); border-left: 3px solid #b45309; }
+
+.oc-rank-bubble {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.oc-rank-bubble.r1 { background: linear-gradient(135deg, var(--orange), #c2410c); color: #fff; box-shadow: 0 2px 8px rgba(249,115,22,0.5); }
+.oc-rank-bubble.r2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
+.oc-rank-bubble.r3 { background: linear-gradient(135deg, #b45309, #92400e); color: #fff; }
+.oc-rank-bubble.rn { background: transparent; border: 1px solid var(--border2); color: var(--text3); font-size: 12px; }
+
+.oc-player-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.oc-av {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 13px; font-weight: 700;
+  flex-shrink: 0; position: relative; border: 1.5px solid rgba(249,115,22,0.3);
+}
+.oc-av-cap { position: absolute; top: -6px; right: -6px; font-size: 12px; line-height: 1; }
+.oc-p-name { font-family: var(--fd); font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oc-p-sub { font-size: 9px; color: var(--text3); margin-top: 1px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+.oc-stat-cell { text-align: center; }
+.oc-stat-main { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--orange2); }
+.oc-stat-secondary { font-size: 9px; color: var(--text3); margin-top: 1px; }
+.oc-progress-wrap { position: relative; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.oc-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, var(--orange), var(--orange2)); border-radius: 2px; transition: width 0.8s ease; }
+</style>
+
+<div class="oc-shell">
+
+  <div class="oc-topbar">
+    <%= link_to spl_dashboard_path, class: "oc-back-btn" do %>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    <% end %>
+    <div class="oc-topbar-center">
+      <div class="oc-brand">Orange Cap 🧢</div>
+      <div class="oc-season-sub">Top Run Scorers · SPL</div>
     </div>
-    <h1 class="text-center mb-4"><%= image_tag('orange_cap.jpeg', alt: 'Orange Cap', style: 'max-height: 70px;') %> Leaderboard</h1>
-    <div class="leaderboard">
-      <table class="table table-striped table-hover">
-          <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Runs/INNS</th>
-                <th>SR</th>
-                <th>6s</th>
-                <!-- <th>AVG</th> -->
-                <th>50s</th>
-                <th>100s</th>
-                <!-- <th>N/O</th> -->
-            </tr>
-          </thead>
-          <tbody>
-              <% @records.each_with_index do |record, i| %>
-              	<tr>
-	              	<% if i == 0 %>
-	                	<td><span class="player-name"><%= i+1 %> <%= image_tag('orange_cap.jpeg', alt: 'Orange Cap', style: 'max-height: 20px;') %></span></td>
-	              	<% else %>
-	              		<td><span class="player-name"><%= i+1 %></span></td>
-	              	<% end %>
-	                <td>
-	                  <span class="player-name"><%= record[:player_name] %></span>
-	                </td>
-	                <td><%= "#{record[:runs]}/#{record[:innings]}" %></td>
-	                <td><%= record[:sr] %></td>
-	                <td><%= record[:sixes] %></td>
-                  <!-- <td><#%= record[:avg] %></td> -->
-	                <td><%= record[:fifties] %></td>
-	                <td><%= record[:hundreds] %></td>
-                  <!-- <td><#%= record[:not_out] %></td> -->
-              	</tr>
-	             <% end %>
-          </tbody>
-      </table>
-     </div>
+    <div class="oc-cap-badge">🧢</div>
   </div>
-</body>
-</html>
+
+  <div class="oc-scroll">
+
+    <%# Season selector (full width always) %>
+    <div class="oc-season-row" style="margin-bottom:16px">
+      <%= link_to spl_orange_cap_path(season: 'all'), class: "season-pill #{@selected_season == 'all' ? 'active' : ''}" do %>All<% end %>
+      <% @seasons.each do |season| %>
+        <%= link_to spl_orange_cap_path(season: season), class: "season-pill #{@selected_season == season ? 'active' : ''}" do %> <%= season.upcase %><% end %>
+      <% end %>
+    </div>
+
+    <div class="oc-desktop-grid">
+
+      <%# LEFT COLUMN: Hero + Full Leaderboard %>
+      <div class="oc-left-col">
+
+        <div class="oc-hero" style="margin-bottom:20px">
+          <div class="oc-hero-glow"></div>
+          <div class="oc-hero-content">
+            <div class="oc-hero-label">Sugam Premier League</div>
+            <div class="oc-hero-title"><span class="oc-hero-emoji">🧢</span> Orange Cap</div>
+            <div class="oc-hero-sub"><%= @title %></div>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:0">Full Rankings</div>
+        <div class="oc-lb-card">
+          <div class="oc-lb-header">
+            <div class="oc-lb-header-icon">📊</div>
+            <div class="oc-lb-header-title">Orange Cap Leaderboard</div>
+            <div style="font-size:10px;color:var(--orange2);font-weight:700;letter-spacing:1px">RUNS</div>
+          </div>
+
+          <div class="oc-col-headers">
+            <div class="oc-col-hdr">#</div>
+            <div class="oc-col-hdr">Player</div>
+            <div class="oc-col-hdr">Runs/Inn</div>
+            <div class="oc-col-hdr">SR</div>
+            <div class="oc-col-hdr">6s</div>
+          </div>
+
+          <% av_colors = ['#f97316','#94a3b8','#b45309','#3b82f6','#8b5cf6','#10b981','#ec4899','#06b6d4'] %>
+          <% @records.each_with_index do |r, i| %>
+            <%
+              rank_class = i == 0 ? 'rank-1' : i == 1 ? 'rank-2' : i == 2 ? 'rank-3' : ''
+              bubble_class = i == 0 ? 'r1' : i == 1 ? 'r2' : i == 2 ? 'r3' : 'rn'
+              percent = i == 0 ? 100 : (@records[i][:runs].to_f / @records[0][:runs].to_f * 100).round
+
+              av_bg = av_colors[i % av_colors.length]
+              initials = r[:player_name].split(' ').map{|w|w[0]}.join.slice(0,2).upcase
+            %>
+            <div class="oc-player-row <%= rank_class %>">
+              <div><div class="oc-rank-bubble <%= bubble_class %>"><%= i + 1 %></div></div>
+              <div class="oc-player-info">
+                <!-- <div class="oc-av" style="background:rgba(<#%= av_bg.gsub('#','').scan(/../).map{|x|x.to_i(16)}.join(',') %>,0.2);color:<#%= av_bg %>">
+                  <#%= initials %>
+                  <#% if i == 0 %><span class="oc-av-cap">🧢</span><#% end %>
+                </div> -->
+                <div style="min-width:0">
+                  <div class="oc-p-name"><%= r[:player_name] %></div>
+                  <div class="oc-p-sub"><%= @selected_season == 'all' ? 'All' : "SPL #{@selected_season.last.upcase}" %></div>
+                  <div class="oc-progress-wrap"><div class="oc-progress-fill" style="width:<%= percent %>%"></div></div>
+                </div>
+              </div>
+              <div class="oc-stat-cell">
+                <div class="oc-stat-main"><%= r[:runs] %>/<%= r[:innings] %></div>
+                <div class="oc-stat-secondary">Balls:- <%= r[:balls] %></div>
+              </div>
+              <div class="oc-stat-cell">
+                <div class="oc-stat-main" style="color:var(--text2);font-size:13px"><%= r[:sr] %></div>
+              </div>
+              <div class="oc-stat-cell">
+                <div class="oc-stat-main" style="font-size:13px"><%= r[:sixes] %></div>
+                <div class="oc-stat-secondary">50s:<%= r[:fifties] %></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# RIGHT COLUMN: Stats cards + Podium %>
+      <div class="oc-right-col">
+        <div class="section-label">Key Stats</div>
+        <div class="oc-stats-grid">
+          <% top = @records&.first %>
+          <div class="oc-stat-card">
+            <div class="oc-stat-icon">🏆</div>
+            <div class="oc-stat-lbl">Top Scorer</div>
+            <div class="oc-stat-val"><%= top[:player_name].split(' ').first %></div>
+            <div class="oc-stat-sub"><%= top[:runs] %> Runs</div>
+          </div>
+          <% most_sixes = @records&.max_by { |r| r[:sixes].to_i } %>
+          <div class="oc-stat-card">
+            <div class="oc-stat-icon">💥</div>
+            <div class="oc-stat-lbl">Most Sixes</div>
+            <div class="oc-stat-val"><%= most_sixes[:player_name].split(' ').first %></div>
+            <div class="oc-stat-sub"><%= most_sixes[:sixes] %> Sixes</div>
+          </div>
+          <% most_fifties = @records&.max_by { |r| r[:fifties].to_i } %>
+          <div class="oc-stat-card">
+            <div class="oc-stat-icon">⚡</div>
+            <div class="oc-stat-lbl">Most Fifties</div>
+            <div class="oc-stat-val"><%= most_fifties[:player_name].split(' ').first %></div>
+            <div class="oc-stat-sub"><%= most_fifties[:fifties] %> × 50s</div>
+          </div>
+          <% most_hundreds = @records&.max_by { |r| r[:hundreds].to_i } %>
+          <div class="oc-stat-card">
+            <div class="oc-stat-icon">👑</div>
+            <div class="oc-stat-lbl">Most Centuries</div>
+            <div class="oc-stat-val"><%= most_hundreds[:player_name].split(' ').first %></div>
+            <div class="oc-stat-sub"><%= most_hundreds[:hundreds] %> × 100s</div>
+          </div>
+        </div>
+
+        <% if @records.size >= 3 %>
+          <div class="section-label" style="margin-top:8px">Top 3 Batters</div>
+          <div class="oc-podium-wrap">
+            <div class="oc-podium">
+              <%
+                av_colors2 = ['#f97316','#94a3b8','#b45309','#3b82f6','#8b5cf6','#10b981']
+                podium_order = [{idx:1,sz:52,h:56,bc:'#94a3b8'},{idx:0,sz:64,h:76,bc:'#f97316'},{idx:2,sz:46,h:40,bc:'#b45309'}]
+              %>
+              <% podium_order.each do |po| %>
+                <% u = @records[po[:idx]]; next unless u %>
+                <div class="pod-item">
+                  <div class="pod-av" style="width:<%= po[:sz] %>px;height:<%= po[:sz] %>px;font-size:<%= (po[:sz]/3.8).floor %>px;background:<%= av_colors2[po[:idx]] %>;border-color:<%= po[:bc] %>">
+                    <% if po[:idx] == 0 %><div class="pod-cap-emoji">🧢</div><% end %>
+                    <%= u[:player_name].split(' ').map{|w|w[0]}.join.slice(0,2).upcase %>
+                  </div>
+                  <div class="pod-name"><%= u[:player_name].split(' ').first %></div>
+                  <div class="pod-pts"><%= u[:runs] %> runs</div>
+                  <div class="pod-block" style="width:<%= po[:sz]+14 %>px;height:<%= po[:h] %>px;background:<%= po[:bc] %>"><%= po[:idx]+1 %></div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    </div><%# /desktop-grid %>
+  </div><%# /scroll %>
+</div><%# /shell %>

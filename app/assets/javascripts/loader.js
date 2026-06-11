@@ -403,7 +403,6 @@ function initializeLoader() {
   const timeElement = document.getElementById('timeRemaining');
   const progressBar = document.querySelector('.progress-bar');
 
-
   if (!percentElement || !timeElement || !progressBar) {
     console.error('Required elements not found!');
     return;
@@ -417,6 +416,7 @@ function initializeLoader() {
 
   // Function to show the loader
   function showLoader() {
+    document.body.classList.add('turbo-loading');
     loaderStartTime = Date.now();
     loader.classList.add('active');
     isLoaderActive = true;
@@ -429,6 +429,28 @@ function initializeLoader() {
     const remainingTime = minimumDisplayTime - elapsedTime;
 
     if (remainingTime > 0) {
+      // Complete the progress animation smoothly
+      const currentProgress = parseFloat(progressBar.style.width) || 0;
+      const remainingProgress = 100 - currentProgress;
+      const timePerPercent = remainingTime / remainingProgress;
+      
+      clearInterval(progressInterval);
+      progressInterval = setInterval(() => {
+        const currentWidth = parseFloat(progressBar.style.width) || 0;
+        if (currentWidth < 100) {
+          const newWidth = Math.min(currentWidth + 1, 100);
+          percentElement.textContent = Math.round(newWidth) + '%';
+          progressBar.style.width = newWidth + '%';
+          
+          // Sync time remaining with percentage
+          const percentRemaining = 100 - newWidth;
+          const secondsRemaining = Math.ceil((percentRemaining / 100) * (remainingTime / 1000));
+          timeElement.textContent = secondsRemaining + 's';
+        } else {
+          clearInterval(progressInterval);
+        }
+      }, timePerPercent);
+      
       setTimeout(() => {
         loader.classList.remove('active');
         isLoaderActive = false;
@@ -436,6 +458,11 @@ function initializeLoader() {
         clearInterval(timeInterval);
       }, remainingTime);
     } else {
+      // If we've already exceeded minimum time, just finish progress and hide
+      percentElement.textContent = '100%';
+      progressBar.style.width = '100%';
+      timeElement.textContent = '0s';
+      
       loader.classList.remove('active');
       isLoaderActive = false;
       clearInterval(progressInterval);
@@ -445,8 +472,14 @@ function initializeLoader() {
 
   // Force hide loader (for back button)
   function forceHideLoader() {
+     document.body.classList.remove('turbo-loading');
     if (isLoaderActive) {
       console.log('Force hiding loader (back button or popstate event)');
+      // Set to 100% before hiding
+      percentElement.textContent = '100%';
+      progressBar.style.width = '100%';
+      timeElement.textContent = '0s';
+      
       loader.classList.remove('active');
       isLoaderActive = false;
       clearInterval(progressInterval);
@@ -474,20 +507,46 @@ function initializeLoader() {
     }
   });
 
-  // Test loader visibility
-  function testLoader() {
-    console.log('Testing loader visibility manually');
-    showLoader();
+  // Updated loading animation function with synchronized progress and time
+  function startLoadingAnimation() {
+    let progress = 0;
+    const startTime = Date.now();
+    const totalSeconds = minimumDisplayTime / 1000;
     
-    // Hide after 8 seconds
-    setTimeout(() => {
-      hideLoader();
-    }, 8000);
+    // Reset elements
+    percentElement.textContent = '0%';
+    progressBar.style.width = '0%';
+    timeElement.textContent = Math.ceil(totalSeconds) + 's';
+    
+    progressInterval = setInterval(() => {
+      const elapsedTime = Date.now() - startTime;
+      progress = Math.min((elapsedTime / minimumDisplayTime) * 100, 99); // Cap at 99% during loading
+      
+      percentElement.textContent = Math.round(progress) + '%';
+      progressBar.style.width = progress + '%';
+      
+      // Sync time remaining with percentage
+      const percentRemaining = 100 - progress;
+      const secondsRemaining = Math.ceil((percentRemaining / 100) * totalSeconds);
+      timeElement.textContent = secondsRemaining + 's';
+      
+      if (progress >= 99) {
+        clearInterval(progressInterval);
+      }
+    }, 50); // Update every 50ms for smoother animation
   }
   
-  // Uncomment this line to manually test the loader
-  // testLoader();
-  
+  // Auto hide the loader if it gets stuck for any reason
+  setInterval(() => {
+    if (isLoaderActive) {
+      const elapsedTime = Date.now() - loaderStartTime;
+      if (elapsedTime > 15000) { // 15 seconds max display time
+        console.log('Loader has been active for too long, force hiding');
+        forceHideLoader();
+      }
+    }
+  }, 5000); // Check every 5 seconds
+
   // Standard Turbo Drive navigation events
   document.addEventListener('turbo:visit', () => {
     console.log('Turbo visit started, showing loader');
@@ -496,9 +555,6 @@ function initializeLoader() {
   
   document.addEventListener('turbo:load', () => {
     console.log('Turbo load completed, hiding loader');
-    // Ensure the progress bar reaches 100% before hiding
-    percentElement.textContent = '100%';
-    progressBar.style.width = '100%';
     hideLoader();
   });
 
@@ -548,53 +604,8 @@ function initializeLoader() {
       showLoader();
     }
   });
-  
-  // Updated loading animation function
-  function startLoadingAnimation() {
-    let progress = 0;
-    const startTime = Date.now();
-    
-    // Reset elements
-    percentElement.textContent = '0%';
-    progressBar.style.width = '0%';
-    timeElement.textContent = Math.ceil(minimumDisplayTime / 1000) + 's';
-    
-    progressInterval = setInterval(() => {
-      const elapsedTime = Date.now() - startTime;
-      progress = Math.min((elapsedTime / minimumDisplayTime) * 100, 100); // Cap at 100%
-      
-      percentElement.textContent = Math.round(progress) + '%';
-      progressBar.style.width = progress + '%';
-      
-      if (progress >= 100) {
-        clearInterval(progressInterval);
-      }
-    }, 50); // Update every 50ms for smoother animation
-    
-    let seconds = Math.ceil(minimumDisplayTime / 1000);
-    timeInterval = setInterval(() => {
-      seconds -= 1;
-      if (seconds >= 0) {
-        timeElement.textContent = seconds + 's';
-      }
-      
-      if (seconds <= 0) {
-        clearInterval(timeInterval);
-      }
-    }, 1000);
-  }
-  
-  // Auto hide the loader if it gets stuck for any reason
-  setInterval(() => {
-    if (isLoaderActive) {
-      const elapsedTime = Date.now() - loaderStartTime;
-      if (elapsedTime > 15000) { // 15 seconds max display time
-        console.log('Loader has been active for too long, force hiding');
-        forceHideLoader();
-      }
-    }
-  }, 5000); // Check every 5 seconds
 }
+
 
 // Initialize only once on page load
 document.addEventListener('DOMContentLoaded', initializeLoader);

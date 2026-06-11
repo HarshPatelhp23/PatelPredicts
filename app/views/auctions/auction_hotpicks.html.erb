@@ -1,85 +1,750 @@
-<div class="text-center mt-3">
-  <%= link_to 'Back', auction_table_path, class:'btn btn-success back-button theme-btn-back' %>
-</div>
-<div class="container mt-4">
-  <h1 class="text-center mb-4">Auction Hotpicks</h1>
+<% provide(:title, "Auction HotPicks") %>
 
-  <div class="row justify-content-center">
-    <% @hotpicks_players.sort_by { |player| -player.total_skill }.each_with_index do |player, index| %>
-      <div class="col-md-6 col-lg-4 col-sm-12 mb-4">
-        <div class="card shadow-sm">
-          <div class="card-header text-center bg-primary text-white">
-            <h5 class="card-title mb-0"><%= "#{index + 1}. #{player.name}" %></h5>
+<!-- ═══════════════════════════════════════
+     APP SHELL — matches dashboard theme
+═══════════════════════════════════════ -->
+<div class="spl-app-shell" id="app-shell">
+
+  <!-- TOP APP BAR -->
+  <div class="app-topbar">
+    <div class="app-topbar-left">
+      <%= link_to spl_dashboard_path, class: "inner-back-btn", data: { no_loader: true } do %>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+      <% end %>
+      <div>
+        <div class="app-brand">HotPicks 🔥</div>
+        <div class="app-season">Auction Edition · 2026</div>
+      </div>
+    </div>
+    <div class="app-topbar-right">
+      <div class="fire-badge">
+        <span class="fire-dot"></span>LIVE
+      </div>
+      <div class="app-avatar"><%= current_spl_user.name.to_s.first(2).upcase %></div>
+    </div>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="filter-tabs-wrap">
+    <div class="filter-tabs" id="filter-tabs">
+      <button class="ftab active" data-tab="all"      onclick="filterTab('all')">⚡ All</button>
+      <button class="ftab"        data-tab="captain"  onclick="filterTab('captain')">👑 Captains</button>
+      <button class="ftab"        data-tab="retained" onclick="filterTab('retained')">🔒 Retained</button>
+    </div>
+  </div>
+
+  <!-- PAGE CONTAINER -->
+  <div class="page-container">
+
+    <%
+      captains_data = {
+        "Harsh"         => { batting: 100, bowling: 80, purse: 171_000_000 },
+        "Parth Gandhi"  => { batting: 90,  bowling: 75, purse: 166_000_000 },
+        "Yash Agrawal"  => { batting: 75,  bowling: 65, purse: 170_000_000 },
+        "Haardam Doshi" => { batting: 95,  bowling: 100, purse: 198_000_000 },
+        "Sagar Thakkar" => { batting: 85,  bowling: 80, purse: 142_000_000 },
+      }
+
+      captains_data.each do |captain, data|
+        data[:type] = data[:batting] > data[:bowling] ? :batsman : :bowler
+        data[:need] = data[:batting] > data[:bowling] ? :bowling : :batting
+      end
+
+      all_captains = @hotpicks_players.select { |p| @captains.include?(p.name) }
+                                      .sort_by { |p| -p.trophies_won.to_i }
+
+      all_players  = @hotpicks_players.reject { |p| @captains.include?(p.name) }
+                                      .sort_by { |p| -p.total_skill }
+
+      av_colors = %w[#7F77DD #1D9E75 #D85A30 #EF9F27 #378ADD #639922 #D4537E #888780]
+    %>
+
+    <!-- ── CAPTAINS SECTION ── -->
+    <div class="section-header" data-section="captain">
+      <div class="section-icon">👑</div>
+      <div>
+        <div class="section-title">Team Captains</div>
+        <div class="section-sub"><%= all_captains.size %> Leaders</div>
+      </div>
+      <div class="section-count-pill"><%= all_captains.size %></div>
+    </div>
+
+    <% all_captains.each_with_index do |player, index| %>
+      <%
+        rank = index + 1
+        av_color = av_colors[index % av_colors.length]
+        medal = ["🥇","🥈","🥉"][index] || "⚡"
+      %>
+      <div class="hp-card captain-card" data-type="captain" data-rank="<%= rank %>">
+        <!-- CARD HEADER / PREVIEW -->
+        <div class="hp-card-header" onclick="toggleCard(this)" style="--av:<%= av_color %>">
+          <div class="hp-rank-badge"><%= medal %></div>
+
+          <div class="hp-avatar" style="background: <%= av_color %>20; color: <%= av_color %>; border-color: <%= av_color %>40">
+            <%= player.name.split(' ').map(&:first).join.upcase.first(2) %>
           </div>
-          <div class="card-body text-center">
-            <p class="fw-bold mb-2">Total Skill: <%= player.total_skill %>/200</p>
-            <div class="d-flex justify-content-around mb-3">
-              <div class="text-center">
-                <p class="mb-1"><strong>Batting Skill</strong></p>
-                <div class="progress" style="height: 15px; width: 80px;">
-                  <div
-                    class="progress-bar bg-success"
-                    role="progressbar"
-                    style="width: <%= player.batting %>%"
-                    aria-valuenow="<%= player.batting %>"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  >
-                    <%= player.batting %>%
-                  </div>
-                </div>
+
+          <div class="hp-header-info">
+            <div class="hp-player-name"><%= player.name %></div>
+            <div class="hp-player-meta">
+              <span class="hp-role-chip cap-chip">👑 Captain</span>
+              <% if player.is_retain? %>
+                <span class="hp-role-chip retain-chip">🔒 Retained</span>
+              <% end %>
+            </div>
+            <div class="hp-skill-preview">
+              <div class="mini-bar">
+                <div class="mini-bar-fill bat-fill" style="width:<%= player.batting %>%"></div>
               </div>
-              <div class="text-center">
-                <p class="mb-1"><strong>Bowling Skill</strong></p>
-                <div class="progress" style="height: 15px; width: 80px;">
-                  <div
-                    class="progress-bar bg-primary"
-                    role="progressbar"
-                    style="width: <%= player.bowling %>%"
-                    aria-valuenow="<%= player.bowling %>"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  >
-                    <%= player.bowling %>%
-                  </div>
+              <div class="mini-bar">
+                <div class="mini-bar-fill bowl-fill" style="width:<%= player.bowling %>%"></div>
+              </div>
+              <span class="skill-total-sm"><%= player.total_skill %>/200</span>
+            </div>
+          </div>
+
+          <div class="hp-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+        </div>
+
+        <!-- CARD BODY (expanded) -->
+        <div class="hp-card-body">
+
+          <!-- Skill meters -->
+          <div class="skill-meters">
+            <div class="skill-row">
+              <span class="skill-label">🏏 Batting</span>
+              <div class="skill-track">
+                <div class="skill-bar bat-bar" style="width:<%= player.batting %>%">
+                  <span class="skill-pct"><%= player.batting %>%</span>
                 </div>
               </div>
             </div>
-
-            <hr>
-            <h6>Why Should You Pick Him?</h6>
-            <p class="note-section"><%= player.note %></p>
+            <div class="skill-row">
+              <span class="skill-label">🎯 Bowling</span>
+              <div class="skill-track">
+                <div class="skill-bar bowl-bar" style="width:<%= player.bowling %>%">
+                  <span class="skill-pct"><%= player.bowling %>%</span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <!-- Captain stats grid -->
+          <div class="cap-stats-grid">
+            <div class="cap-stat">
+              <div class="cap-stat-icon" style="background:rgba(240,192,64,0.15);color:#f0c040">⚡</div>
+              <div class="cap-stat-val"><%= player.total_skill %></div>
+              <div class="cap-stat-lbl">Total Skill</div>
+            </div>
+            <div class="cap-stat">
+              <div class="cap-stat-icon" style="background:rgba(16,185,129,0.15);color:#34d399">🧠</div>
+              <div class="cap-stat-val"><%= [(player.batting + player.bowling) / 2, 95].min %>%</div>
+              <div class="cap-stat-lbl">Strategy</div>
+            </div>
+            <div class="cap-stat">
+              <div class="cap-stat-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa">👥</div>
+              <div class="cap-stat-val"><%= [player.total_skill / 2, 95].min %>%</div>
+              <div class="cap-stat-lbl">Influence</div>
+            </div>
+            <div class="cap-stat">
+              <div class="cap-stat-icon" style="background:rgba(239,68,68,0.15);color:#f87171">🏆</div>
+              <div class="cap-stat-val"><%= player.trophies_won || 0 %></div>
+              <div class="cap-stat-lbl">Trophies</div>
+            </div>
+          </div>
+
+          <!-- Why pick -->
+          <div class="why-pick-block">
+            <div class="why-pick-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              Why bid on him?
+            </div>
+            <div class="why-pick-text"><%= player.note %></div>
+          </div>
+
         </div>
       </div>
     <% end %>
-  </div>
-</div>
 
+    <!-- ── PLAYERS SECTION ── -->
+    <div class="section-header" style="margin-top:8px" data-section="players">
+      <div class="section-icon">⚡</div>
+      <div>
+        <div class="section-title">Top Players</div>
+        <div class="section-sub"><%= all_players.size %> Must-Haves</div>
+      </div>
+      <div class="section-count-pill"><%= all_players.size %></div>
+    </div>
+
+    <% all_players.each_with_index do |player, index| %>
+      <%
+        rank     = index + 1
+        av_color = av_colors[index % av_colors.length]
+        medal    = ["🥇","🥈","🥉"][index] || "##{rank}"
+        is_bat   = player.batting > player.bowling
+        is_retained = player.is_retain?
+
+        # Team probability calc
+        team_scores = {}
+        captains_data.each do |cap, data|
+          fit = if data[:need] == :batting && is_bat
+                  player.batting * 1.2
+                elsif data[:need] == :bowling && !is_bat
+                  player.bowling * 1.2
+                elsif data[:need] == :batting && !is_bat
+                  player.batting * 0.8
+                else
+                  player.bowling * 0.8
+                end
+          team_scores[cap] = fit * (0.5 + Math.sqrt(data[:purse].to_f / 200_000_000) * 0.5)
+        end
+
+        total = team_scores.values.sum.to_f
+        probs = if total > 0
+                  team_scores.transform_values { |v| ((v / total) * 100).round }
+                else
+                  team_scores.transform_values { |_| 25 }
+                end
+        diff = 100 - probs.values.sum
+        probs[probs.key(probs.values.max)] += diff if diff != 0
+        sorted_probs = probs.sort_by { |_, v| -v }
+      %>
+
+      <%# data-retained used by JS filter %>
+      <div class="hp-card player-card"
+           data-type="player"
+           data-retained="<%= is_retained ? 'true' : 'false' %>"
+           data-rank="<%= rank %>">
+
+        <div class="hp-card-header" onclick="toggleCard(this)" style="--av:<%= av_color %>">
+          <div class="hp-rank-badge"><%= medal %></div>
+
+          <div class="hp-avatar" style="background:<%= av_color %>20;color:<%= av_color %>;border-color:<%= av_color %>40">
+            <%= player.name.split(' ').map(&:first).join.upcase.first(2) %>
+          </div>
+
+          <div class="hp-header-info">
+            <div class="hp-player-name"><%= player.name %></div>
+            <div class="hp-player-meta">
+              <span class="hp-role-chip <%= is_bat ? 'bat-chip' : 'bowl-chip' %>">
+                <%= is_bat ? '🏏 Batsman' : '🎯 Bowler' %>
+              </span>
+              <% if is_retained %>
+                <span class="hp-role-chip retain-chip">🔒 Retained</span>
+              <% end %>
+            </div>
+            <div class="hp-skill-preview">
+              <div class="mini-bar">
+                <div class="mini-bar-fill bat-fill" style="width:<%= player.batting %>%"></div>
+              </div>
+              <div class="mini-bar">
+                <div class="mini-bar-fill bowl-fill" style="width:<%= player.bowling %>%"></div>
+              </div>
+              <span class="skill-total-sm"><%= player.total_skill %>/200</span>
+            </div>
+          </div>
+
+          <div class="hp-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+        </div>
+
+        <div class="hp-card-body">
+
+          <!-- Skill meters -->
+          <div class="skill-meters">
+            <div class="skill-row">
+              <span class="skill-label">🏏 Batting</span>
+              <div class="skill-track">
+                <div class="skill-bar bat-bar" style="width:<%= player.batting %>%">
+                  <span class="skill-pct"><%= player.batting %>%</span>
+                </div>
+              </div>
+            </div>
+            <div class="skill-row">
+              <span class="skill-label">🎯 Bowling</span>
+              <div class="skill-track">
+                <div class="skill-bar bowl-bar" style="width:<%= player.bowling %>%">
+                  <span class="skill-pct"><%= player.bowling %>%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Team probability -->
+          <div class="prob-section">
+            <div class="prob-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              Team Probability
+            </div>
+            <div class="prob-grid">
+              <% sorted_probs.each_with_index do |(team, prob), ti| %>
+                <div class="prob-row">
+                  <div class="prob-av" style="background:<%= av_colors[ti % av_colors.length] %>20;color:<%= av_colors[ti % av_colors.length] %>">
+                    <%= team.split.first.first %>
+                  </div>
+                  <div class="prob-info">
+                    <div class="prob-name"><%= team.split.first %></div>
+                    <div class="prob-track">
+                      <div class="prob-fill" style="width:<%= prob %>%;background:<%= av_colors[ti % av_colors.length] %>"></div>
+                    </div>
+                  </div>
+                  <div class="prob-pct"><%= prob %>%</div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Why pick -->
+          <div class="why-pick-block">
+            <div class="why-pick-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              Why bid on him?
+            </div>
+            <div class="why-pick-text"><%= player.note %></div>
+          </div>
+
+        </div>
+      </div>
+    <% end %>
+
+    <div style="height:40px"></div>
+  </div><!-- /page-container -->
+
+  <!-- BOTTOM NAV (mirrors dashboard) -->
+  <nav class="bottom-nav">
+    <%= link_to root_path, class: "bn-item", data: { no_loader: true } do %>
+      <div class="bn-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      </div>
+      <div class="bn-label">Home</div>
+    <% end %>
+
+    <div class="bn-item bn-item--active">
+      <div class="bn-icon">🔥</div>
+      <div class="bn-label">HotPicks</div>
+    </div>
+
+    <%= link_to auction_table_path, class: "bn-item", data: { no_loader: true } do %>
+      <div class="bn-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      </div>
+      <div class="bn-label">Auction</div>
+    <% end %>
+  </nav>
+
+</div><!-- /spl-app-shell -->
+
+<!-- Toast -->
+<div class="spl-toast" id="spl-toast"></div>
+
+
+<!-- ══════════════════════════════════
+     STYLES
+══════════════════════════════════ -->
 <style>
-  .card {
-    border-radius: 10px;
-    overflow: hidden;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
 
-  .card-header {
-    font-size: 18px;
-    font-weight: bold;
-  }
+:root {
+  --bg: #0f172a;
+  --bg2: #1e293b;
+  --bg3: #334155;
+  --surface: #1e293b;
+  --surface2: #243044;
+  --gold: #f59e0b;
+  --gold2: #fbbf24;
+  --gold-dim: rgba(245,158,11,0.15);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.15);
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --nav-h: 68px;
+  --top-h: 58px;
+  --fd: 'Rajdhani', sans-serif;
+  --fb: 'Nunito', sans-serif;
+  --bat: #10b981;
+  --bowl: #3b82f6;
+  --cap: #f59e0b;
+}
 
-  .note-section {
-    font-size: 19px;
-    font-style: italic;
-    color: #555;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); font-family: var(--fb); color: var(--text); overflow-x: hidden; }
 
-  @media (max-width: 768px) {
-    .card-header {
-      font-size: 16px;
-    }
+/* ── APP SHELL ── */
+.spl-app-shell {
+  max-width: 480px; margin: 0 auto;
+  min-height: 100dvh; display: flex; flex-direction: column;
+  background: var(--bg); position: relative;
+}
 
-    .progress-bar {
-      font-size: 10px;
-    }
-  }
+/* ── TOP APP BAR ── */
+.app-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; height: var(--top-h);
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px);
+}
+.app-topbar-left { display: flex; align-items: center; gap: 10px; }
+.inner-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); cursor: pointer; flex-shrink: 0; text-decoration: none;
+  transition: all 0.15s;
+}
+.inner-back-btn:active { background: var(--bg3); }
+.app-brand { font-family: var(--fd); font-size: 18px; font-weight: 700; color: var(--gold); letter-spacing: 0.5px; }
+.app-season { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.app-topbar-right { display: flex; align-items: center; gap: 10px; }
+.fire-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 10px; font-weight: 700; color: var(--red); letter-spacing: 1.5px;
+}
+.fire-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--red);
+  animation: pulse 1.2s infinite; flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.app-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #d97706);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 13px; font-weight: 700; color: #0f172a;
+}
+
+/* ── FILTER TABS ── */
+.filter-tabs-wrap {
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  padding: 10px 16px; position: sticky; top: var(--top-h); z-index: 40;
+}
+.filter-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.filter-tabs::-webkit-scrollbar { display: none; }
+.ftab {
+  flex-shrink: 0; padding: 7px 14px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 20px; color: var(--text2); font-family: var(--fb);
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.ftab.active {
+  background: linear-gradient(135deg, var(--gold), #d97706);
+  border-color: var(--gold); color: #0f172a;
+  box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+}
+/* Retained tab active state — purple accent */
+.ftab[data-tab="retained"].active {
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  border-color: var(--purple);
+  box-shadow: 0 4px 12px rgba(168,85,247,0.35);
+}
+.ftab:active { transform: scale(0.97); }
+
+/* ── PAGE CONTAINER ── */
+.page-container {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 14px 14px 0; padding-bottom: var(--nav-h);
+  scrollbar-width: none;
+}
+.page-container::-webkit-scrollbar { display: none; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.section-icon { font-size: 22px; line-height: 1; }
+.section-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--text); }
+.section-sub { font-size: 10px; color: var(--text3); margin-top: 1px; letter-spacing: 0.5px; }
+.section-count-pill {
+  margin-left: auto; padding: 3px 10px;
+  background: var(--gold-dim); border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 20px; font-family: var(--fd); font-size: 13px;
+  font-weight: 700; color: var(--gold2);
+}
+
+/* ── HOTPICK CARD ── */
+.hp-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 10px; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.hp-card.captain-card { border-left: 3px solid var(--gold); }
+.hp-card.player-card  { border-left: 3px solid var(--bat); }
+.hp-card.player-card[data-retained="true"] { border-left: 3px solid var(--purple); }
+.hp-card.open { border-color: var(--border2); }
+.hp-card.captain-card.open { border-left-color: var(--gold); }
+
+/* Card header (always visible) */
+.hp-card-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; cursor: pointer;
+  transition: background 0.15s; user-select: none;
+}
+.hp-card-header:active { background: var(--surface2); }
+
+.hp-rank-badge {
+  font-size: 18px; line-height: 1; flex-shrink: 0;
+  width: 28px; text-align: center;
+}
+.hp-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 15px; font-weight: 700;
+  border: 1.5px solid; flex-shrink: 0;
+}
+.hp-header-info { flex: 1; min-width: 0; }
+.hp-player-name {
+  font-family: var(--fd); font-size: 17px; font-weight: 700;
+  color: var(--text); line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hp-player-meta { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
+.hp-role-chip {
+  font-size: 10px; font-weight: 600; padding: 2px 7px;
+  border-radius: 10px; border: 1px solid;
+}
+.cap-chip    { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); color: var(--gold2); }
+.bat-chip    { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); color: #34d399; }
+.bowl-chip   { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.3); color: #60a5fa; }
+.retain-chip { background: rgba(168,85,247,0.12); border-color: rgba(168,85,247,0.3); color: #c084fc; }
+
+.hp-skill-preview {
+  display: flex; align-items: center; gap: 5px; margin-top: 5px;
+}
+.mini-bar {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.08); overflow: hidden;
+}
+.mini-bar-fill { height: 100%; border-radius: 2px; }
+.bat-fill  { background: var(--bat); }
+.bowl-fill { background: var(--bowl); }
+.skill-total-sm {
+  font-family: var(--fd); font-size: 11px; font-weight: 600;
+  color: var(--text3); margin-left: 2px;
+}
+
+.hp-chevron {
+  color: var(--text3); transition: transform 0.25s;
+  display: flex; align-items: center; flex-shrink: 0;
+}
+.hp-card.open .hp-chevron { transform: rotate(180deg); }
+
+/* Card body (collapsible) */
+.hp-card-body {
+  display: none; padding: 0 14px 14px;
+  animation: slidein 0.22s ease;
+}
+.hp-card.open .hp-card-body { display: block; }
+@keyframes slidein { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+
+/* Skill meters */
+.skill-meters {
+  background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  margin-bottom: 12px;
+}
+.skill-row { display: flex; align-items: center; gap: 10px; }
+.skill-label { font-size: 11px; font-weight: 600; color: var(--text2); width: 72px; flex-shrink: 0; }
+.skill-track {
+  flex: 1; height: 10px; border-radius: 5px;
+  background: rgba(255,255,255,0.07); overflow: visible; position: relative;
+}
+.skill-bar {
+  height: 100%; border-radius: 5px; position: relative;
+  display: flex; align-items: center; justify-content: flex-end;
+  min-width: 30px; transition: width 0.4s ease;
+}
+.bat-bar  { background: linear-gradient(90deg, #059669, var(--bat)); }
+.bowl-bar { background: linear-gradient(90deg, #1d4ed8, var(--bowl)); }
+.skill-pct {
+  position: absolute; right: -26px;
+  font-family: var(--fd); font-size: 11px; font-weight: 700; color: var(--text);
+}
+
+/* Captain stats grid */
+.cap-stats-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+  margin-bottom: 12px;
+}
+.cap-stat {
+  background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 8px;
+  text-align: center;
+}
+.cap-stat-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; margin: 0 auto 5px;
+}
+.cap-stat-val { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1; }
+.cap-stat-lbl { font-size: 9px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Team probability */
+.prob-section {
+  background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.prob-title {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.prob-grid { display: flex; flex-direction: column; gap: 8px; }
+.prob-row { display: flex; align-items: center; gap: 9px; }
+.prob-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+.prob-info { flex: 1; }
+.prob-name { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 3px; }
+.prob-track {
+  height: 5px; border-radius: 3px;
+  background: rgba(255,255,255,0.07); overflow: hidden;
+}
+.prob-fill { height: 100%; border-radius: 3px; opacity: 0.85; }
+.prob-pct { font-family: var(--fd); font-size: 13px; font-weight: 700; color: var(--text); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* Why pick */
+.why-pick-block {
+  background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+}
+.why-pick-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; color: var(--gold2);
+  letter-spacing: 0.5px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.why-pick-text { font-size: 13px; line-height: 1.6; color: var(--text2); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; height: var(--nav-h);
+  background: var(--bg); border-top: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-around;
+  z-index: 100; padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.bn-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 16px; cursor: pointer; flex: 1; border-radius: 12px;
+  transition: all 0.15s; color: var(--text3); text-decoration: none;
+}
+.bn-item.bn-item--active { color: var(--gold); }
+.bn-item:active { background: rgba(255,255,255,0.04); }
+.bn-icon { font-size: 22px; }
+.bn-label { font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+
+/* Toast */
+.spl-toast {
+  position: fixed; bottom: calc(var(--nav-h) + 12px); left: 50%;
+  transform: translateX(-50%) translateY(40px);
+  background: rgba(15,23,42,0.95); border: 1px solid var(--green);
+  color: var(--green); font-family: var(--fd); font-size: 14px; font-weight: 600;
+  padding: 10px 20px; border-radius: 24px; z-index: 500;
+  white-space: nowrap; transition: transform .3s ease;
+  backdrop-filter: blur(12px); opacity: 0;
+}
+.spl-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* Hidden for filtering */
+.hp-card.hp-hidden { display: none; }
+.section-header.hp-hidden { display: none; }
+
+/* Responsive */
+@media (min-width: 480px) { .bottom-nav { border-radius: 0; } }
 </style>
+
+
+<!-- ══════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════ -->
+<script>
+/* ── Card accordion ── */
+function toggleCard(header) {
+  const card = header.closest('.hp-card');
+  const wasOpen = card.classList.contains('open');
+  // close all
+  document.querySelectorAll('.hp-card.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) {
+    card.classList.add('open');
+    // animate skill bars
+    card.querySelectorAll('.skill-bar, .prob-fill').forEach(b => {
+      const w = b.style.width; b.style.width = '0'; setTimeout(() => b.style.width = w, 30);
+    });
+  }
+}
+
+/* ── Filter tabs ── */
+function filterTab(tab) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.ftab[data-tab="${tab}"]`).classList.add('active');
+
+  const capSection = document.querySelector('.section-header[data-section="captain"]');
+  const plrSection = document.querySelector('.section-header[data-section="players"]');
+
+  document.querySelectorAll('.hp-card').forEach(card => {
+    const type     = card.dataset.type;       // "captain" | "player"
+    const retained = card.dataset.retained;   // "true" | "false" (only on player cards)
+
+    if (tab === 'all') {
+      // All tab: show only non-captain players; hide captains
+      card.classList.toggle('hp-hidden', type === 'captain');
+    } else if (tab === 'captain') {
+      card.classList.toggle('hp-hidden', type !== 'captain');
+    } else if (tab === 'retained') {
+      // Retained tab: non-captain retained players only
+      card.classList.toggle('hp-hidden', !(type === 'player' && retained === 'true'));
+    }
+  });
+
+  // Show/hide section headers based on whether any visible cards remain in that section
+  const capCards = document.querySelectorAll('.captain-card');
+  const plrCards = document.querySelectorAll('.player-card');
+  const allCapHidden = [...capCards].every(c => c.classList.contains('hp-hidden'));
+  const allPlrHidden = [...plrCards].every(c => c.classList.contains('hp-hidden'));
+  capSection && capSection.classList.toggle('hp-hidden', allCapHidden);
+  plrSection && plrSection.classList.toggle('hp-hidden', allPlrHidden);
+
+  // Close any expanded cards on tab switch
+  document.querySelectorAll('.hp-card.open').forEach(c => c.classList.remove('open'));
+}
+
+/* ── On load: hide captains from default "All" view & animate entrance ── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Apply default "all" filter (hides captains)
+  filterTab('all');
+
+  // Staggered entrance for visible cards
+  const visibleEls = [...document.querySelectorAll('.hp-card:not(.hp-hidden), .section-header:not(.hp-hidden)')];
+  visibleEls.forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(12px)';
+    el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    setTimeout(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 60 + i * 40);
+  });
+});
+</script>

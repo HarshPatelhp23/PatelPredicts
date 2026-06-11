@@ -3,7 +3,21 @@
 class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLength
   before_action :authenticate_user!
 
+  def update_purse
+    @team = Team.find(params[:id])
+    sold_amount = params[:sold_amount].to_f
+    
+    @team.remaining_purse -= sold_amount
+    
+    if @team.save
+      render json: { success: true, remaining_purse: @team.remaining_purse }
+    else
+      render json: { success: false }, status: :unprocessable_entity
+    end
+  end
+
   def new # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    flash.keep if flash.any?
     if allowed_to_change_team?
       @team = Team.friendly.find(params[:team_id])
       # @team = Team.friendly.find(params[:team_slug])
@@ -22,13 +36,16 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
       @team_players = @team.players.where(id: @playing_11_players.pluck(:player_id))
       @team_bench_players = @team.players.where(id: @bench_players.pluck(:player_id))
       @wicket_keeper = @team_players.where(role: 'wicket_keeper')
+      @playing11_wicket_keepers = @team_players.where(role: 'wicket_keeper')
       # @batsman = @playing_11_players.where(role: 'batsman')
       @batsman = @team_players.where(role: 'batsman')
-      @playing11_batsman = @team_players.where(role: 'batsman')
+      @playing11_batsmans = @team_players.where(role: 'batsman')
       # @all_rounder = @playing_11_players.where(role: 'all_rounder')
       @all_rounder = @team_players.where(role: 'all_rounder')
+      @playing11_all_rounders = @team_players.where(role: 'all_rounder')
       # @bowler = @playing_11_players.where(role: 'bowler')  
       @bowler = @team_players.where(role: 'bowler')
+      @playing11_bowlers = @team_players.where(role: 'bowler')
       @week_start_date = find_week_dates[:week_start_date]
       @week_end_date = find_week_dates[:week_end_date]
       @current_week_matches = MatchSchedule.where(match_date: @week_start_date..@week_end_date)
@@ -52,10 +69,10 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   def analysis # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-    render partial: 'layouts/insufficient_analysis_data'
+    # render partial: 'layouts/insufficient_analysis_data'
+    @default_team = default_team
     @player_perfomance = default_team.players
                                      .order(points: :desc)
-                                     .where(bench: false)
                                      .group_by(&:name).transform_values do |v|
       v.first.players_teams.where(team: default_team)&.first&.points
     end
@@ -79,11 +96,16 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   def other_player_teams
+    # flash.keep if flash.any?
     @auction = params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last
 
     @other_players = @auction.users.includes(:teams).sort_by do |player|
-      @grand_total = player.teams.find { |t| t.auction == @auction }&.grand_total
-      @grand_total || 0
+      team = player.teams.find { |t| t.auction == @auction }
+      if team
+        (team.grand_total || 0) - (team.penalty_points || 0)  # Calculate net points
+      else
+        0
+      end
     end.reverse
   end
 
@@ -99,14 +121,13 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   def other_players_team_detail
     @user = User.friendly.find(params['user_slug'])
     if @user.weekly_user_teams.blank?
-      redirect_to other_players_team_path, alert: 'User has not created his team yet!'
+      redirect_to other_players_team_path, alert: "User has not submitted his team yet!"
       return
     end
     @user_team = @user.teams.count > 1 ? @user.teams.where(auction: default_auction)&.last : @user.teams.last
     week = params[:week].to_i || 1
     # playing11_ids = @user.weekly_user_teams.where(team: @user_team).order(week_start_date: :asc).last.playing11
     # @playing11_players = @user.teams&.where(auction: default_auction)&.first&.players&.where(id: playing11_ids)
-    # byebug
     # playing11_ids = if (@user.weekly_user_teams.where(team: @user_team).count > 1) && (params[:week].to_i > 1)
     #                   @user.weekly_user_teams
     #                        .where(team: @user_team)
@@ -115,7 +136,7 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     #                   @user.weekly_user_teams.where(team: @user_team)&.first&.playing11
     #                 end
 
-    playing11_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last.playing11
+    playing11_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last&.playing11
     @playing11_players = @user_team.players.where(id: playing11_ids)
     
 
@@ -129,15 +150,15 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     #             else
     #               @user.weekly_user_teams.where(team: @user_team)&.first&.bench
     #             end
-    bench_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last.bench
+    bench_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last&.bench
     @bench_players = @user_team.players.where(id: bench_ids)
    
 
     # change_week = params[:week].present?
     # @playing_11_changed_player_ids, @bench_changed_player_ids = WeeklyUserTeam.current_week_changes(@user, @user_team, week, default_auction)
     if @user.weekly_user_teams.where(team: @user_team).count > 1 && params[:week].to_i != 1
-      @playing_11_changed_player_ids = @user.weekly_user_teams.where(team: @user_team)&.last.team_changes['bench_changes']
-      @bench_changed_player_ids = @user.weekly_user_teams.where(team: @user_team)&.last.team_changes["playing11_changes"]
+      @playing_11_changed_player_ids = @user.weekly_user_teams.where(team: @user_team, week: params[:week])&.last&.team_changes&.fetch('bench_changes') ||  @user.weekly_user_teams.where(team: @user_team)&.last&.team_changes['bench_changes']
+      @bench_changed_player_ids = @user.weekly_user_teams.where(team: @user_team, week: params[:week])&.last&.team_changes&.fetch("playing11_changes") || @user.weekly_user_teams.where(team: @user_team)&.last&.team_changes["playing11_changes"]
     elsif params[:week].to_i == 1
       @playing_11_changed_player_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.first.playing11
       @bench_changed_player_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.first.bench
@@ -160,8 +181,10 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     #                   @user.weekly_user_teams.where(team: @user_team)&.first&.playing11
     #                 end
 
-    playing11_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last.playing11
-    @playing11_players = @user_team.players.where(id: playing11_ids)
+
+    playing11_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last&.playing11 || @user.weekly_user_teams.where(team: @user_team)&.last&.playing11 
+    
+    @playing11_players = @user_team&.players.where(id: playing11_ids)
 
     # bench_ids = if (@user.weekly_user_teams.where(team: @user_team).count > 1) && (params[:week].to_i > 1)
     #               @user.weekly_user_teams
@@ -171,17 +194,49 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     #               @user.weekly_user_teams.where(team: @user_team)&.first&.bench
     #             end
 
-    bench_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last.bench
+    bench_ids = @user.weekly_user_teams.where(team: @user_team, week:)&.last&.bench || @user.weekly_user_teams.where(team: @user_team)&.last&.bench
     @bench_players = @user_team.players.where(id: bench_ids)
   end
 
+  # def submit_team
+  #   respond_to do |format|
+  #     if check_team_format
+  #       upsert_weekly_team
+  #       flash.now[:notice] = "Team Submitted Successfully."
+  #       format.html { redirect_to after_login_path }
+  #       format.turbo_stream
+  #     else
+  #       flash.now[:alert] = playing_11_errors.to_s
+  #       format.html { redirect_to after_login_path }
+  #       format.turbo_stream
+  #     end
+  #   end
+  # end
+
+  # def submit_team
+  #   respond_to do |format|
+  #     if check_team_format
+  #     # if true
+  #       upsert_weekly_team
+  #       format.html { redirect_to after_login_path, notice: "eam Submitted Successfully." }
+  #       format.turbo_stream { redirect_to after_login_path, notice: "Team Submitted Successfully." }
+  #     else
+  #       format.html { redirect_to team_new_team_path(default_team), alert: "#{playing_11_errors.to_s}" }
+  #       format.turbo_stream { redirect_to team_new_team_path(default_team), alert: "#{playing_11_errors.to_s}" }
+  #     end
+  #   end
+  # end
+
   def submit_team
+    flash.keep if flash.any?
     if check_team_format
     # if true
       upsert_weekly_team
-      redirect_to after_login_path, notice: 'Team Submitted Successfully'
+      redirect_to after_login_path, notice: 'Team Submitted Successfully.'
     else
-      redirect_to team_new_team_path(default_team), alert: playing_11_errors.to_s
+      # flash[:alert] = playing_11_errors.to_s
+      redirect_to team_new_team_path(default_team, auction: default_auction), alert: playing_11_errors
+      # render :new
     end
   end
 
@@ -277,6 +332,41 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     render json: { player_data: data, player_performance_card_html: }
   end
 
+  # def show
+  #   @player = Player.find(params[:player_id])
+  #   @auction = default_auction
+  #   @team = @player.teams.where(auction: @auction).first
+  #   @matches = @player.matches.where(auction: @auction, team: @team).order(match_date: :desc)
+    
+  #   # Calculate stats
+  #   @total_points = @player.players_teams.joins(:team).where(team: @auction.teams).pluck(:points).first || 0
+  #   @average_points = @matches.size.zero? ? 0 : (@total_points.to_f / @matches.size).round(2)
+  #   @highest_score = @matches.maximum(:points) || 0
+  #   @price = @player.players_teams.where(team: @auction.teams).first.sold_price
+    
+  #   # For charts
+  #   @points_data = @matches.pluck(:match_name, :points)
+  #   @performance_trend = @matches.order(match_date: :asc).pluck(:match_date, :points)
+
+  #   @best_match = @matches.order(points: :desc).first
+  #   @best_match_opponent = @best_match&.match_name&.split(' vs ').last || 'N/A'
+  #   @lowest_score = @matches.minimum(:points) || 0
+  #   @worst_match = @matches.order(points: :asc).first
+  #   @worst_match_opponent = @worst_match&.match_name&.split(' vs ').last|| 'N/A'
+  #   @good_performances_count = @matches.where('points >= 25').count
+  #   @recent_form = @matches.last(5).map { |m| m.points }
+    
+  #   # For consistency rating (example calculation)
+  #   @consistency_rating = calculate_consistency_rating
+  #   @impact_index = calculate_impact_index
+  #   @value_for_money = @price.to_f / @average_points rescue 0
+    
+  #   respond_to do |format|
+  #     format.html
+  #     format.json { render json: { player: @player, stats: { runs: 400, wickets: 2 } } }
+  #   end
+  # end
+
   def move_players
     move_action = params[:move_action] || ''
     player_ids = params[:player_ids] || []
@@ -291,6 +381,19 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
   end
 
   private
+
+  def calculate_consistency_rating
+    return 0 if @matches.size.zero?
+
+    average = @average_points
+    deviations = @matches.pluck(:points).map { |p| (p - average).abs }
+    (100 - (deviations.sum.to_f / @matches.size)).round(2)
+  end
+
+  def calculate_impact_index
+    return 0 if @matches.size.zero?
+    (@matches.sum(:points).to_f / (@matches.size * 10) * 100).round(2)
+  end
 
   def find_week_dates
     today = Date.today
@@ -320,25 +423,29 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
 
   def allowed_to_change_team?
     today = Time.zone.now.in_time_zone('Mumbai')
-    today.saturday? || today.sunday? || current_user.id == 1
+    today.saturday? || today.sunday?  || current_user.id == 1
   end
 
   # rubocop:disable Rails/SkipsModelValidations
   def upsert_weekly_team
+    #UCOMMENT ME AFTER 1ST WEEK ONCE STATIC DATE IS USED
     today = Time.zone.now.in_time_zone('Mumbai')
     if today.saturday?
       week_start_date = Date.current + 2.day
     elsif today.sunday?
       week_start_date = Date.current + 1.day
     end
+    # week_start_date = Date.new(2025, 2, 2)
     user_weekly_team_record = current_user.weekly_user_teams.where(week_start_date:, team: default_team).first
     playing11_player_ids = default_team.players_teams.where(bench: false).pluck(:player_id)
     bench_player_ids = default_team.players_teams.where(bench: true).pluck(:player_id)
 
     if user_weekly_team_record.present?
-      user_weekly_team_record.update_columns(playing11: playing11_player_ids, bench: bench_player_ids)
+      user_weekly_team_record.update(playing11: playing11_player_ids, bench: bench_player_ids)
     else
-      current_user.weekly_user_teams.create(week_start_date:, week_end_date: next_sunday_date(Time.zone.today), team: default_team, playing11: playing11_player_ids, bench: bench_player_ids)
+      # week_end_date = Date.new(2026, 2, 8)
+      week_end_date = next_sunday_date(Time.zone.today) #USE ME AFTER 1ST WEEK
+      current_user.weekly_user_teams.create(week_start_date:, week_end_date:, team: default_team, playing11: playing11_player_ids, bench: bench_player_ids)
 
       #HARDCORE WEEK_START AND WEEK_END DATE
       # current_user.weekly_user_teams.create(week_start_date: Date.new(2025,3,17), week_end_date: Date.new(2025,3,23), team: default_team, playing11: playing11_player_ids, bench: bench_player_ids)
@@ -379,9 +486,10 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
                  end
     all_user_data = []
     @all_users.each do |user|
+      user_team = user.teams.where(auction_id: default_auction.id)&.first
       user_data = {
         name: user.username,
-        data: user.rankings_data(default_auction.id, default_team.id)
+        data: user.rankings_data(default_auction.id, user_team.id)
       }
       all_user_data << user_data
     end
@@ -402,8 +510,8 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     # end.transform_values(&:uniq)
     if playing11_players.length != 11
       errors['message'] = 'Please select 11 players'
-    elsif player_counts['batsman'].to_i < 2
-      errors['message'] = 'You have to select minimum 2 batsman'
+    elsif player_counts['batsman'].to_i < 3
+      errors['message'] = 'You have to select minimum 3 batsman'
     elsif player_counts['wicket_keeper'].to_i < 1
       errors['message'] = 'You have to select atleast one Wicket-Kepper'
     elsif player_counts['bowler'].to_i < 3
@@ -425,12 +533,13 @@ class TeamsController < ApplicationController # rubocop:disable Metrics/ClassLen
     all_rounder = playing11_players.where(role: 'all_rounder')
     wk = playing11_players.where(role: 'wicket_keeper')
     bowler = playing11_players.where(role: 'bowler')
+    overseas_players = playing11_players.where(foreigner: true)
     # player_teams = playing11_players.pluck(:team_name)
     # player_counts_by_team = player_teams.group_by do |element|
     #   player_teams.count(element)
     # end.transform_values(&:uniq)
 
-    playing11_players.length == 11 && batsman.length >= 2 && wk.length >= 1 && all_rounder.length >= 1 && bowler.length >= 3
+    playing11_players.length == 11 && batsman.length >= 3 && wk.length >= 1 && all_rounder.length >= 1 && bowler.length >= 3 && overseas_players.length <= 4
   end
 
   def default_auction

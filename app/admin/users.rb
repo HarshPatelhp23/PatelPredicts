@@ -108,7 +108,7 @@ ActiveAdmin.register User do
     private
 
     def user_params
-      params.require(:user).permit(:username, :email, :password, :password_confirmation, :confirmed_at,:grand_total, :final_total_points, :penalty_points, :otp_verified, :slug, :update_profile_count, auction_ids: [])
+      params.require(:user).permit(:username, :email, :password, :password_confirmation, :confirmed_at,:grand_total, :final_total_points, :penalty_points, :otp_verified, :slug, :update_profile_count, :total_purse, :remaining_purse, :captain, auction_ids: [])
     end
   end
 

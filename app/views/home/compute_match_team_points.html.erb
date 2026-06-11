@@ -1,722 +1,1284 @@
-<div id="playerCarousel" class="carousel slide carousel-dark shadow-lg rounded" data-bs-ride="carousel">
-  <!-- Header Section with Improved Styling -->
-  <div class="text-center mt-3 mb-4">
-    <%= link_to 'Back', one_match_scorecard_path(params[:match_name], auction_id: @auction.id), class:'btn btn-success back-button theme-btn-back me-2', style: "margin-top: 35px;" %>
-    <%= link_to "View Points Overview", "javascript:void(0)", 
-      id: "toggleButton", 
-      class: "btn btn-primary fw-bold",
-      style: "margin-top: 35px;",
-      onclick: "toggleContent()" %>
-  </div>
+<!-- compute_match_team_points.html.erb - Modern Redesign -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Performance Breakdown</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
-  <!-- <div id="hiddenContent" class="mt-4" style="display: none;"> -->
-    <%= render 'scorecard_summary', team: @selected_user_team, players: @players, points_data: @points_data %>
-  <!-- </div> -->
-  
-  <!-- Improved Carousel Indicators -->
-  <div class="carousel-indicators mb-0">
-    <% @players.each_with_index do |player, index| %>
-      <button type="button" data-bs-target="#playerCarousel" data-bs-slide-to="<%= index %>" 
-        class="<%= index == 0 ? 'active' : '' %>" aria-current="<%= index == 0 ? 'true' : 'false' %>" 
-        aria-label="Player <%= index + 1 %>"></button>
-    <% end %>
-  </div>
-  
-  <!-- Carousel Content with Enhanced Styling -->
-  <div class="carousel-inner">
-    <% @players.each_with_index do |player, index| %>
-      <div class="carousel-item <%= 'active' if index == 0 %>">
-        <div class="container mt-2">
-          <div class="player-header text-center mb-3 rounded py-2 bg-light shadow-sm">
-            <h3 class="player-name mb-0"><%= player.name %> 🏏</h3>
-            <p class="team-match-info mb-0">
-              <span class="badge bg-primary"><%= @selected_user_team.team_name %></span> | 
-              <span class="badge bg-info text-dark"><%= params['match_name'] %></span>
-            </p>
+  <style>
+    /* CSS Variables */
+    :root {
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --success-gradient: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);
+      --gold-gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+      --bench-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --dark-bg: #0f0f23;
+      --card-bg: #1a1a2e;
+      --card-bg-light: #242438;
+      --text-primary: #ffffff;
+      --text-secondary: #b3b3cc;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .breakdown-app {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .breakdown-header {
+      background: var(--primary-gradient);
+      padding: 20px 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn-header {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: none;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-back {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn-toggle {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-header:active {
+      transform: scale(0.98);
+    }
+
+    .header-title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header-subtitle {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    /* Summary Cards */
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      margin: 0 16px 20px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .summary-card.active {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .bench-summary-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      margin: 0 16px 20px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .bench-summary-card.active {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .summary-header {
+      background: var(--card-bg-light);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .summary-body {
+      padding: 12px 16px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+      background: var(--card-bg-light);
+      margin: 8px -16px -12px;
+      padding: 12px 16px;
+    }
+
+    .summary-player {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .bench-number {
+      background: var(--bench-gradient);
+    }
+
+    .summary-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .summary-points {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffd700;
+    }
+
+    .summary-total-label {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .summary-total-value {
+      font-size: 18px;
+      font-weight: 700;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .bench-total-value {
+      background: var(--bench-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Player Navigation */
+    .player-navigation {
+      padding: 0 16px;
+      margin-bottom: 20px;
+    }
+
+    .player-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .player-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      padding: 0;
+    }
+
+    .player-dot.active {
+      background: var(--gold-gradient);
+      width: 32px;
+      border-radius: 5px;
+    }
+
+    /* Player Card */
+    .player-carousel {
+      position: relative;
+      padding: 0 16px;
+    }
+
+    .player-slides {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .player-slide {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .player-slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .player-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .player-card-header {
+      background: var(--primary-gradient);
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .player-avatar-container {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      margin: 0 auto 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-avatar-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .player-name-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .player-badges {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .player-badge-item {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Total Points Banner */
+    .total-points-banner {
+      background: var(--gold-gradient);
+      padding: 16px;
+      text-align: center;
+      color: #1a1a2e;
+    }
+
+    .total-points-value {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .total-points-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Stats Sections */
+    .stats-body {
+      padding: 16px;
+    }
+
+    .stat-section {
+      margin-bottom: 20px;
+    }
+
+    .stat-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .stat-section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--card-bg-light);
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+    }
+
+    .stat-section-icon {
+      font-size: 16px;
+    }
+
+    .stat-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+
+    .stat-points {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stat-points-badge {
+      min-width: 60px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .points-positive {
+      background: linear-gradient(135deg, #4CAF50, #8BC34A);
+      color: white;
+    }
+
+    .points-negative {
+      background: linear-gradient(135deg, #F44336, #FF5722);
+      color: white;
+    }
+
+    .points-zero {
+      background: linear-gradient(135deg, #9E9E9E, #BDBDBD);
+      color: white;
+    }
+
+    .stat-actual {
+      min-width: 80px;
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .stat-actual-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .badge-danger {
+      background: #F44336;
+      color: white;
+    }
+
+    .badge-warning {
+      background: #FFC107;
+      color: #1a1a2e;
+    }
+
+    .badge-info {
+      background: #48c6ef;
+      color: white;
+    }
+
+    .badge-light {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+    }
+
+    /* Navigation Arrows */
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      z-index: 10;
+    }
+
+    .carousel-nav:active {
+      background: rgba(0, 0, 0, 0.7);
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    .carousel-nav.prev {
+      left: -8px;
+    }
+
+    .carousel-nav.next {
+      right: -8px;
+    }
+
+    /* Swipe Indicator */
+    .swipe-indicator {
+      text-align: center;
+      padding: 16px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .swipe-arrow {
+      font-size: 20px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* Responsive Design */
+    @media (min-width: 768px) {
+      .breakdown-app {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .breakdown-header {
+        border-radius: 0 0 24px 24px;
+      }
+
+      .summary-card, .bench-summary-card {
+        margin: 0 24px 20px;
+      }
+
+      .player-carousel {
+        padding: 0 24px;
+      }
+
+      .player-avatar-container {
+        width: 120px;
+        height: 120px;
+      }
+
+      .player-name-title {
+        font-size: 20px;
+      }
+
+      .total-points-value {
+        font-size: 42px;
+      }
+
+      .carousel-nav {
+        width: 48px;
+        height: 48px;
+      }
+
+      .carousel-nav.prev {
+        left: -12px;
+      }
+
+      .carousel-nav.next {
+        right: -12px;
+      }
+    }
+
+    /* Hide native scrollbar on mobile */
+    ::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="breakdown-app">
+    <!-- Header -->
+    <div class="breakdown-header">
+      <div class="header-actions">
+        <%= link_to one_match_scorecard_path(params[:match_name], auction_id: @auction.id), class: 'btn-header btn-back', data: { turbo: false } do %>
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        <% end %>
+        <button class="btn-header btn-toggle" onclick="toggleSummary()">
+          <i class="fas fa-list"></i>
+          <span id="toggle-text">Show Summary</span>
+        </button>
+      </div>
+      <div class="header-title">
+        <%= @selected_user_team.team_name %>
+      </div>
+      <div class="header-subtitle">
+        <%= params[:match_name] %>
+      </div>
+    </div>
+
+    <% if @scoring_players.blank? %>
+      <div class="no-players-container" style="text-align: center; padding: 40px 20px;">
+        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+          <i class="fas fa-users-slash" style="font-size: 32px; color: white;"></i>
+        </div>
+        <h3 style="color: white; margin-bottom: 10px;">No Players in This Match</h3>
+        <p style="color: #b3b3cc; margin-bottom: 30px;">
+          <%= @selected_user_team.team_name %> doesn't have any players from the <%= params[:match_name] %> match in their playing 11.
+        </p>
+        <%= link_to one_match_scorecard_path(params[:match_name], auction_id: @auction.id), 
+                    class: 'btn-header btn-back',
+                    style: 'max-width: 200px; margin: 0 auto;' do %>
+          <i class="fas fa-arrow-left"></i>
+          <span>Back to Match</span>
+        <% end %>
+      </div>
+    <% else %>
+      <!-- Points Overview Table -->
+      <div class="summary-card" id="summary-card">
+        <div class="summary-header">
+          <i class="fas fa-chart-bar"></i>
+          <h3>Points Overview (Playing XI)</h3>
+        </div>
+        <div class="summary-body">
+          <% @scoring_players&.each_with_index do |player, i| %>
+            <div class="summary-row">
+              <div class="summary-player">
+                <div class="summary-number"><%= i + 1 %></div>
+                <span class="summary-name"><%= player.name %></span>
+              </div>
+              <span class="summary-points"><%= @points_data[player.name] %></span>
+            </div>
+          <% end %>
+          <div class="summary-row">
+            <div class="summary-total-label">
+              <i class="fas fa-trophy"></i> Total Points (Playing XI)
+            </div>
+            <span class="summary-total-value"><%= @points_data.values.sum %></span>
           </div>
-          
-          <div class="card shadow">
-            <div class="card-body p-2 p-md-3">
-              <div class="text-center mb-3">
-                <div class="player-image-container">
-                  <%= player_image(player) %>
+        </div>
+      </div>
+
+      <!-- Bench Points Overview Table -->
+      <% if @scoring_bench_players.present? %>
+        <div class="bench-summary-card" id="bench-summary-card">
+          <div class="summary-header">
+            <i class="fas fa-chair"></i>
+            <h3>Bench Points Overview</h3>
+          </div>
+          <div class="summary-body">
+            <% @scoring_bench_players&.each_with_index do |player, i| %>
+              <div class="summary-row">
+                <div class="summary-player">
+                  <div class="summary-number bench-number"><%= i + 1 %></div>
+                  <span class="summary-name"><%= player.name %></span>
                 </div>
+                <span class="summary-points"><%= @bench_points_data[player.name] %></span>
               </div>
-              
-              <!-- Stats Table with Enhanced Styling -->
-              <div class="table-responsive">
-                <table class="table table-bordered table-hover text-center">
-                  <thead>
-                    <tr class="bg-primary text-white">
-                      <th style="width: 33%;"><center>Event 📊</center></th>
-                      <th style="width: 33%;"><center>Points 🏆</center></th>
-                      <th style="width: 34%;"><center>Actual 📈</center></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Team Section -->
-                    <% next if @data[player.name].blank? %>
-                    <tr>
-                      <td class="fw-bold">Status</td>
-                      <td class="points-cell">
-                        <div class="points-badge <%= @data[player.name]&.in_playing11.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= @data[player.name]&.in_playing11 %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.in_playing11.zero? %>
-                          <span class="badge bg-danger">⛔ Sub</span>
-                        <% else %>
-                          <span class="badge bg-success">✅ Playing</span>
-                        <% end %>
-                      </td>
-                    </tr>
-
-                    <!-- Batting Stats Section -->
-                    <tr class="table-primary">
-                      <td colspan="3" class="text-center fw-bold">BATTING STATS 🏏</td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Runs</td>
-                      <td class="points-cell">
-                        <% runs_points = @data[player.name]&.calculate_field_points('runs') %>
-                        <div class="points-badge <%= runs_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= runs_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.runs > 50 %>
-                          <span class="badge bg-success"><%= @data[player.name]&.runs %> 🔥</span>
-                        <% elsif @data[player.name]&.runs > 25 %>
-                          <span class="badge bg-info text-dark"><%= @data[player.name]&.runs %> 👍</span>
-                        <% elsif @data[player.name]&.runs > 0 %>
-                          <span class="badge bg-light text-dark"><%= @data[player.name]&.runs %></span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Balls Faced</td>
-                      <td class="points-cell">
-                        <div class="points-badge points-na">NA</div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.balls_faced > 0 %>
-                          <%= @data[player.name]&.balls_faced %>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">4's</td>
-                      <td class="points-cell">
-                        <% fours_points = @data[player.name]&.calculate_field_points('fours') %>
-                        <div class="points-badge <%= fours_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= fours_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.fours > 0 %>
-                          <span class="text-primary"><%= @data[player.name]&.fours %> ×2️⃣</span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">6's</td>
-                      <td class="points-cell">
-                        <% sixes_points = @data[player.name]&.calculate_field_points('sixes') %>
-                        <div class="points-badge <%= sixes_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= sixes_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.sixes > 0 %>
-                          <span class="text-danger"><%= @data[player.name]&.sixes %> ×4️⃣</span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Strike Rate</td>
-                      <td class="points-cell">
-                        <div class="points-badge points-na"><%= @data[player.name]&.strike_rate_bonus %></div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% strike_rate = @data[player.name]&.strike_rate %>
-                        <% if strike_rate > 150 %>
-                          <span class="badge bg-danger"><%= @data[player.name]&.strike_rate %> 🚀</span>
-                        <% elsif strike_rate > 120 %>
-                          <span class="badge bg-success"><%= @data[player.name]&.strike_rate %> ⚡</span>
-                        <% elsif strike_rate > 100 %>
-                          <span class="badge bg-primary"><%= @data[player.name]&.strike_rate %></span>
-                        <% elsif strike_rate > 0 %>
-                          <span class="badge bg-warning text-dark"><%= @data[player.name]&.strike_rate %></span>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">30/50/100+ Bonus</td>
-                      <td class="points-cell">
-                        <% bonus_points = @data[player.name]&.display_batting_bonus_points[:value] %>
-                        <div class="points-badge <%= bonus_points.is_a?(Integer) ? 'points-positive' : 'points-zero' %>">
-                          <%= bonus_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% bonus_name = @data[player.name]&.display_batting_bonus_points[:field_name] %>
-                        <% if bonus_name.present? && bonus_name != "NA" %>
-                          <span class="badge bg-warning text-dark"><%= bonus_name %> 🎯</span>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Duck</td>
-                      <td class="points-cell">
-                        <% duck_points = @data[player.name]&.duck? ? PlayerPerfomacePoint::POINTS_EVALUATION[:duck] : 0 %>
-                        <div class="points-badge <%= duck_points.negative? ? 'points-negative' : 'points-zero' %>">
-                          <%= duck_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.duck? %>
-                          <span class="badge bg-danger">Yes 🦆</span>
-                        <% else %>
-                          <span class="badge bg-light text-dark">No</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <!-- Bowling Stats Section -->
-                    <tr class="table-success">
-                      <td colspan="3" class="text-center fw-bold">BOWLING STATS 🏏</td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Overs Bowled</td>
-                      <td class="points-cell">
-                        <div class="points-badge points-na">NA</div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name]&.overs_bowled.present? && @data[player.name]&.overs_bowled != "0" %>
-                          <%= @data[player.name]&.overs_bowled %>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Wickets</td>
-                      <td class="points-cell">
-                        <% wicket_points = @data[player.name]&.calculate_field_points('wickets') %>
-                        <div class="points-badge <%= wicket_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= wicket_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% wickets = @data[player.name].wickets %>
-                        <% if wickets >= 5 %>
-                          <span class="badge bg-danger"><%= wickets %> 🔥</span>
-                        <% elsif wickets >= 3 %>
-                          <span class="badge bg-success"><%= wickets %> 👏</span>
-                        <% elsif wickets > 0 %>
-                          <span class="badge bg-info text-dark"><%= wickets %></span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">4W/5W Bonus</td>
-                      <td class="points-cell">
-                        <% if @data[player.name].wickets > 4 %>
-                          <% bonus_points = @data[player.name]&.bonus_5w %>
-                        <% else %>
-                          <% bonus_points = @data[player.name]&.bonus_4w %>
-                        <% end %>
-                        <div class="points-badge <%= bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= bonus_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name].wickets > 4 %>
-                          <span class="badge bg-danger">5W 🏆</span>
-                        <% elsif @data[player.name].wickets == 4 %>
-                          <span class="badge bg-warning text-dark">4W 🎯</span>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>   
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Economy</td>
-                      <td class="points-cell">
-                        <% eco_points = @data[player.name].eco_bonus %>
-                        <div class="points-badge <%= eco_points.positive? ? 'points-positive' : (eco_points.negative? ? 'points-negative' : 'points-zero') %>">
-                          <%= eco_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% eco = @data[player.name].eco.to_f %>
-                        <% if eco > 0 %>
-                          <% if eco < 6 %>
-                            <span class="badge bg-success"><%= eco %> 👌</span>
-                          <% elsif eco < 8 %>
-                            <span class="badge bg-info text-dark"><%= eco %></span>
-                          <% elsif eco < 10 %>
-                            <span class="badge bg-warning text-dark"><%= eco %></span>
-                          <% else %>
-                            <span class="badge bg-danger"><%= eco %></span>
-                          <% end %>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Maiden Overs</td>
-                      <td class="points-cell">
-                        <% maiden_points = @data[player.name]&.calculate_field_points('maidens') %>
-                        <div class="points-badge <%= maiden_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= maiden_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% maidens = @data[player.name]&.maidens %>
-                        <% if maidens > 0 %>
-                          <span class="badge bg-success"><%= maidens %> 🔒</span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">LBW Bonus</td>
-                      <td class="points-cell">
-                        <% lbw_bonus_points = @data[player.name].lbw_bonus %>
-                        <div class="points-badge <%= lbw_bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= lbw_bonus_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% lbw_bonus = @data[player.name]&.lbw_bonus %>
-                        <% if lbw_bonus > 0 %>
-                          <span class="badge bg-primary"><%= (lbw_bonus / 8).to_s + '%' %> 🎯</span>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Bowled Bonus</td>
-                      <td class="points-cell">
-                        <% bowled_bonus_points = @data[player.name]&.bowled_bonus %>
-                        <div class="points-badge <%= bowled_bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= bowled_bonus_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% bowled_bonus = @data[player.name]&.bowled_bonus %>
-                        <% if bowled_bonus > 0 %>
-                          <span class="badge bg-primary"><%= (bowled_bonus / 8).to_s + '%' %> 🎯</span>
-                        <% else %>
-                          <span class="badge bg-danger">NA</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <!-- Fielding Stats Section -->
-                    <tr class="table-info">
-                      <td colspan="3" class="text-center fw-bold">FIELDING STATS 🧤👐</td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Catches</td>
-                      <td class="points-cell">
-                        <% catch_points = @data[player.name]&.calculate_field_points('catches') %>
-                        <div class="points-badge <%= catch_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= catch_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% catches = @data[player.name]&.catches %>
-                        <% if catches > 2 %>
-                          <span class="badge bg-success"><%= catches %> 🧤</span>
-                        <% elsif catches > 0 %>
-                          <span class="badge bg-info text-dark"><%= catches %> 👐</span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Catch Bonus</td>
-                      <td class="points-cell">
-                        <% catch_bonus_points = @data[player.name].catch_bonus %>
-                        <div class="points-badge <%= catch_bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= catch_bonus_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% if @data[player.name].catch_bonus.zero? %>
-                          <span class="badge bg-danger">NA</span>
-                        <% else %>
-                          <span class="badge bg-success">Added ✅</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    
-                    <tr>
-                      <td class="fw-bold">Run Outs</td>
-                      <td class="points-cell">
-                        <% runout_points = @data[player.name].calculate_field_points('run_outs') %>
-                        <div class="points-badge <%= runout_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= runout_points %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% run_outs = @data[player.name].run_outs %>
-                        <% if run_outs > 0 %>
-                          <span class="badge bg-danger"><%= run_outs %> 🎯</span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="fw-bold">Stumping</td>
-                      <td class="points-cell">
-                        <% stumpings = @data[player.name].calculate_field_points('stumping') %>
-                        <div class="points-badge <%= runout_points.positive? ? 'points-positive' : 'points-zero' %>">
-                          <%= stumpings %>
-                        </div>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% stumpings = @data[player.name].stumping %>
-                        <% if stumpings > 0 %>
-                          <span class="badge bg-danger"><%= stumpings %> 🎯</span>
-                        <% else %>
-                          <span class="badge bg-danger">0</span>
-                        <% end %>
-                      </td>
-                    </tr>
-
-                    <tr class="table-primary">
-                      <td colspan="3" class="text-center fw-bold">MOM STATS 🏏</td>
-                    </tr>
-                    <td class="fw-bold">Man of the Match</td>
-                      <td class="points-cell">
-                        <% mom_points = @data[player.name].bonus_mom %>
-                        <% if mom_points > 0 %>
-                          <span class="points-badge points-positive"><%= mom_points %> 🎯</span>
-                        <% else %>
-                          <span class="points-badge points-zero">0</span>
-                        <% end %>
-                      </td>
-                      <td class="d-md-table-cell">
-                        <% mom_points = @data[player.name].is_mom %>
-                        <span class="badge bg-danger">
-                          <%= mom_points ? 'Yes' : 'No' %>
-                        </span>
-                      </td>
-                    <!-- Final Points Section -->
-                    <tr class="table-dark">
-                      <td class="fw-bold">Total Points</td>
-                      <td colspan="2" class="points-total">
-                        <% points = @points_data[player.name] %>
-                        <div class="points-ribbon">
-                          <div class="ribbon-text">
-                            <span class="points-value"><%= points %></span>
-                            <% if points > 100 %>
-                              <span class="points-label">STAR PERFORMER 🏆</span>
-                            <% elsif points > 75 %>
-                              <span class="points-label">EXCELLENT 🔥</span>
-                            <% elsif points > 50 %>
-                              <span class="points-label">GOOD 👍</span>
-                            <% elsif points > 25 %>
-                              <span class="points-label">DECENT 👌</span>
-                            <% else %>
-                              <span class="points-label">POINTS</span>
-                            <% end %>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+            <% end %>
+            <div class="summary-row">
+              <div class="summary-total-label">
+                <i class="fas fa-trophy"></i> Total Points (Bench)
               </div>
+              <span class="summary-total-value bench-total-value"><%= @bench_points_data.values.sum %></span>
             </div>
           </div>
         </div>
+      <% end %>
+
+      <!-- Player Navigation Dots -->
+      <div class="player-navigation">
+        <div class="player-dots" id="player-dots">
+          <% @scoring_players&.each_with_index do |player, index| %>
+            <button class="player-dot <%= 'active' if index == 0 %>" 
+                    onclick="goToSlide(<%= index %>)" 
+                    data-slide="<%= index %>">
+            </button>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Player Carousel -->
+      <div class="player-carousel">
+        <button class="carousel-nav prev" onclick="prevSlide()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="player-slides" id="player-slides">
+          <% @scoring_players&.each_with_index do |player, index| %>
+            <% next if @data[player.name].blank? %>
+            
+            <div class="player-slide <%= 'active' if index == 0 %>" data-slide="<%= index %>">
+              <div class="player-card">
+                <!-- Player Header -->
+                <div class="player-card-header">
+                  <div class="player-avatar-container">
+                    <%= player_image(player) %>
+                  </div>
+                  <div class="player-name-title">
+                    <%= player.name %> 🏏
+                  </div>
+                  <div class="player-badges">
+                    <span class="player-badge-item">
+                      <%= @selected_user_team.team_name %>
+                    </span>
+                    <span class="player-badge-item">
+                      <%= params[:match_name].split(' vs ').include?(player.team_name) ? player.team_name : 'N/A' %>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Total Points Banner -->
+                <div class="total-points-banner">
+                  <div class="total-points-value">
+                    <%= @points_data[player.name] %>
+                  </div>
+                  <div class="total-points-label">
+                    <% points = @points_data[player.name].to_i %>
+                    <% if points > 100 %>
+                      ⭐ Star Performer
+                    <% elsif points > 75 %>
+                      🔥 Excellent
+                    <% elsif points > 50 %>
+                      👍 Good
+                    <% elsif points > 25 %>
+                      👌 Decent
+                    <% else %>
+                      Total Points
+                    <% end %>
+                  </div>
+                </div>
+
+                <!-- Stats Body -->
+                <div class="stats-body">
+                  <!-- Playing Status -->
+                  <div class="stat-section">
+                    <div class="stat-section-header">
+                      <i class="fas fa-user-check stat-section-icon"></i>
+                      <h4 class="stat-section-title">Playing Status</h4>
+                    </div>
+                    <div class="stat-item">
+                      <span class="stat-label">Status</span>
+                      <div class="stat-points">
+                        <span class="stat-points-badge <%= @data[player.name].in_playing11.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= @data[player.name].in_playing11 %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].in_playing11.zero? %>
+                            <span class="stat-actual-badge badge-danger">⛔ Sub</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-success">✅ Playing</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Batting Stats -->
+                  <div class="stat-section">
+                    <div class="stat-section-header">
+                      <i class="fas fa-baseball-ball stat-section-icon"></i>
+                      <h4 class="stat-section-title">Batting Stats</h4>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Runs</span>
+                      <div class="stat-points">
+                        <% runs_points = @data[player.name].calculate_field_points('runs') %>
+                        <span class="stat-points-badge <%= runs_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= runs_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% runs = @data[player.name].runs %>
+                          <% if runs > 50 %>
+                            <span class="stat-actual-badge badge-success"><%= runs %> 🔥</span>
+                          <% elsif runs > 25 %>
+                            <span class="stat-actual-badge badge-info"><%= runs %> 👍</span>
+                          <% elsif runs > 0 %>
+                            <span class="stat-actual-badge badge-light"><%= runs %></span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Balls Faced</span>
+                      <div class="stat-points">
+                        <span class="stat-points-badge points-zero">-</span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].balls_faced > 0 %>
+                            <span class="stat-actual-badge badge-light"><%= @data[player.name].balls_faced %></span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">4's</span>
+                      <div class="stat-points">
+                        <% fours_points = @data[player.name].calculate_field_points('fours') %>
+                        <span class="stat-points-badge <%= fours_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= fours_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].fours > 0 %>
+                            <span class="stat-actual-badge badge-info"><%= @data[player.name].fours %> ×4</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">6's</span>
+                      <div class="stat-points">
+                        <% sixes_points = @data[player.name].calculate_field_points('sixes') %>
+                        <span class="stat-points-badge <%= sixes_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= sixes_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].sixes > 0 %>
+                            <span class="stat-actual-badge badge-success"><%= @data[player.name].sixes %> ×6</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Strike Rate</span>
+                      <div class="stat-points">
+                        <span class="stat-points-badge <%= @data[player.name].strike_rate_bonus.positive? ? 'points-positive' : (@data[player.name].strike_rate_bonus.negative? ? 'points-negative' : 'points-zero') %>">
+                          <%= @data[player.name].strike_rate_bonus %>
+                        </span>
+                        <div class="stat-actual">
+                          <% strike_rate = @data[player.name].strike_rate %>
+                          <% if strike_rate > 150 %>
+                            <span class="stat-actual-badge badge-success"><%= strike_rate %> 🚀</span>
+                          <% elsif strike_rate > 120 %>
+                            <span class="stat-actual-badge badge-success"><%= strike_rate %> ⚡</span>
+                          <% elsif strike_rate > 100 %>
+                            <span class="stat-actual-badge badge-info"><%= strike_rate %></span>
+                          <% elsif strike_rate > 0 %>
+                            <span class="stat-actual-badge badge-warning"><%= strike_rate %></span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Milestone Bonus</span>
+                      <div class="stat-points">
+                        <% bonus_points = @data[player.name].display_batting_bonus_points[:value] %>
+                        <span class="stat-points-badge <%= bonus_points.is_a?(Integer) && bonus_points > 0 ? 'points-positive' : 'points-zero' %>">
+                          <%= bonus_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% bonus_name = @data[player.name].display_batting_bonus_points[:field_name] %>
+                          <% if bonus_name.present? && bonus_name != "NA" %>
+                            <span class="stat-actual-badge badge-warning"><%= bonus_name %> 🎯</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Duck Penalty</span>
+                      <div class="stat-points">
+                        <% duck_points = @data[player.name].duck? ? PlayerPerfomacePoint::POINTS_EVALUATION[:duck] : 0 %>
+                        <span class="stat-points-badge <%= duck_points.negative? ? 'points-negative' : 'points-zero' %>">
+                          <%= duck_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].duck? %>
+                            <span class="stat-actual-badge badge-danger">Yes 🦆</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-light">No</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Bowling Stats -->
+                  <div class="stat-section">
+                    <div class="stat-section-header">
+                      <i class="fas fa-bowling-ball stat-section-icon"></i>
+                      <h4 class="stat-section-title">Bowling Stats</h4>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Overs Bowled</span>
+                      <div class="stat-points">
+                        <span class="stat-points-badge points-zero">-</span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].overs_bowled.present? && @data[player.name].overs_bowled != "0" %>
+                            <span class="stat-actual-badge badge-light"><%= @data[player.name].overs_bowled %></span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Wickets</span>
+                      <div class="stat-points">
+                        <% wicket_points = @data[player.name].calculate_field_points('wickets') %>
+                        <span class="stat-points-badge <%= wicket_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= wicket_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% wickets = @data[player.name].wickets %>
+                          <% if wickets >= 5 %>
+                            <span class="stat-actual-badge badge-success"><%= wickets %> 🔥</span>
+                          <% elsif wickets >= 3 %>
+                            <span class="stat-actual-badge badge-success"><%= wickets %> 👏</span>
+                          <% elsif wickets > 0 %>
+                            <span class="stat-actual-badge badge-info"><%= wickets %></span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Wicket Haul Bonus</span>
+                      <div class="stat-points">
+                        <% if @data[player.name].wickets > 4 %>
+                          <% bonus_points = @data[player.name].bonus_5w %>
+                        <% elsif @data[player.name].wickets == 4 %>
+                          <% bonus_points = @data[player.name].bonus_4w %>
+                        <% elsif @data[player.name].wickets == 3 %>
+                          <% bonus_points = @data[player.name].bonus_3w %>
+                        <% else %>
+                          <% bonus_points = 0 %>
+                        <% end %>
+                        <span class="stat-points-badge <%= bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= bonus_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].wickets > 4 %>
+                            <span class="stat-actual-badge badge-success">5W 🏆</span>
+                          <% elsif @data[player.name].wickets == 4 %>
+                            <span class="stat-actual-badge badge-warning">4W 🎯</span>
+                          <% elsif @data[player.name].wickets == 3 %>
+                            <span class="stat-actual-badge badge-warning">3W 🎯</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Economy</span>
+                      <div class="stat-points">
+                        <% eco_points = @data[player.name].eco_bonus %>
+                        <span class="stat-points-badge <%= eco_points.positive? ? 'points-positive' : (eco_points.negative? ? 'points-negative' : 'points-zero') %>">
+                          <%= eco_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% eco = @data[player.name].eco.to_f %>
+                          <% if eco > 0 %>
+                            <% if eco < 6 %>
+                              <span class="stat-actual-badge badge-success"><%= eco %> 👌</span>
+                            <% elsif eco < 8 %>
+                              <span class="stat-actual-badge badge-info"><%= eco %></span>
+                            <% elsif eco < 10 %>
+                              <span class="stat-actual-badge badge-warning"><%= eco %></span>
+                            <% else %>
+                              <span class="stat-actual-badge badge-danger"><%= eco %></span>
+                            <% end %>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Maiden Overs</span>
+                      <div class="stat-points">
+                        <% maiden_points = @data[player.name].calculate_field_points('maidens') %>
+                        <span class="stat-points-badge <%= maiden_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= maiden_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% maidens = @data[player.name].maidens %>
+                          <% if maidens > 0 %>
+                            <span class="stat-actual-badge badge-success"><%= maidens %> 🔒</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">LBW Bonus</span>
+                      <div class="stat-points">
+                        <% lbw_bonus_points = @data[player.name].lbw_bonus %>
+                        <span class="stat-points-badge <%= lbw_bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= lbw_bonus_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if lbw_bonus_points > 0 %>
+                            <span class="stat-actual-badge badge-info"><%= (lbw_bonus_points / 8.0).round %>% 🎯</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Bowled Bonus</span>
+                      <div class="stat-points">
+                        <% bowled_bonus_points = @data[player.name].bowled_bonus %>
+                        <span class="stat-points-badge <%= bowled_bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= bowled_bonus_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if bowled_bonus_points > 0 %>
+                            <span class="stat-actual-badge badge-info"><%= (bowled_bonus_points / 8.0).round %>% 🎯</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Fielding Stats -->
+                  <div class="stat-section">
+                    <div class="stat-section-header">
+                      <i class="fas fa-hand-paper stat-section-icon"></i>
+                      <h4 class="stat-section-title">Fielding Stats</h4>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Catches</span>
+                      <div class="stat-points">
+                        <% catch_points = @data[player.name].calculate_field_points('catches') %>
+
+                        <span class="stat-points-badge <%= catch_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= catch_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% catches = @data[player.name].catches %>
+                          <% if catches > 2 %>
+                            <span class="stat-actual-badge badge-success"><%= catches %> 🧤</span>
+                          <% elsif catches > 0 %>
+                            <span class="stat-actual-badge badge-info"><%= catches %> 👐</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Catch Bonus</span>
+                      <div class="stat-points">
+                        <% catch_bonus_points = @data[player.name].catch_bonus %>
+                        <span class="stat-points-badge <%= catch_bonus_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= catch_bonus_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if catch_bonus_points.zero? %>
+                            <span class="stat-actual-badge badge-danger">-</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-success">Added ✅</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Run Outs</span>
+                      <div class="stat-points">
+                        <% runout_points = @data[player.name].calculate_field_points('run_outs') %>
+                        <span class="stat-points-badge <%= runout_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= runout_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% run_outs = @data[player.name].run_outs %>
+                          <% if run_outs > 0 %>
+                            <span class="stat-actual-badge badge-success"><%= run_outs %> 🎯</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">Stumpings</span>
+                      <div class="stat-points">
+                        <% stumping_points = @data[player.name].calculate_field_points('stumping') %>
+                        <span class="stat-points-badge <%= stumping_points.positive? ? 'points-positive' : 'points-zero' %>">
+                          <%= stumping_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% stumpings = @data[player.name].stumping %>
+                          <% if stumpings > 0 %>
+                            <span class="stat-actual-badge badge-success"><%= stumpings %> 🎯</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">0</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Man of the Match -->
+                  <div class="stat-section">
+                    <div class="stat-section-header">
+                      <i class="fas fa-trophy stat-section-icon"></i>
+                      <h4 class="stat-section-title">Man of the Match</h4>
+                    </div>
+
+                    <div class="stat-item">
+                      <span class="stat-label">MoM Award</span>
+                      <div class="stat-points">
+                        <% mom_points = @data[player.name].bonus_mom %>
+                        <span class="stat-points-badge <%= mom_points > 0 ? 'points-positive' : 'points-zero' %>">
+                          <%= mom_points %>
+                        </span>
+                        <div class="stat-actual">
+                          <% if @data[player.name].is_mom %>
+                            <span class="stat-actual-badge badge-success">Yes 🏆</span>
+                          <% else %>
+                            <span class="stat-actual-badge badge-danger">No</span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <button class="carousel-nav next" onclick="nextSlide()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Swipe Indicator -->
+      <div class="swipe-indicator">
+        <span class="swipe-arrow">←</span>
+        <span>Swipe to view other players</span>
+        <span class="swipe-arrow">→</span>
       </div>
     <% end %>
   </div>
 
-  <!-- Improved Carousel Controls -->
-  <button class="carousel-control-prev" type="button" data-bs-target="#playerCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#playerCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentSlide = 0;
+    const totalSlides = <%= @scoring_players.length %>;
 
-<!-- Enhanced Navigation Notice -->
-<div class="text-center mt-3 mb-4">
-  <div class="swipe-indicator">
-    <div class="swipe-arrow swipe-left">←</div>
-    <p class="slide-notice m-0">Swipe to view other players</p>
-    <div class="swipe-arrow swipe-right">→</div>
-  </div>
-</div>
+    function updateSlide() {
+      // Hide all slides
+      document.querySelectorAll('.player-slide').forEach(slide => {
+        slide.classList.remove('active');
+      });
 
-<!-- JavaScript for Enhanced Interaction -->
-<script>
-  
-  // Update active indicators when carousel slides
-  const playerCarousel = document.getElementById('playerCarousel');
-  if (playerCarousel) {
-    playerCarousel.addEventListener('slide.bs.carousel', function (event) {
-      const activeIndex = event.to;
-      const dots = document.querySelectorAll('.carousel-indicators button');
-      
-      dots.forEach((dot, index) => {
-        if (index === activeIndex) {
-          dot.classList.add('active');
-        } else {
-          dot.classList.remove('active');
-        }
+      // Show current slide
+      const currentSlideElement = document.querySelector(`.player-slide[data-slide="${currentSlide}"]`);
+      if (currentSlideElement) {
+        currentSlideElement.classList.add('active');
+      }
+
+      // Update dots
+      document.querySelectorAll('.player-dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
       });
-    });
-    
-    // Add touch swiping capability for mobile
-    try {
-      const hammer = new Hammer(playerCarousel);
-      hammer.on('swipeleft', () => {
-        const nextButton = document.querySelector('.carousel-control-next');
-        nextButton && nextButton.click();
-      });
-      hammer.on('swiperight', () => {
-        const prevButton = document.querySelector('.carousel-control-prev');
-        prevButton && prevButton.click();
-      });
-    } catch (e) {
-      console.log('Hammer.js not loaded. Touch swiping disabled.');
     }
-  }
-</script>
 
-<!-- Enhanced Styling -->
-<style>
-  /* Card and Table Styling */
-  .card {
-    border-radius: 15px;
-    border: none;
-    overflow: hidden;
-    margin-bottom: 1rem;
-  }
-  
-  .table {
-    font-size: 0.9rem;
-    margin-bottom: 0;
-  }
-  
-  .table th, .table td {
-    vertical-align: middle;
-    padding: 0.5rem;
-  }
-  
-  /* Player Image Styling */
-  .player-image-container {
-    width: 120px;
-    height: 120px;
-    overflow: hidden;
-    border-radius: 50%;
-    border: 3px solid #007bff;
-    margin: 0 auto;
-    background-color: #f8f9fa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .player-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: cover;
-  }
-  
-  /* Points Styling */
-  .points-cell {
-    padding: 0.25rem !important;
-  }
-  
-  .points-badge {
-    border-radius: 50px;
-    padding: 5px 10px;
-    font-weight: bold;
-    display: inline-block;
-    min-width: 50px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-  }
-  
-  .points-badge:hover {
-    transform: scale(1.05);
-  }
-  
-  .points-positive {
-    background: linear-gradient(to right, #4CAF50, #8BC34A);
-    color: white;
-  }
-  
-  .points-negative {
-    background: linear-gradient(to right, #F44336, #FF5722);
-    color: white;
-  }
-  
-  .points-zero {
-    background: linear-gradient(to right, #9E9E9E, #BDBDBD);
-    color: white;
-  }
-  
-  .points-na {
-    background: linear-gradient(to right, #D32F2F, #F44336);
-    color: white;
-  }
-  
-  /* Total Points Styling */
-  .points-total {
-    padding: 0 !important;
-    position: relative;
-  }
-  
-  .points-ribbon {
-    background: linear-gradient(135deg, #007bff, #00c6ff);
-    padding: 10px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .ribbon-text {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  
-  .points-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-  }
-  
-  .points-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    display: block;
-    margin-top: 5px;
-  }
-  
-  /* Carousel Control Styling */
-  .carousel-control-prev,
-  .carousel-control-next {
-    width: 10%;
-    opacity: 1;
-  }
-  
-  .carousel-control-prev-icon,
-  .carousel-control-next-icon {
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 50%;
-  }
-  
-  /* Swipe Indicator Styling */
-  .swipe-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-weight: bold;
-    color: #007bff;
-  }
-  
-  .swipe-arrow {
-    font-size: 1.2rem;
-    animation: pulse 1.5s infinite;
-  }
-  
-  .swipe-left {
-    animation-delay: 0s;
-  }
-  
-  .swipe-right {
-    animation-delay: 0.75s;
-  }
-  
-  @keyframes pulse {
-    0% { opacity: 0.3; }
-    50% { opacity: 1; }
-    100% { opacity: 0.3; }
-  }
-  
-  /* Carousel Indicators Styling */
-  .carousel-indicators {
-    position: relative;
-    margin-bottom: 0;
-    padding: 5px 0;
-  }
-  
-  .carousel-indicators button {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #ccc;
-    margin: 0 5px;
-  }
-  
-  .carousel-indicators button.active {
-    background-color: #007bff;
-  }
-  
-  /* Player Header */
-  .player-header {
-    background: linear-gradient(to right, #e0f7fa, #b2ebf2);
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      updateSlide();
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      updateSlide();
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      updateSlide();
+    }
+
+    function toggleSummary() {
+      const summaryCard = document.getElementById('summary-card');
+      const benchSummaryCard = document.getElementById('bench-summary-card');
+      const toggleText = document.getElementById('toggle-text');
+      
+      if (summaryCard.classList.contains('active')) {
+        summaryCard.classList.remove('active');
+        if (benchSummaryCard) benchSummaryCard.classList.remove('active');
+        toggleText.textContent = 'Show Summary';
+      } else {
+        summaryCard.classList.add('active');
+        if (benchSummaryCard) benchSummaryCard.classList.add('active');
+        toggleText.textContent = 'Hide Summary';
+      }
+    }
+
+    // Touch swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const slidesContainer = document.getElementById('player-slides');
+
+    if (slidesContainer) {
+      slidesContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      });
+
+      slidesContainer.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      });
+    }
+
+    function handleSwipe() {
+      if (touchEndX < touchStartX - 50) {
+        nextSlide();
+      }
+      if (touchEndX > touchStartX + 50) {
+        prevSlide();
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        prevSlide();
+      } else if (e.key === 'ArrowRight') {
+        nextSlide();
+      }
+    });
+  </script>
+</body>
+</html>

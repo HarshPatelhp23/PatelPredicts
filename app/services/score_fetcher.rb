@@ -2,11 +2,12 @@
 
 class ScoreFetcher
   require 'responses/scorecard_response'
-  attr_accessor :res, :series, :match_id
+  attr_accessor :res, :series, :match_ids
 
-  SERIES = 'Indian Premier League 2025' # CHANGE IT TO => 'Indian Premier League 2025'
+  SERIES = "Indian Premier League 2026" # CHANGE IT TO => 'Indian Premier League 2026'
   # ct_2025 series_id = '9325'
-  # indian-premier-league-2025 = '9237'
+  # T20_worldcup_2026 = 11253
+  # indian-premier-league-2026 = '9241'
   include HTTParty
   base_uri 'https://cricbuzz-cricket.p.rapidapi.com'
 
@@ -16,44 +17,65 @@ class ScoreFetcher
   }.freeze
 
   def initialize(end_point: '/matches/v1/recent')
-    # @res = fetch_recent_matches(end_point) # Change to get dynamic
+    @res = fetch_recent_matches(end_point) # Change to get dynamic
     # @res = Responses::ChampionsTrophy.champions_trophy_2025
-    # @series = fetch_series
-    # store_response(res: @res, series: @series)
-    @match_id = find_todays_match_from_stored_data
+    @series = fetch_series
+    store_response(res: @res, series: @series)
+    @match_ids = find_todays_match_from_stored_data
   end
 
   def process_scorecard
     # users = User.all
     # users_pool = Auction.includes(:users).map { |auction| [auction.id, auction.users] }.to_h
-    # match_id = find_match_for_today
     # match_id = '114960'
-    return if match_id.blank?
+    
+    # match_id = find_match_for_today
+    return if match_ids.blank?
 
-    PointsCalculator.new(match_id).calculate_total_points
+    match_ids.each do |match_id|
+      PointsCalculator.new(match_id).calculate_total_points
+    end
+    # OwnerScoreNotifier.notify_owners.deliver_later
   end
 
    def find_todays_match_from_stored_data
-    match_ids = []
+    ScoreFetcher.create_ipl_matches_series_reponse
     series_data = SeriesMatchResponse.where.not(series_res: '{}')&.last
-    return nil unless series_data
+    return [] unless series_data
 
-    todays_date = Date.today.strftime("%a, %d %b %Y")
-    match_details = series_data.series_res["matchDetails"].find do |detail|
-      detail["matchDetailsMap"] && detail["matchDetailsMap"]["key"] == todays_date
-    end
-    return nil unless match_details
+    todays_date = Date.today
+    todays_completed_match_ids = []
 
-    # match_info = match_details["matchDetailsMap"]["match"].first["matchInfo"]
-    match_info = match_details["matchDetailsMap"]["match"]
-    match_info.each do |m_info|
-      match_ids << m_info["matchInfo"]["matchId"].to_s
+    # Get matchDetails array from series_res
+    match_details = series_data.series_res["matchDetails"] || []
+    
+    match_details.each do |item|
+      # Skip adDetail objects and only process matchDetailsMap
+      next unless item.is_a?(Hash) && item["matchDetailsMap"].present?
+      
+      match_details_map = item["matchDetailsMap"]
+      matches = match_details_map["match"] || []
+      
+      matches.each do |match|
+        match_info = match["matchInfo"]
+        next unless match_info
+        
+        # Convert timestamp to date (timestamp is in milliseconds)
+        start_timestamp = match_info["startDate"].to_i / 1000
+        match_date = Time.at(start_timestamp).to_date
+        
+        # Check if match is completed AND date is today
+        if match_info["state"] == "Complete" && match_date == todays_date
+          todays_completed_match_ids << match_info["matchId"].to_s
+        end
+      end
     end
-    match_ids
+
+    todays_completed_match_ids
   end
 
   def self.create_ipl_matches_series_reponse
-    end_point = '/series/v1/9237'
+    end_point = '/series/v1/9241'
     response = get(end_point, headers: HEADERS)
     if response.success?
       series_res = JSON.parse(response.body)
@@ -62,7 +84,7 @@ class ScoreFetcher
   end
 
   def self.get_squad_ids
-    end_point = '/series/v1/9237/squads' # 9237 is series_id
+    end_point = '/series/v1/9241/squads' # 9241 is series_id for ipl -2026
     response = get(end_point, headers: HEADERS)
     if response.success?
       squads_data = JSON.parse(response.body)['squads']
@@ -84,7 +106,7 @@ class ScoreFetcher
   end
 
   def self.update_cricbuzz_player_id
-    series_match_response = SeriesMatchResponse.first
+    series_match_response = SeriesMatchResponse.last
 
     if series_match_response&.series_res.present?
       squads_data = JSON.parse(series_match_response.series_res)['squads']
@@ -94,7 +116,7 @@ class ScoreFetcher
 
         squad_id = squad['squadId']
         team_name = squad['squadType']
-        end_point = "/series/v1/9237/squads/#{squad_id}"
+        end_point = "/series/v1/9241/squads/#{squad_id}"
 
         response = ScoreFetcher.get(end_point, headers: HEADERS)
 
@@ -107,7 +129,7 @@ class ScoreFetcher
   end
 
   def self.create_cricbuzz_players
-    series_match_response = SeriesMatchResponse.first
+    series_match_response = SeriesMatchResponse.last
 
     if series_match_response&.series_res.present?
       squads_data = JSON.parse(series_match_response.series_res)['squads']
@@ -117,7 +139,7 @@ class ScoreFetcher
 
         squad_id = squad['squadId']
         team_name = squad['squadType']
-        end_point = "/series/v1/9237/squads/#{squad_id}"
+        end_point = "/series/v1/9241/squads/#{squad_id}"
 
         response = ScoreFetcher.get(end_point, headers: HEADERS)
 
@@ -148,7 +170,31 @@ class ScoreFetcher
       'Punjab Kings' => 'PBKS',
       'Mumbai Indians' => 'MI',
       'Gujarat Titans' => 'GT',
-      'Lucknow Super Giants' => 'LSG'
+      'Lucknow Super Giants' => 'LSG',
+
+      'India' => 'IND',
+      'Australia' => 'AUS',
+      'Sri Lanka' => 'SL',
+      'Zimbabwe' => 'ZIM',
+      'Ireland' => 'IRE',
+      'Oman' => 'OMA',
+      'England' => 'ENG',
+      'West Indies' => 'WI',
+      'Bangladesh' => 'BAN',
+      'Italy' => 'ITA',
+      'Nepal' => 'NEP',
+      'South Africa' => 'SA',
+      'New Zealand' => 'NZ',
+      'Afghanistan' => 'AFG',
+      'Canada' => 'CAN',
+      'UAE' => 'UAE',
+      'Scotland' => 'SCO',
+      'United Arab Emirates' => 'UAE',
+      'United States Of America' => 'USA',
+      'USA' => 'USA',
+      'Namibia' => 'NAM',
+      'Netherlands' => 'NED',
+      'Pakistan' => 'PAK'
     }
     teams[team_name]
   end
@@ -169,7 +215,7 @@ class ScoreFetcher
 
       player = Player.where("LOWER(name) = LOWER(?)", player_data["name"])&.first
       if player.blank?
-        not_updated_players << { cricbuzz_id: player_data["id"], player_name: player_data["name"] }
+        not_updated_players << { cricbuzz_player_id: player_data["id"], player_name: player_data["name"] }
       end
       player&.update_columns(cricbuzz_player_id: player_data["id"])
       success_count += 1
@@ -193,11 +239,13 @@ class ScoreFetcher
       next if player_data["isHeader"].present?
 
       player = Player.create(name: player_data["name"])
-      role_mapping = {'Batter' => 'batsman', 'Batting Allrounder' => 'all_rounder', 'Bowling Allrounder' => 'all_rounder',  'WK-Batter' => 'wicket_keeper', 'Bowler' => 'bowler'  }
+      role_mapping = {'Batter' => 'batsman', 'Batters' => 'batsman', 'Batsman' => 'batsman', 'Batting Allrounder' => 'all_rounder', 'Bowling Allrounder' => 'all_rounder', 'Allrounders' => 'all_rounder',  'WK-Batter' => 'wicket_keeper', 'WK-Batsman' => 'wicket_keeper', 'WICKET KEEPERS' => 'wicket_keeper',  'Bowler' => 'bowler', 'Bowlers' => 'bowler'  }
       player.role = Player.roles[role_mapping[player_data['role']]]
       player.team_name = team_short_name
       player.batting_style = player_data['battingStyle']
       player.bowling_style = player_data['bowlingStyle']
+      player.cricbuzz_player_id = player_data['id']
+      player.cricbuzz_image_id = player_data['imageId']
       player.save!
     end
   end
@@ -209,17 +257,24 @@ class ScoreFetcher
 
   def fetch_series
     raise 'Response not set. Call fetch_recent_matches first.' unless @res
-    @series = res['typeMatches'].find do |type_match|
-      type_match['seriesMatches'].any? do |series|
-        series.dig('seriesAdWrapper', 'seriesName') == SERIES
+    
+    # Find the T20 World Cup series across all typeMatches
+    @res['typeMatches'].each do |type_match|
+      type_match['seriesMatches'].each do |series|
+        if series.dig('seriesAdWrapper', 'seriesName') == SERIES
+          @series = series  # Return just the T20 World Cup series
+          return @series
+        end
       end
     end
+    
+    nil  # Return nil if not found
   end
 
   def find_both_team_of_match
     res_team1, res_team2 = nil
     # series = Responses::ScorecardResponse.demo_series_res if series.blank?
-    series['seriesMatches'].each do |s|
+    series['seriesMatches'].each do |ss|
       s['seriesAdWrapper']['matches'].each do |match|
         match_info = match['matchInfo']
         res_team1 = match_info['team1']['teamSName']
@@ -263,13 +318,24 @@ class ScoreFetcher
     raise StandardError, "Failed to fetch data: #{response.code} - #{response.message}"
   end
 
-  def store_response(**attrs)
-    allowed_columns = %i[match_data series_res recent_match_res]
-
-    # Filter out only allowed columns from the provided attributes
-    filtered_attrs = attrs.slice(*allowed_columns)
-    return if filtered_attrs.empty?
-
-    SeriesMatchResponse.create(filtered_attrs)
+  def store_response(res:, series:)
+    # Map your data to the correct column names
+    attrs = {
+      match_data: res,  # Store @res in recent_match_res
+      series_res: series      # Store @series in series_res
+      # match_data: nil or some other data if you have it
+    }
+    
+    SeriesMatchResponse.create(attrs)
   end
+
+  # def store_response(**attrs)
+  #   allowed_columns = %i[match_data series_res recent_match_res]
+
+  #   # Filter out only allowed columns from the provided attributes
+  #   filtered_attrs = attrs.slice(*allowed_columns)
+  #   return if filtered_attrs.empty?
+
+  #   SeriesMatchResponse.create(filtered_attrs)
+  # end
 end

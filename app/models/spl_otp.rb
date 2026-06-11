@@ -1,0 +1,2 @@
+class SplOtp < ApplicationRecord
+end

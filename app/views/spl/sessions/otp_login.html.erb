@@ -1,0 +1,90 @@
+<% provide(:title, "OTP Login") %>
+
+<div class="auth-header">
+  <div class="auth-logo">
+    <i class="fas fa-mobile-alt"></i>
+  </div>
+  <h1>OTP Login</h1>
+  <p>Get a one-time password on your email</p>
+</div>
+
+<div id="step1" class="auth-step">
+  <div class="input-group">
+    <i class="fas fa-envelope"></i>
+    <input type="email" id="loginEmail" placeholder="Email address" required>
+  </div>
+  
+  <button onclick="sendOTP()" class="auth-btn" id="sendOtpBtn">
+    Send OTP
+  </button>
+</div>
+
+<div id="step2" style="display: none;" class="auth-step">
+  <div class="input-group">
+    <i class="fas fa-key"></i>
+    <input type="text" id="otpCode" placeholder="Enter OTP" maxlength="6" pattern="[0-9]{6}" inputmode="numeric">
+  </div>
+  
+  <button onclick="verifyOTP()" class="auth-btn">
+    Verify & Login
+  </button>
+  
+  <div class="timer-text" id="timer"></div>
+  
+  <button onclick="resendOTP()" id="resendBtn" style="display: none;" class="otp-btn" style="margin-top: 12px; width: 100%;">
+    Resend OTP
+  </button>
+</div>
+
+<div class="toggle-auth">
+  <p><%= link_to "Back to Sign In", new_spl_user_session_path %></p>
+</div>
+
+<script>
+
+  document.addEventListener("turbo:load", function() {
+    window.sendOTP = function() {
+      const email = document.getElementById('loginEmail').value;
+      if (!email) {
+        alert('Please enter your email');
+        return;
+      }
+      
+      const btn = document.getElementById('sendOtpBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      
+      fetch('/spl/send_otp_login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]')?.content
+        },
+        body: JSON.stringify({ email: email })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('step1').style.display = 'none';
+          document.getElementById('step2').style.display = 'block';
+          startTimer();
+        } else {
+          alert(data.message);
+          btn.disabled = false;
+          btn.textContent = 'Send OTP';
+        }
+      })
+      .catch(error => {
+        console.error("Fetch error:", error);
+        alert('Error sending OTP');
+        btn.disabled = false;
+        btn.textContent = 'Send OTP';
+      });
+    };
+    
+    // Similarly redefine verifyOTP, startTimer, resendOTP inside turbo:load
+    window.verifyOTP = function() { /* ... */ };
+    window.startTimer = function() { /* ... */ };
+    window.resendOTP = function() { /* ... */ };
+  });
+</script>

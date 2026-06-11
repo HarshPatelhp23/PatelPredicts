@@ -1,39 +1,749 @@
-<div class="card player-performance-card mb-3 mx-auto" style="max-width: 600px;">
-  <div class="card-header theme-light-color text-white py-2"> 
-    <%= "#{data[:player][:name]}'s Performance" %>
+<!-- _player_performance_card.html.erb -->
+<div class="card player-performance-card mb-3 mx-auto">
+  <!-- Player Header -->
+  <div class="card-header theme-color text-white py-2 d-flex justify-content-between align-items-center">
+    <h5 class="m-0"><%= "#{data[:player][:name]}'s Performance" %></h5>
+    <button class="btn btn-sm text-white" data-bs-toggle="collapse" data-bs-target="#playerDetails">
+      <i class="fas fa-chevron-down"></i>
+    </button>
   </div>
-  <div class="card-body py-2">
-    <div class="row">
-      <div class="col-md-4 col-12 text-center mb-3 mb-md-0">
-        <%= image_tag data[:player][:image], alt: 'Player Image', class: 'player-image img-fluid rounded-circle' %>
-        <div class="mt-2">
-          <p><span class="summary-label">Owner:</span> <%= data[:owner] %></p>
-          <p><span class="summary-label">Price:</span> <%= data[:price] %></p>
-          <p><span class="summary-label">Total Matches:</span> <%= data[:total_matches] %></p>
+  
+  <div class="card-body p-2 p-md-3">
+    <!-- Player Profile Section -->
+    <div class="row mb-3">
+      <div class="col-4 col-md-3 text-center">
+        <div class="player-image-container mx-auto">
+          <%= image_tag data[:player][:image], alt: "#{data[:player][:name]}", class: "player-image img-fluid rounded-circle" %>
         </div>
       </div>
-      <div class="col-md-8 col-12">
-        <div class="player-summary">
-          <ul class="list-unstyled">
-            <% if data[:matches].present? %>
-              <% data[:matches].each do |match| %>
-                <li class="mb-1">
-                  <span class="match-name"><%= match[:name] %>:</span>
-                  <span class="match-points"><%= "#{match[:points]} points" %></span>
-                </li>
-              <% end %>
-            <% else %>
-              <li class="mb-1">
-                <span class="match-name">-</span>
-                <span class="match-points">-</span>
-              </li>
-            <% end %>
-          </ul>
-          <hr>
-          <p><span class="summary-label">Total Points:</span> <%= "#{data[:total_points]} points" %></p>
-          <p><span class="summary-label">AVG Points/Match:</span> <%= "#{data[:average_points].round(2)} points" %></p>
+      <div class="col-8 col-md-9">
+        <h4 class="player-name mb-0"><%= data[:player][:name] %></h4>
+        <div class="player-info mt-1 small">
+          <p class="mb-1"><span class="info-label">Owner:</span> <span class="info-value"><%= data[:owner] %></span></p>
+          <p class="mb-1"><span class="info-label">Price:</span> <span class="info-value"><%= data[:price] %></span></p>
+          <p class="mb-0"><span class="info-label">Matches:</span> <span class="info-value"><%= data[:total_matches] %></span></p>
         </div>
+      </div>
+    </div>
+    
+    <!-- Stats Summary Cards -->
+    <div class="stats-summary row g-2 mb-3">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value"><%= data[:total_points] %></div>
+          <div class="stat-label">Total Points</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value"><%= data[:average_points].round(1) %></div>
+          <div class="stat-label">AVG Points</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value"><%= data[:highest_score] %></div>
+          <div class="stat-label">Highest</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <% 
+            # Calculate performance rating based on average points
+            performance_rating = 0
+            if data[:average_points] >= 15
+              performance_rating = "Excellent"
+              rating_color = "success"
+            elsif data[:average_points] >= 10
+              performance_rating = "Good"
+              rating_color = "primary"
+            elsif data[:average_points] >= 5
+              performance_rating = "Average"
+              rating_color = "warning"
+            else
+              performance_rating = "Poor"
+              rating_color = "danger"
+            end
+          %>
+          <div class="stat-value text-<%= rating_color %>"><%= performance_rating %></div>
+          <div class="stat-label">Performance</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tabs Navigation - Horizontal Scrollable for Mobile -->
+    <div class="stats-tabs-container mb-2">
+      <ul class="nav nav-pills stats-tabs" id="playerStatsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+            Overview
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false">
+            Match Stats
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends" type="button" role="tab" aria-controls="trends" aria-selected="false">
+            Trends
+          </button>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="tab-content p-2 p-md-3 border rounded" id="playerStatsTabsContent">
+      <!-- Overview Tab -->
+      <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+        <% if data[:matches].present? %>
+          <h6 class="stats-header mb-2">Recent Matches</h6>
+          <div class="match-list">
+            <% data[:matches].sort_by { |m| m[:points] }.reverse.take(4).each do |match| %>
+              <% 
+                # Determine point class based on points value
+                point_class = if match[:points] >= 15
+                                "high"
+                              elsif match[:points] > 0
+                                "medium"
+                              else
+                                "low"
+                              end
+              %>
+              <div class="match-item">
+                <div class="match-name"><%= match[:name] %>:</div>
+                <div class="match-points <%= point_class %>"><%= "#{match[:points]} pts" %></div>
+              </div>
+            <% end %>
+            <% if data[:matches].length > 4 %>
+              <div class="text-center mt-2">
+                <button class="btn btn-sm btn-outline-primary" id="matches-tab-trigger" onclick="document.getElementById('matches-tab').click()">
+                  View All Matches
+                </button>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="alert alert-info py-2 small">
+            No match data available for this player.
+          </div>
+        <% end %>
+        
+        <hr class="my-2">
+        <div class="performance-metrics mt-3">
+          <h6 class="stats-header">Performance Summary</h6>
+          
+          <% if data[:matches].present? && data[:matches].length > 1 %>
+            <% 
+              # Calculate consistency (standard deviation)
+              points = data[:matches].map { |m| m[:points] }
+              mean = points.sum.to_f / points.length
+              variance = points.map { |p| (p - mean) ** 2 }.sum / points.length
+              std_dev = Math.sqrt(variance)
+              max_possible_std_dev = Math.sqrt(data[:highest_score] ** 2)
+              consistency_percentage = [(1 - (std_dev / [max_possible_std_dev, 1].max)) * 100, 100].min.round
+              
+              # Calculate value for money
+              price_value = data[:price].include?("CR") ? data[:price].to_f : data[:price].to_f / 100
+              point_per_cr = price_value > 0 ? (data[:total_points].to_f / price_value) : 0
+              # Scale from 0-100%
+              value_percentage = [(point_per_cr / 15) * 100, 100].min.round
+            %>
+            
+            <div class="row g-2">
+              <div class="col-12">
+                <div class="metric-item">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="summary-label">Consistency Rating:</span>
+                    <span class="summary-value"><%= consistency_percentage %>%</span>
+                  </div>
+                  <div class="progress-container">
+                    <div class="progress" style="height: 8px;">
+                      <div class="bg-primary" role="progressbar" style="width: <%= consistency_percentage %>%;" 
+                           aria-valuenow="<%= consistency_percentage %>" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-12">
+                <div class="metric-item">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="summary-label">Value for Money:</span>
+                    <span class="summary-value"><%= value_percentage %>%</span>
+                  </div>
+                  <div class="progress-container">
+                    <div class="progress" style="height: 8px;">
+                      <div class="bg-success" role="progressbar" style="width: <%= value_percentage %>%;" 
+                           aria-valuenow="<%= value_percentage %>" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <p class="small text-muted">More data needed for detailed analysis.</p>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- Matches Tab -->
+      <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
+        <% if data[:matches].present? %>
+          <div class="match-chart-container mb-3">
+            <h6 class="stats-header mb-2">Match Performance</h6>
+            <div class="match-chart">
+              <canvas id="matchPointsChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="match-stats-table">
+            <h6 class="stats-header">Match Details</h6>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Match</th>
+                    <th class="text-center">Points</th>
+                    <th class="text-center">% of Best</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% data[:matches].each do |match| %>
+                    <% 
+                      percent_of_highest = data[:highest_score] > 0 ? ((match[:points].to_f / data[:highest_score]) * 100).round : 0
+                      point_class = if match[:points] >= 15
+                                     "text-success"
+                                   elsif match[:points] > 0
+                                     "text-primary"
+                                   else
+                                     "text-danger"
+                                   end
+                    %>
+                    <tr>
+                      <td><%= match[:name] %></td>
+                      <td class="text-center <%= point_class %>"><strong><%= match[:points] %></strong></td>
+                      <td class="text-center">
+                        <div class="progress" style="height: 12px;">
+                          <div class="bg-<%= point_class.gsub('text-', '') %>" role="progressbar" 
+                               style="width: <%= percent_of_highest %>%;" 
+                               aria-valuenow="<%= percent_of_highest %>" aria-valuemin="0" aria-valuemax="100">
+                            <% if percent_of_highest > 15 %>
+                              <span class="small"><%= "#{percent_of_highest}%" %></span>
+                            <% end %>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% else %>
+          <div class="alert alert-info py-2">
+            No match data available for this player.
+          </div>
+        <% end %>
+      </div>
+      
+      <!-- Trends Tab -->
+      <div class="tab-pane fade" id="trends" role="tabpanel" aria-labelledby="trends-tab">
+        <% if data[:matches].present? && data[:matches].length > 1 %>
+          <div class="performance-trend-chart mb-3">
+            <h6 class="stats-header mb-2">Performance Trend</h6>
+            <div class="match-chart">
+              <canvas id="performanceTrendChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="trend-analysis">
+            <h6 class="stats-header">Trend Analysis</h6>
+            <% 
+              # Simple trend analysis
+              first_half = data[:matches][0...data[:matches].length/2]
+              second_half = data[:matches][data[:matches].length/2..-1]
+              
+              first_half_avg = first_half.map { |m| m[:points] }.sum.to_f / first_half.length
+              second_half_avg = second_half.map { |m| m[:points] }.sum.to_f / second_half.length
+              
+              trend_direction = if second_half_avg > first_half_avg * 1.2
+                                 "Strongly Improving"
+                               elsif second_half_avg > first_half_avg
+                                 "Improving"
+                               elsif second_half_avg < first_half_avg * 0.8
+                                 "Declining"
+                               elsif second_half_avg < first_half_avg
+                                 "Slightly Declining"
+                               else
+                                 "Stable"
+                               end
+              
+              # Form calculation based on last 2 matches
+              recent_matches = data[:matches].last(2)
+              recent_avg = recent_matches.map { |m| m[:points] }.sum.to_f / recent_matches.length
+              
+              current_form = if recent_avg >= 25
+                               ["Excellent", "success"]
+                             elsif recent_avg >= 20
+                               ["Good", "primary"]
+                             elsif recent_avg >= 15
+                               ["Average", "warning"]
+                             else
+                               ["Poor", "danger"]
+                             end
+            %>
+            
+            <div class="trend-stats">
+              <div class="row g-2">
+                <div class="col-6">
+                  <div class="trend-stat-card">
+                    <div class="d-flex justify-content-between">
+                      <h6 class="mb-1">Trend</h6>
+                      <% if second_half_avg > first_half_avg %>
+                        <i class="fas fa-arrow-up text-success"></i>
+                      <% elsif second_half_avg < first_half_avg %>
+                        <i class="fas fa-arrow-down text-danger"></i>
+                      <% else %>
+                        <i class="fas fa-arrows-alt-h text-warning"></i>
+                      <% end %>
+                    </div>
+                    <p class="trend-value mb-1">
+                      <%= trend_direction %>
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="col-6">
+                  <div class="trend-stat-card">
+                    <div class="d-flex justify-content-between">
+                      <h6 class="mb-1">Current Form</h6>
+                    </div>
+                    <p class="trend-value mb-1 text-<%= current_form[1] %>">
+                      <%= current_form[0] %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="performance-breakdown mt-3">
+                <h6 class="stats-header small">Performance Changes</h6>
+                <div class="table-responsive">
+                  <table class="table table-sm small">
+                    <thead>
+                      <tr>
+                        <th>Metric</th>
+                        <th>First Half</th>
+                        <th>Second Half</th>
+                        <th>Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Avg Points</td>
+                        <td><%= first_half_avg.round(1) %></td>
+                        <td><%= second_half_avg.round(1) %></td>
+                        <td class="<%= second_half_avg >= first_half_avg ? 'text-success' : 'text-danger' %>">
+                          <%= ((second_half_avg - first_half_avg) / [first_half_avg, 0.1].max * 100).round %>%
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>High Scores</td>
+                        <td><%= first_half.count { |m| m[:points] >= 15 } %></td>
+                        <td><%= second_half.count { |m| m[:points] >= 15 } %></td>
+                        <td>-</td>
+                      </tr>
+                      <tr>
+                        <td>Low Scores</td>
+                        <td><%= first_half.count { |m| m[:points] < 5 } %></td>
+                        <td><%= second_half.count { |m| m[:points] < 5 } %></td>
+                        <td>-</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% else %>
+          <div class="alert alert-info py-2 small">
+            Insufficient match data to analyze trends. A minimum of 2 matches is required.
+          </div>
+        <% end %>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Add the required CSS and JS -->
+<style>
+  /* Custom styles for mobile-optimized player stats dashboard */
+  .player-performance-card {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .theme-color {
+    background-color: #6C5CE7;
+  }
+  
+  .player-image-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #6C5CE7;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  @media (min-width: 768px) {
+    .player-image-container {
+      width: 110px;
+      height: 110px;
+    }
+  }
+  
+  .player-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .info-label {
+    font-weight: 600;
+    color: #666;
+  }
+  
+  .info-value {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .player-name {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .stats-summary {
+    margin-bottom: 1rem;
+  }
+  
+  .stat-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    transition: transform 0.2s;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #6C5CE7;
+    margin-bottom: 2px;
+  }
+  
+  .stat-label {
+    font-size: 0.7rem;
+    color: #666;
+  }
+  
+  .stats-header {
+    font-weight: 600;
+    color: #444;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Scrollable tabs for mobile */
+  .stats-tabs-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .stats-tabs-container::-webkit-scrollbar {
+    display: none; /* Chrome and Safari */
+  }
+  
+  .stats-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    border-bottom: 0;
+  }
+  
+  .stats-tabs .nav-item {
+    flex: 0 0 auto;
+    margin-right: 0.25rem;
+  }
+  
+  .stats-tabs .nav-link {
+    color: #555;
+    border-radius: 1rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .stats-tabs .nav-link.active {
+    background-color: #6C5CE7;
+    color: white;
+  }
+  
+  .match-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 5px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .match-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+  
+  .match-points {
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  
+  .match-points.high {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+  }
+  
+  .match-points.medium {
+    background-color: rgba(52, 152, 219, 0.15);
+    color: #2980b9;
+  }
+  
+  .match-points.low {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+  }
+  
+  .summary-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.85rem;
+  }
+  
+  .summary-value {
+    font-weight: 500;
+    font-size: 0.85rem;
+  }
+  
+  .match-chart {
+    height: 180px;
+    margin-bottom: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .match-chart {
+      height: 250px;
+    }
+  }
+  
+  .progress-container {
+    margin-bottom: 0.75rem;
+  }
+  
+  .trend-stat-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.75rem;
+    height: 100%;
+  }
+  
+  .trend-stat-card h6 {
+    color: #555;
+    font-size: 0.8rem;
+  }
+  
+  .trend-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  .metric-item {
+    margin-bottom: 0.75rem;
+  }
+  
+  /* Responsive table adjustments */
+  .table-responsive {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  
+  .table {
+    margin-bottom: 0;
+  }
+  
+  .table th {
+    font-size: 0.8rem;
+    font-weight: 600;
+    background-color: #f8f9fa;
+  }
+  
+  .table td {
+    font-size: 0.85rem;
+    vertical-align: middle;
+  }
+  
+  /* Hide scrollbar for all elements */
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Make tabs scrollable
+  const tabsContainer = document.querySelector('.stats-tabs-container');
+  if (tabsContainer) {
+    const activeTab = tabsContainer.querySelector('.nav-link.active');
+    if (activeTab) {
+      setTimeout(() => {
+        activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 100);
+    }
+  }
+  
+  // Only run if we have match data
+  if (<%= data[:matches].present? %>) {
+    // Extract match data for charts
+    const matchNames = <%= raw data[:matches].map { |m| m[:name] }.to_json %>;
+    const matchPoints = <%= raw data[:matches].map { |m| m[:points] }.to_json %>;
+    
+    // Configure charts to be responsive for mobile
+    Chart.defaults.font.size = 10;
+    Chart.defaults.plugins.legend.display = false;
+    
+    // Bar chart for match points
+    const matchCtx = document.getElementById('matchPointsChart').getContext('2d');
+    new Chart(matchCtx, {
+      type: 'bar',
+      data: {
+        labels: matchNames,
+        datasets: [{
+          label: 'Points',
+          data: matchPoints,
+          backgroundColor: matchPoints.map(point => {
+            if (point >= 15) return 'rgba(46, 204, 113, 0.7)';
+            if (point > 0) return 'rgba(52, 152, 219, 0.7)';
+            return 'rgba(231, 76, 60, 0.7)';
+          }),
+          borderColor: matchPoints.map(point => {
+            if (point >= 15) return 'rgba(46, 204, 113, 1)';
+            if (point > 0) return 'rgba(52, 152, 219, 1)';
+            return 'rgba(231, 76, 60, 1)';
+          }),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              maxTicksLimit: 5
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
+          }
+        }
+      }
+    });
+    
+    // Line chart for performance trends
+    if (<%= data[:matches].length > 1 %>) {
+      const trendCtx = document.getElementById('performanceTrendChart').getContext('2d');
+      
+      // Calculate moving average
+      const movingAvg = [];
+      const windowSize = 2;
+      
+      for (let i = 0; i < matchPoints.length; i++) {
+        if (i < windowSize - 1) {
+          // Not enough data points yet
+          movingAvg.push(null);
+        } else {
+          // Calculate average of window
+          let sum = 0;
+          for (let j = 0; j < windowSize; j++) {
+            sum += matchPoints[i - j];
+          }
+          movingAvg.push(sum / windowSize);
+        }
+      }
+      
+      new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: matchNames,
+          datasets: [
+            {
+              label: 'Points',
+              data: matchPoints,
+              borderColor: 'rgba(108, 92, 231, 1)',
+              backgroundColor: 'rgba(108, 92, 231, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 3
+            },
+            {
+              label: 'Trend',
+              data: movingAvg,
+              borderColor: 'rgba(243, 156, 18, 1)',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [3, 3],
+              fill: false,
+              tension: 0.3,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                maxTicksLimit: 5
+              }
+            },
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+});
+</script>

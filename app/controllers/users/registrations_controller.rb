@@ -6,11 +6,11 @@ module Users
     def create
       otp = rand(100_000..999_999)
       @user = User.new(email: params[:user][:email], username: params[:user][:username],
-                       password: params[:user][:password], password_confirmation: params[:user][:password_confirmation], otp:)
+                       password: params[:user][:password], password_confirmation: params[:user][:password_confirmation], otp:, profile_picture: params[:user][:profile_picture])
       WelcomeMailer.with(otp:, username: params[:user][:username],
                          email: params[:user][:email]).verify_otp.deliver_now
       if @user.save
-        @user.teams << Team.create(team_name: @user.username, user_id: @user.id)
+        @user.teams << Team.create(team_name: @user.username, user_id: @user.id, total_purse: 1000000000, remaining_purse: 1000000000)
         redirect_to verify_otp_path(@user)
         flash[:notice] = 'We have sent otp to your email please confirm it'
       else

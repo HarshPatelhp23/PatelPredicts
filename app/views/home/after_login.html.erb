@@ -1,1889 +1,1832 @@
-<!-- app/views/after_login.html.erb -->
+<!-- app/views/after_login.html.erb - Modern Redesign -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<div class="container mt-4">
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-primary text-white py-3">
-      <% if current_user.auctions.count > 1 %>
-        <div class="row align-items-center">
-          <div class="col-md-12">
-            <%= form_with url: after_login_path, method: :get, local: true, class: "d-flex flex-column flex-md-row align-items-center" do |form| %>
-              <div class="me-md-3 mb-2 mb-md-0 flex-grow-1">
-                <%= form.label :auction_id, "Select Auction", class: "text-white fw-bold mb-1" %>
-                <%= form.select :auction_id, 
-                             options_from_collection_for_select(current_user.auctions, :id, :name, params[:auction_id]), 
-                             { prompt: "Choose an auction" }, 
-                             { class: "form-select" } %>
-              </div>
-              <%= form.submit "Get Updates", class: "btn btn-light px-4" %>
+
+<div class="fantasy-cricket-app">
+  <!-- Header Section with Gradient -->
+  <div class="app-header">
+    <div class="header-content">
+      <div class="header-top">
+        <div class="user-greeting">
+          <div class="user-avatar">
+            <% if current_user.profile_picture.attached? %>
+              <%= image_tag current_user.profile_picture, class: "profile-pic", id: "profileImage" %>
+            <% else %>
+              <%= current_user.username.first.upcase %>
+              <!--   <img src="https://ui-avatars.com/api/?name=<%= current_user.username %>&background=1B5E20&color=fff&size=200&font-size=0.5" 
+                     alt="Profile Picture" class="profile-pic" id="profileImage"> -->
             <% end %>
           </div>
+          <div class="greeting-text">
+            <span class="greeting-label">Welcome back,</span>
+            <h2 class="user-name"><%= current_user.username.split.first %></h2>
+          </div>
+        </div>
+        <button class="notification-btn" id="notification-toggle">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge">3</span>
+        </button>
+      </div>
+
+      <!-- Auction Selector - Only show if multiple auctions -->
+      <% if current_user.auctions.count > 1 %>
+        <div class="auction-selector-card">
+          <%= form_with url: after_login_path, method: :get, local: true, class: "auction-form" do |form| %>
+            <div class="custom-select-wrapper">
+              <i class="fas fa-trophy select-icon"></i>
+              <%= form.select :auction_id, 
+                           options_from_collection_for_select(current_user.auctions, :id, :name, params[:auction_id]), 
+                           { prompt: "Choose Tournament" }, 
+                           { class: "custom-select", id: "auction-select" } %>
+              <i class="fas fa-chevron-down select-arrow"></i>
+            </div>
+            <%= form.submit "Switch", class: "btn-switch" %>
+          <% end %>
         </div>
       <% else %>
-        <h4 class="mb-0 text-center fw-bold"><%= "#{current_user.auctions.last.name} Updates" %></h4>
+        <div class="tournament-title">
+          <i class="fas fa-trophy"></i>
+          <h3><%= current_user.auctions.last.name %></h3>
+        </div>
       <% end %>
     </div>
-    
-    <div class="card-body">
-      <!-- Stats Summary Row - Modified to stay horizontal on mobile -->
-      <div class="row mb-4 d-flex flex-nowrap overflow-auto">
-        <div class="col-4 mb-3 px-1">
-          <div class="card h-100 border-0 bg-light">
-            <div class="card-body text-center p-2 p-md-3">
-              <div class="d-flex align-items-center justify-content-center mb-2">
-                <i class="bi bi-trophy fs-3 text-warning"></i>
-              </div>
-              <h3 class="mb-1"><%= @default_team.grand_total %></h3>
-              <p class="text-muted mb-0 small">Total Points</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-4 mb-3 px-1">
-          <div class="card h-100 border-0 bg-light">
-            <div class="card-body text-center p-2 p-md-3">
-              <div class="d-flex align-items-center justify-content-center mb-2">
-                <i class="bi bi-award fs-3 text-success"></i>
-              </div>
-              <h3 class="mb-1"><%= @current_rank %></h3>
-              <p class="text-muted mb-0 small">Overall Ranking</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-4 mb-3 px-1">
-          <div class="card h-100 border-0 bg-light">
-            <div class="card-body text-center p-2 p-md-3">
-              <div class="d-flex align-items-center justify-content-center mb-2">
-                <i class="bi bi-calendar-check fs-3 text-primary"></i>
-              </div>
-              <h3 class="mb-1"><%= @user_data&.keys&.count %></h3>
-              <p class="text-muted mb-0 small">Matches Played</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Countdown and Next Match Section -->
-      <div class="row mb-4">
-        <div class="col-md-6 mb-3">
-          <div class="card h-100 border-0 bg-gradient-primary text-white">
-            <div class="card-body p-3">
-              <div class="d-flex align-items-center">
-                <div class="flex-shrink-0 me-3">
-                  <i class="fas fa-clock fa-2x"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h5 class="card-title mb-1">Next Points Update</h5>
-                  <div id="countdown-timer" class="display-4 fw-bold"></div>
-                  <small class="opacity-75">Updates daily at 11:56 PM</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-6 mb-3">
-          <div class="card h-100 border-0 bg-gradient-info text-white">
-            <div class="card-body p-3">
-              <div class="d-flex align-items-center">
-                <div class="flex-shrink-0 me-3">
-                  <i class="fas fa-calendar-alt fa-2x"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <h5 class="card-title mb-1">Today's Match</h5>
-                  <div id="next-match" class="display-6 fw-bold">
-                    <% @today_matches.each_with_index do |match, index| %>
-                      <% t1,t2 = match.match_name.split(' vs ') %>
-                      <% u_t1 = match_country_code[t1].upcase %>
-                      <% u_t2 = match_country_code[t2].upcase %>
-                      <% if index <= 0 %>
-                        <%= u_t1 %> vs <%= u_t2 %>
-                      <% else %>
-                        <%= ", #{u_t1}" %> vs <%= u_t2 %>
-                      <% end %>
+  </div>
 
-                      <!-- <#%= display_match_name_with_flags(match.match_name) %> -->
-                    <% end %>
-                  </div>
-                  <small class="opacity-75">Points will update after match completion</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  <!-- Stats Overview Cards -->
+  <div class="stats-container" style="margin-left: 10px;">
+    <div class="stat-card stat-card-primary">
+      <div class="stat-icon-wrapper stat-icon-gold">
+        <i class="fas fa-star"></i>
       </div>
-      <!-- Match Table -->
-      <div class="table-responsive">
-        <table class="table table-hover">
-          <thead class="table-primary">
-            <tr>
-              <th class="text-center">Match</th>
-              <th class="text-center">Top Scorer</th>
-              <th class="text-center">Your Score</th>
-              <th class="text-center">Position</th>
-              <th class="text-center">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @match_points.each do |match| %>
-              <% user_data = @user_data[match.match_name][0] %>
-              <% is_top_3 = (1..4).include?(user_data) %>
-              <% is_bottom_3 = (8..10).include?(user_data) %>
-              <% top_scorer = MatchPoint.leader_of_match(match.match_name, @current_auction, current_user) %>
-              <% top_scorer_initial = top_scorer.first %>
-              <% top_scorer_points = MatchPoint.leader_points_of_match(match.match_name, @current_auction, current_user) %>
-              
-              <% if is_top_3 %>
-                <% row_class = 'table-success' %>
-                <% text_class = 'text-success' %>
-                <% display_text = 'Top-3' %>
-              <% elsif is_bottom_3 %> 
-                <% row_class = 'table-danger' %>
-                <% text_class = 'text-danger' %>
-                <% display_text = 'Bottom-3' %>
-              <% else %>
-                <% row_class = 'table-light' %>
-                <% text_class = 'text-dark' %>
-                <% display_text = '' %>
-              <% end %>
-              
-              <tr class="<%= row_class %>">
-                <td class="text-center align-middle">
-                  <span class="fw-medium"><%= display_match_name_with_flags(match.match_name) %></span>
-                </td>
-                <td class="text-center align-middle">
-                  <div class="d-flex flex-column align-items-center justify-content-center">
-                    <!-- Avatar circle with initial letter -->
-                    <div class="avatar-circle bg-primary d-flex align-items-center justify-content-center text-white mb-1">
-                      <%= top_scorer_initial %>
-                    </div>
-                    <!-- Points shown below the avatar -->
-                    <span class="fw-bold"><%= top_scorer_points %></span>
-                  </div>
-                </td>
-                <td class="text-center align-middle fw-bold"><%= @user_data[match.match_name][1] %></td>
-                <td class="text-center align-middle">
-                  <div class="d-flex flex-column align-items-center">
-                    <% if user_data <= 9 %>
-                      <h4 class="mb-0"><i class="bi bi-<%= user_data %>-circle <%= text_class %>"></i></h4>
-                    <% else %>
-                      <h4 class="mb-0">
-                        <i class="bi bi-1-circle <%= text_class %>"></i>
-                        <i class="bi bi-0-circle <%= text_class %>"></i>
-                      </h4>
-                    <% end %>
-                    <small class="<%= text_class %> fw-medium"><%= display_text %></small>
-                  </div>
-                </td>
-                <td class="text-center align-middle">
-                  <%= link_to one_match_scorecard_path(match.match_name, auction_id: @current_auction.id), 
-                          class: 'btn-team-details' do %>
-                    <!-- <div class="d-flex flex-column align-items-center"> -->
-                      <!-- <i class="fas fa-eye"></i> -->
-                      <span class="btn-text">Open</span>
-                    <!-- </div> -->
-                  <% end %>
-                </td>
-              </tr>
+      <div class="stat-content">
+        <div class="stat-value"><%= @default_team.grand_total %></div>
+        <div class="stat-label">Total Points</div>
+      </div>
+      <div class="stat-sparkle"></div>
+    </div>
+
+    <div class="stat-card stat-card-success">
+      <div class="stat-icon-wrapper stat-icon-purple">
+        <i class="fas fa-medal"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value">
+          #<%= @current_rank %>
+          <% if @current_rank && @current_rank <= 3 %>
+            <i class="fas fa-crown rank-crown"></i>
+          <% end %>
+        </div>
+        <div class="stat-label">Your Rank</div>
+      </div>
+      <% if @current_rank && @current_rank <= 3 %>
+        <div class="stat-glow"></div>
+      <% end %>
+    </div>
+
+    <div class="stat-card stat-card-info">
+      <div class="stat-icon-wrapper stat-icon-blue">
+        <i class="fas fa-gamepad"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value"><%= @user_data&.keys&.count %></div>
+        <div class="stat-label">Matches</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Updates Section -->
+  <div class="live-updates-section">
+    <!-- Countdown Timer Card -->
+    <div class="update-card countdown-card">
+      <div class="card-header-icon">
+        <div class="pulse-ring"></div>
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="update-content">
+        <h4 class="update-title">Next Update</h4>
+        <div id="countdown-timer" class="countdown-display">00:00:00</div>
+        <p class="update-subtitle">Daily updates at 11:40 PM</p>
+      </div>
+    </div>
+
+    <!-- Today's Matches Card -->
+    <div class="update-card matches-card">
+      <div class="card-header-icon">
+        <i class="fas fa-cricket-bat-ball"></i>
+      </div>
+      <div class="update-content">
+        <h4 class="update-title">Today's Matches</h4>
+        <div class="matches-list">
+          <% if @today_matches.any? %>
+            <% @today_matches.each_with_index do |match, index| %>
+              <% t1, t2 = match.match_name.split(' vs ') %>
+              <div class="match-item">
+                <span class="team-name"><%= ipl_team_logo(t1) %></span>
+                <span class="vs-text">vs</span>
+                <span class="team-name"><%= ipl_team_logo(t2) %></span>
+              </div>
             <% end %>
-          </tbody>
-        </table>
+          <% else %>
+            <div class="no-matches">
+              <i class="fas fa-calendar-times"></i>
+              <span>No matches today</span>
+            </div>
+          <% end %>
+        </div>
       </div>
-      
-      <!-- Pagination -->
-      <div class="d-flex justify-content-center mt-4">
-        <%== pagy_bootstrap_nav(@pagy) %>
+    </div>
+  </div>
+
+  <!-- Match Performance Section -->
+  <div class="section-header">
+    <h3 class="section-title">
+      <i class="fas fa-chart-line"></i>
+      Match Performance
+    </h3>
+    <div class="section-subtitle">Track your journey to the top</div>
+  </div>
+
+  <!-- Compact Match List/Table -->
+  <div class="matches-table-container">
+    <div class="matches-table-wrapper">
+      <table class="matches-table">
+        <thead class="matches-table-header">
+          <tr>
+            <th class="col-match">Match</th>
+            <th class="col-leader">Leader</th>
+            <th class="col-score">Score</th>
+            <th class="col-rank">Rank</th>
+            <th class="col-action"></th>
+          </tr>
+        </thead>
+        <tbody class="matches-table-body">
+          <% @match_points.each do |match| %>
+            <% user_data = @user_data[match.match_name][0] %>
+            <% user_points = @user_data[match.match_name][1] %>
+            <% is_top_3 = (1..3).include?(user_data) %>
+            <% is_bottom_3 = (8..10).include?(user_data) %>
+            <% top_scorer = MatchPoint.leader_of_match(match.match_name, @current_auction, match.match_date) %>
+            <% top_scorer_initial = top_scorer.first %>
+            <% top_scorer_points = MatchPoint.leader_points_of_match(match.match_name, @current_auction, match.match_date) %>
+            
+            <tr class="match-row <%= 'row-winner' if is_top_3 %> <%= 'row-loser' if is_bottom_3 %>">
+              <!-- Match Name -->
+              <td class="match-name-cell">
+                <div class="match-info">
+                  <span class="match-teams"><%= display_match_name_with_flags(match.match_name) %></span>
+                  <% if is_top_3 %>
+                    <span class="performance-tag tag-success">
+                      <i class="fas fa-trophy"></i> Top 3
+                    </span>
+                  <% elsif is_bottom_3 %>
+                    <span class="performance-tag tag-danger">
+                      <i class="fas fa-arrow-down"></i> Bottom
+                    </span>
+                  <% end %>
+                </div>
+              </td>
+
+              <!-- Leader -->
+              <td class="leader-cell">
+                <div class="leader-info">
+                  <div class="leader-avatar">
+                    <%= top_scorer_initial %>
+                  </div>
+                  <span class="leader-points"><%= top_scorer_points %></span>
+                </div>
+              </td>
+
+              <!-- Your Score -->
+              <td class="score-cell">
+                <div class="score-display">
+                  <span class="score-value"><%= user_points %></span>
+                </div>
+              </td>
+
+              <!-- Rank -->
+              <td class="rank-cell">
+                <div class="rank-badge rank-<%= user_data %>">
+                  <% if user_data <= 3 %>
+                    <i class="fas fa-medal medal-<%= user_data %>"></i>
+                  <% else %>
+                    <span class="rank-number">#<%= user_data %></span>
+                  <% end %>
+                </div>
+              </td>
+
+              <!-- Action -->
+              <td class="action-cell">
+                <%= link_to one_match_scorecard_path(match.match_name, auction_id: @current_auction.id), 
+                        class: 'btn-view-compact', data: { turbo: false } do %>
+                  <i class="fas fa-chevron-right"></i>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-wrapper">
+    <%== pagy_bootstrap_nav(@pagy) %>
+  </div>
+</div>
+
+<!-- Victory Modal -->
+<!-- Victory Modal -->
+<!-- Victory Modal -->
+<div id="victory-modal" class="victory-modal">
+  <div class="victory-modal-overlay" id="victory-overlay"></div>
+  <div class="victory-modal-content" id="victory-modal-content">
+    <button class="victory-close" id="close-victory">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <!-- Step 1: Tap prompt (shown first, full modal) -->
+    <div id="victory-tap-screen" class="tap-screen tap-screen-win">
+      <div class="tap-screen-inner">
+        <div class="tap-icon-ring">
+          <i class="fas fa-hand-pointer"></i>
+        </div>
+        <p class="tap-screen-title">Tap Here</p>
+        <p class="tap-screen-sub">to reveal your result 🎉</p>
+      </div>
+    </div>
+
+    <!-- Step 2: Video -->
+    <div id="meme-video-container" class="meme-video-container" style="display:none;">
+      <video id="meme-video" class="meme-video" playsinline>
+        <source src="/videos/7cr.mp4" type="video/mp4">
+      </video>
+      <button class="skip-btn" id="skip-victory-video">Skip <i class="fas fa-forward"></i></button>
+    </div>
+
+    <!-- Step 3: Victory content -->
+    <div id="victory-content" class="victory-content" style="display:none;">
+      <div class="victory-animation">
+        <div class="trophy-3d">🏆</div>
+      </div>
+      <div class="victory-text">
+        <h2 class="victory-title">🎉 Congratulations! 🎉</h2>
+        <p class="victory-message">You're in the <span class="winning-zone">Winning Zone</span></p>
+        <div class="rank-display-large">
+          <span class="rank-number-large"><%= @current_rank %></span>
+          <span class="rank-suffix-large">
+            <%= @current_rank == 1 ? 'st' : @current_rank == 2 ? 'nd' : @current_rank == 3 ? 'rd' : 'th' %>
+          </span>
+          <span class="rank-label-large">Place</span>
+        </div>
+        <p class="victory-subtitle">Keep it up to claim exclusive rewards!</p>
+      </div>
+      <div class="victory-actions">
+        <button class="btn-share-victory">
+          <i class="fab fa-whatsapp"></i>
+          Share Achievement
+        </button>
+        <button class="btn-continue" id="continue-victory">Continue</button>
       </div>
     </div>
   </div>
 </div>
 
-<div id="celebration-modal" class="celebration-modal">
-  <div class="modal-content">
-    <div class="modal-inner">
-      <div class="confetti-container"></div>
-      
-      <div class="trophy-container">
-        <div class="trophy">
-          <div class="trophy-cup">
-            <div class="cup-top"></div>
-            <div class="cup-middle"></div>
-            <div class="cup-bottom"></div>
-            <div class="cup-handle left"></div>
-            <div class="cup-handle right"></div>
-          </div>
-          <div class="trophy-base"></div>
-          <div class="trophy-plaque">
-            <span id="user-rank-display">1</span>
-          </div>
+<!-- Loser Modal -->
+<div id="loser-modal" class="victory-modal">
+  <div class="victory-modal-overlay" id="loser-overlay"></div>
+  <div class="victory-modal-content loser-modal-content" id="loser-modal-content">
+    <button class="victory-close" id="close-loser">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <!-- Step 1: Tap prompt -->
+    <div id="loser-tap-screen" class="tap-screen tap-screen-lose">
+      <div class="tap-screen-inner">
+        <div class="tap-icon-ring tap-icon-red">
+          <i class="fas fa-hand-pointer"></i>
         </div>
-        
-        <div class="trophy-shine"></div>
-        <div class="trophy-particles"></div>
+        <p class="tap-screen-title">Tap Here</p>
+        <p class="tap-screen-sub">to see your result 👀</p>
       </div>
-      
-      <div class="celebration-text">
-        <h2 class="main-title">Congratulations!</h2>
-        <p class="rank-message">You're in the <span class="highlight">Winning Zone</span></p>
-        <div class="rank-details">
-          <span class="rank-label">Current Position:</span>
-          <span class="rank-value" id="modal-rank-value">1</span>
-          <span class="rank-suffix" id="rank-suffix">st</span>
+    </div>
+
+    <!-- Step 2: Video -->
+    <div id="loser-video-container" class="meme-video-container" style="display:none;">
+      <video id="loser-video" class="meme-video" playsinline>
+        <source src="/videos/b3.mp4" type="video/mp4">
+      </video>
+      <button class="skip-btn skip-btn-red" id="skip-loser-video">Skip <i class="fas fa-forward"></i></button>
+    </div>
+
+    <!-- Step 3: Loser content (stays open after video) -->
+    <div id="loser-content" class="victory-content" style="display:none;">
+      <div class="loser-animation">
+        <div class="loser-emoji">😬</div>
+      </div>
+      <div class="victory-text">
+        <h2 class="loser-title">Tough Luck!</h2>
+        <p class="victory-message">You finished in the <span style="color:#f5576c; font-weight:700;">Bottom Zone</span></p>
+        <div class="rank-display-large">
+          <span class="rank-number-large" style="background: linear-gradient(135deg,#f5576c,#f093fb); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">
+            <%= @current_rank %>
+          </span>
+          <span class="rank-suffix-large">
+            <%= @current_rank == 1 ? 'st' : @current_rank == 2 ? 'nd' : @current_rank == 3 ? 'rd' : 'th' %>
+          </span>
+          <span class="rank-label-large">Place</span>
         </div>
-        <p class="bonus-message">Stay in the top ranks to win exclusive rewards!</p>
+        <p class="victory-subtitle">Better luck next match! 💪</p>
       </div>
-      
-      <div class="action-buttons">
-        <button class="share-button">
-          <i class="fas fa-share-alt"></i> Share
-        </button>
-        <button class="close-button" id="close-celebration">
-          Continue
-        </button>
-      </div>
-      
-      <div class="fireworks-container">
-        <div class="firework-base left"></div>
-        <div class="firework-base right"></div>
+      <div class="victory-actions">
+        <button class="btn-continue loser-continue-btn" id="continue-loser">Close</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Add this to your application.html.erb head section if not already present -->
-<!-- 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
--->
-
-<!-- Add these custom styles to your application.css or create a new stylesheet -->
+<!-- Styles -->
 <style>
-
+  /* CSS Variables for Easy Theming */
   :root {
-      --primary: #4834d4;
-      --primary-dark: #3525b0;
-      --secondary: #ff7b25;
-      --secondary-dark: #e66b1c;
-      --white: #ffffff;
-      --light-gray: #f5f6fa;
-      --mid-gray: #dcdde1;
-      --dark-gray: #718093;
-      --text-dark: #2f3640;
-      --success: #4cd137;
-      --danger: #eb4d4b;
-    }
-  .table th, .table td {
-    vertical-align: middle;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gold-gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+    --dark-bg: #0f0f23;
+    --card-bg: #1a1a2e;
+    --card-bg-light: #242438;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3cc;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .table-primary {
-    --bs-table-bg: rgba(13, 110, 253, 0.1);
-    --bs-table-color: #0d6efd;
+
+  /* Reset and Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-  
-  .card {
-    border-radius: 0.5rem;
-    transition: transform 0.2s;
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--dark-bg);
+    color: var(--text-primary);
+    line-height: 1.6;
   }
-  
-  .card:hover {
-    transform: translateY(-3px);
+
+  .fantasy-cricket-app {
+    min-height: 100vh;
+    padding-bottom: 40px;
+    background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
   }
-  
-  .card-header {
-    border-top-left-radius: 0.5rem !important;
-    border-top-right-radius: 0.5rem !important;
+
+  /* Header Section */
+  .app-header {
+    background: var(--primary-gradient);
+    padding: 20px 16px 32px;
+    position: relative;
+    overflow: hidden;
   }
-  
-  /* Avatar circle for top scorer */
-  .avatar-circle {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-weight: bold;
-    font-size: 16px;
+
+  .app-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.1;
   }
-  
-  /* Redesigned team details button */
-  .btn-team-details {
-    background-color: #0D6EFD;
-    color: var(--white);
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    /*display: flex;*/
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    transition: background-color 0.2s;
-    text-decoration: none;
-    margin-left: 5px;
-  }
-  
-  .btn-team-details:hover {
-    background-color: #0d6efd;
-    color: white;
-    transform: scale(1.05);
-  }
-  
-  .btn-team-details i {
-    font-size: 1.1rem;
-  }
-  
-  .btn-team-details .btn-text {
-    font-size: 0.6rem;
-    font-weight: 600;
-  }
-  /* Countdown Timer Styles */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-}
-
-.bg-gradient-info {
-  background: linear-gradient(135deg, #17a2b8, #138496);
-}
-
-#countdown-timer {
-  font-family: 'Courier New', monospace;
-  letter-spacing: 2px;
-  transition: all 0.3s ease;
-}
-
-.text-warning {
-  color: #ffc107 !important;
-}
-
-.text-danger {
-  color: var(--danger) !important;
-}
-
-.text-success {
-  color: var(--success) !important;
-}
-
-.pulse {
-  animation: pulse 1s infinite;
-}
-
-.pulse-fast {
-  animation: pulse 0.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
-}
-
-/* Next Match Styles */
-#next-match {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .display-4 {
-    font-size: 2rem;
-  }
-  
-  .display-6 {
-    font-size: 1.1rem;
-  }
-}
-  
-  @media (max-width: 768px) {
-    .table {
-      font-size: 0.85rem;
-    }
-    
-    /* Keep the stats cards in a horizontal row with reduced padding */
-    .card-body {
-      padding: 0.75rem;
-    }
-    
-    /* Make sure the cards don't shrink too much on very small screens */
-    .row.d-flex.flex-nowrap {
-      min-width: 300px;
-    }
-  }
-  
-  /* For very small screens */
-  @media (max-width: 380px) {
-    .table {
-      font-size: 0.75rem;
-    }
-    
-    .avatar-circle {
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
-    }
-    
+    margin-bottom: 24px;
   }
 
-  /* Fireworks Animation for Top Rankings */
-  .ranking-container {
-    position: relative;
+  .user-greeting {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
-  
-  .firework {
-    position: absolute;
-    width: 5px;
-    height: 5px;
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8);
-    animation: explode 1s ease-out forwards;
-    opacity: 0;
-    z-index: 2;
-    pointer-events: none;
-  }
-  
-  @keyframes explode {
-    0% {
-      transform: translateY(0) scale(0.1);
-      opacity: 0;
-    }
-    25% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.8;
-    }
-    100% {
-      transform: translateY(-50px) scale(1);
-      opacity: 0;
-    }
-  }
-  
-  .top-rank-glow {
-    position: relative;
-    animation: pulse-glow 2s infinite;
-  }
-  
-  .trophy-badge {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background: linear-gradient(135deg, #ffd700, #ffaa00);
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px 2px rgba(255, 215, 0, 0.6);
+    font-size: 20px;
+    font-weight: bold;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .greeting-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .greeting-label {
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+
+  .user-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .notification-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .notification-btn:active {
+    transform: scale(0.95);
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #ff4757;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--dark-bg);
+  }
+
+  /* Auction Selector */
+  .auction-selector-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .auction-form {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .custom-select-wrapper {
+    position: relative;
+    flex: 1;
+  }
+
+  .select-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-primary);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .custom-select {
+    width: 100%;
+    padding: 12px 36px 12px 40px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-primary);
+    pointer-events: none;
+    font-size: 12px;
+  }
+
+  .btn-switch {
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: #667eea;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+  }
+
+  .btn-switch:active {
+    transform: scale(0.98);
+  }
+
+  .tournament-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .tournament-title i {
+    font-size: 20px;
+  }
+
+  .tournament-title h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  /* Stats Container */
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 0 16px;
+    margin-top: -20px;
+    position: relative;
     z-index: 2;
   }
-  
-  .trophy-badge i {
-    font-size: 14px;
-    color: white;
+
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
   }
-  
-  .confetti-container {
+
+  .stat-card:active {
+    transform: translateY(-2px);
+  }
+
+  .stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  .stat-icon-gold {
+    background: var(--gold-gradient);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  }
+
+  .stat-icon-purple {
+    background: var(--primary-gradient);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .stat-icon-blue {
+    background: var(--success-gradient);
+    box-shadow: 0 4px 12px rgba(72, 198, 239, 0.3);
+  }
+
+  .stat-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, #ffffff 0%, #b3b3cc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .rank-crown {
+    font-size: 16px;
+    color: #ffd700;
+    margin-left: 4px;
+    animation: crown-bounce 2s infinite;
+  }
+
+  @keyframes crown-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  .stat-sparkle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: sparkle-pulse 2s infinite;
+  }
+
+  @keyframes sparkle-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 0.8; transform: scale(1.2); }
+  }
+
+  .stat-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
     pointer-events: none;
+  }
+
+  /* Live Updates Section */
+  .live-updates-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 16px;
+  }
+
+  .update-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    transition: var(--transition);
+  }
+
+  .update-card:active {
+    transform: translateY(-2px);
+  }
+
+  .card-header-icon {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .pulse-ring {
     position: absolute;
     width: 100%;
     height: 100%;
-    top: 0;
-    left: 0;
+    border-radius: 50%;
+    border: 2px solid #667eea;
+    animation: pulse-ring 2s infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  .update-content {
+    flex: 1;
+  }
+
+  .update-title {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 8px 0;
+    font-weight: 500;
+  }
+
+  .countdown-display {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .update-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 4px 0 0 0;
+  }
+
+  .matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .match-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .team-name {
+    color: var(--text-primary);
+  }
+
+  .vs-text {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .no-matches {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  /* Section Header */
+  .section-header {
+    padding: 24px 16px 16px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* Compact Matches Table */
+  .matches-table-container {
+    padding: 0 16px;
+    margin-bottom: 20px;
+  }
+
+  .matches-table-wrapper {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
     overflow: hidden;
-    z-index: 1;
   }
-  
-  .confetti {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    opacity: 0;
-    animation: fall 3s linear infinite;
+
+  .matches-table {
+    width: 100%;
+    border-collapse: collapse;
   }
-  
-  @keyframes fall {
-    0% {
-      top: -10%;
-      transform: translateX(0) rotate(0deg);
-      opacity: 1;
-    }
-    100% {
-      top: 100%;
-      transform: translateX(100px) rotate(360deg);
-      opacity: 0;
-    }
+
+  .matches-table-header {
+    background: var(--card-bg-light);
+    border-bottom: 1px solid var(--border-color);
   }
-  
-  @keyframes pulse-glow {
-    0% {
-      box-shadow: 0 0 5px 0 rgba(255, 215, 0, 0.5);
-    }
-    50% {
-      box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.7);
-    }
-    100% {
-      box-shadow: 0 0 5px 0 rgba(255, 215, 0, 0.5);
-    }
+
+  .matches-table-header th {
+    padding: 12px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
   }
-  
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    .trophy-badge {
-      width: 20px;
-      height: 20px;
+
+  .col-match {
+    padding-left: 16px !important;
+  }
+
+  .col-leader {
+    text-align: center !important;
+  }
+
+  .col-score {
+    text-align: center !important;
+  }
+
+  .col-rank {
+    text-align: center !important;
+  }
+
+  .col-action {
+    width: 40px;
+    padding-right: 16px !important;
+  }
+
+  /* Match Row */
+  .match-row {
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+    position: relative;
+  }
+
+  .match-row:last-child {
+    border-bottom: none;
+  }
+
+  .match-row:active {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .row-winner {
+    background: linear-gradient(90deg, rgba(72, 198, 239, 0.05) 0%, transparent 100%);
+    border-left: 3px solid #48c6ef;
+  }
+
+  .row-loser {
+    background: linear-gradient(90deg, rgba(245, 87, 108, 0.05) 0%, transparent 100%);
+    border-left: 3px solid #f5576c;
+  }
+
+  .match-row td {
+    padding: 12px 8px;
+    vertical-align: middle;
+  }
+
+  /* Match Name Cell */
+  .match-name-cell {
+    padding-left: 16px !important;
+    max-width: 180px;
+  }
+
+  .match-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .match-teams {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .performance-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    width: fit-content;
+  }
+
+  .tag-success {
+    background: rgba(72, 198, 239, 0.15);
+    color: #48c6ef;
+  }
+
+  .tag-danger {
+    background: rgba(245, 87, 108, 0.15);
+    color: #f5576c;
+  }
+
+  /* Leader Cell */
+  .leader-cell {
+    text-align: center;
+  }
+
+  .leader-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .leader-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .leader-points {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  /* Score Cell */
+  .score-cell {
+    text-align: center;
+  }
+
+  .score-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .score-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  /* Rank Cell */
+  .rank-cell {
+    text-align: center;
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+  }
+
+  .rank-badge.rank-1,
+  .rank-badge.rank-2,
+  .rank-badge.rank-3 {
+    background: transparent;
+  }
+
+  .medal-1 {
+    color: #ffd700;
+    filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
+  }
+
+  .medal-2 {
+    color: #c0c0c0;
+    filter: drop-shadow(0 2px 4px rgba(192, 192, 192, 0.4));
+  }
+
+  .medal-3 {
+    color: #cd7f32;
+    filter: drop-shadow(0 2px 4px rgba(205, 127, 50, 0.4));
+  }
+
+  .rank-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  /* Action Cell */
+  .action-cell {
+    padding-right: 16px !important;
+    text-align: right;
+  }
+
+  .btn-view-compact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    text-decoration: none;
+    transition: var(--transition);
+    font-size: 12px;
+  }
+
+  .btn-view-compact:active {
+    background: rgba(102, 126, 234, 0.2);
+    transform: scale(0.95);
+  }
+
+  .btn-view-compact:hover {
+    color: #667eea;
+  }
+
+  /* Mobile Specific Optimizations */
+  @media (max-width: 640px) {
+    .matches-table-header th {
+      padding: 10px 6px;
+      font-size: 10px;
     }
-    
-    .trophy-badge i {
+
+    .col-match {
+      padding-left: 12px !important;
+    }
+
+    .match-row td {
+      padding: 10px 6px;
+    }
+
+    .match-name-cell {
+      padding-left: 12px !important;
+      max-width: 140px;
+    }
+
+    .match-teams {
       font-size: 12px;
     }
-    
-    .firework {
-      width: 4px;
-      height: 4px;
+
+    .leader-avatar {
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+    }
+
+    .leader-points {
+      font-size: 10px;
+    }
+
+    .score-value {
+      font-size: 14px;
+    }
+
+    .rank-badge {
+      width: 28px;
+      height: 28px;
+      font-size: 18px;
+    }
+
+    .rank-number {
+      font-size: 12px;
+    }
+
+    .btn-view-compact {
+      width: 28px;
+      height: 28px;
+      font-size: 11px;
+    }
+
+    .performance-tag {
+      font-size: 9px;
+      padding: 2px 6px;
+    }
+
+    .action-cell {
+      padding-right: 12px !important;
     }
   }
 
-  /*OVERALL RANKINGS CSS*/
+  /* Pagination */
+  .pagination-wrapper {
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+  }
 
-  @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@700&display=swap');
+  .pagination {
+    display: flex;
+    gap: 8px;
+  }
 
-  .celebration-active {
+  .page-item .page-link {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+  }
+
+  .page-item.active .page-link {
+    background: var(--primary-gradient);
+    border-color: transparent;
+  }
+
+  /* Victory Modal */
+  .victory-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .victory-modal.show {
+    display: flex;
+    opacity: 1;
+  }
+
+  .victory-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+  }
+
+  .victory-modal-content {
     position: relative;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 32px 24px;
+    max-width: 400px;
+    width: 90%;
+    margin: 0 16px;
+    border: 1px solid var(--border-color);
+    animation: modal-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  @keyframes modal-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .victory-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .victory-close:active {
+    transform: scale(0.9);
+  }
+
+  .victory-animation {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    height: 120px;
+  }
+
+  .trophy-3d {
+    display: inline-block;
+    font-size: 80px;
+    animation: trophy-spin 3s infinite linear;
+  }
+
+  @keyframes trophy-spin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+  }
+
+  .victory-text {
+    text-align: center;
+  }
+
+  .victory-title {
+    font-size: 28px;
+    margin: 0 0 12px 0;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .victory-message {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+
+  .winning-zone {
+    color: #48c6ef;
+    font-weight: 700;
+  }
+
+  .rank-display-large {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 16px;
+  }
+
+  .rank-number-large {
+    font-size: 56px;
+    font-weight: 700;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .rank-suffix-large {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .rank-label-large {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-left: 4px;
+  }
+
+  .victory-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+
+  .victory-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-share-victory,
+  .btn-continue {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-share-victory {
+    background: #25D366;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-continue {
+    background: var(--primary-gradient);
+    color: white;
+  }
+
+  .btn-share-victory:active,
+  .btn-continue:active {
+    transform: scale(0.98);
+  }
+
+  /* Responsive Design */
+  @media (min-width: 768px) {
+    .fantasy-cricket-app {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .app-header {
+      padding: 32px 24px 48px;
+      border-radius: 0 0 24px 24px;
+    }
+
+    .stats-container {
+      padding: 0 24px;
+      gap: 16px;
+    }
+
+    .stat-card {
+      padding: 24px;
+    }
+
+    .stat-icon-wrapper {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+    }
+
+    .live-updates-section {
+      grid-template-columns: 1fr 1fr;
+      padding: 32px 24px;
+      gap: 16px;
+    }
+
+    .section-header {
+      padding: 32px 24px 20px;
+    }
+
+    .matches-table-container {
+      padding: 0 24px;
+    }
+
+    .matches-table-header th {
+      padding: 14px 12px;
+      font-size: 12px;
+    }
+
+    .match-row td {
+      padding: 14px 12px;
+    }
+
+    .match-name-cell {
+      max-width: 300px;
+    }
+
+    .match-teams {
+      font-size: 14px;
+    }
+
+    .leader-avatar {
+      width: 32px;
+      height: 32px;
+      font-size: 13px;
+    }
+
+    .leader-points {
+      font-size: 12px;
+    }
+
+    .score-value {
+      font-size: 18px;
+    }
+
+    .rank-badge {
+      width: 36px;
+      height: 36px;
+      font-size: 22px;
+    }
+
+    .rank-number {
+      font-size: 14px;
+    }
+
+    .btn-view-compact {
+      width: 36px;
+      height: 36px;
+      font-size: 13px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .match-name-cell {
+      max-width: 400px;
+    }
+  }
+
+  /* Loading States */
+  @keyframes skeleton-loading {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--card-bg-light) 0px, rgba(255,255,255,0.05) 40px, var(--card-bg-light) 80px);
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.2s ease-in-out infinite;
+  }
+
+  /* Meme Video Styles */
+  .meme-video-container {
+    position: relative;
+    width: 100%;
+    border-radius: var(--radius-md);
     overflow: hidden;
-    transition: all 0.3s ease;
+    background: #000;
+    cursor: pointer;
+  }
+
+  .meme-video {
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .video-skip-hint {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .victory-content {
+    margin-top: 8px;
+  }
+
+  .loser-modal-content {
+    background: #1a0a0a;
+    border-color: rgba(245, 87, 108, 0.3);
+  }
+
+  /* Tap to Play Overlay */
+  .tap-to-play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
     z-index: 10;
   }
 
-  .celebration-active h3 {
-    font-family: 'Exo 2', sans-serif;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    animation: number-pop 1.5s ease-in-out infinite;
-    transition: all 0.3s ease;
-  }
-
-  /* Golden particle effect container */
-  .particles-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* Individual golden particles */
-  .particle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, rgba(255,215,0,1) 0%, rgba(255,215,0,0) 70%);
+  .tap-play-btn {
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
-    pointer-events: none;
-    z-index: 9;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: white;
+    box-shadow: 0 0 0 12px rgba(102, 126, 234, 0.2), 0 0 0 24px rgba(102, 126, 234, 0.1);
+    animation: tap-pulse 1.8s infinite;
   }
 
-  /* Spotlight effect behind number */
-  .spotlight {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0) 70%);
-    opacity: 0;
-    animation: spotlight-pulse 2s ease-in-out infinite;
-    z-index: -1;
-    pointer-events: none;
+  .tap-play-btn-red {
+    background: var(--warning-gradient);
+    box-shadow: 0 0 0 12px rgba(245, 87, 108, 0.2), 0 0 0 24px rgba(245, 87, 108, 0.1);
   }
 
-  /* 3D rotating crown for top rank */
-  .crown-3d {
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%) rotate(0deg);
-    width: 60px;
-    height: 40px;
-    z-index: 20;
-    animation: crown-rotate 6s infinite linear;
-    transform-style: preserve-3d;
-    pointer-events: none;
+  @keyframes tap-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
   }
 
-  .crown-front, .crown-left, .crown-right, .crown-back, .crown-top {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
+  .tap-play-text {
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
   }
 
-  .crown-front {
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
-    clip-path: polygon(50% 0%, 75% 50%, 100% 25%, 100% 100%, 0% 100%, 0% 25%, 25% 50%);
-    transform: translateZ(10px);
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  .tap-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
   }
 
-  .crown-back {
-    background: linear-gradient(135deg, #ffaa00, #ff6f00);
-    clip-path: polygon(50% 0%, 75% 50%, 100% 25%, 100% 100%, 0% 100%, 0% 25%, 25% 50%);
-    transform: translateZ(-10px) rotateY(180deg);
+  .tap-screen-win {
+    background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+    border: 1px dashed rgba(102,126,234,0.4);
   }
 
-  .crown-left {
-    background: linear-gradient(90deg, #ffc700, #ff8800);
-    width: 20px;
-    transform: rotateY(-90deg) translateZ(30px);
+  .tap-screen-lose {
+    background: linear-gradient(135deg, rgba(245,87,108,0.15) 0%, rgba(240,147,251,0.15) 100%);
+    border: 1px dashed rgba(245,87,108,0.4);
   }
 
-  .crown-right {
-    background: linear-gradient(90deg, #ff8800, #ffc700);
-    width: 20px;
-    transform: rotateY(90deg) translateZ(30px);
+  .tap-screen-inner {
+    text-align: center;
+    padding: 24px;
   }
 
-  .crown-top {
-    height: 20px;
-    background: radial-gradient(circle, #ffe100, #ffaa00);
-    transform: rotateX(90deg) translateZ(10px);
-    box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.6);
-  }
-
-  /* Rank ribbon */
-  .rank-ribbon {
-    position: absolute;
-    top: -15px;
-    right: -15px;
+  .tap-icon-ring {
     width: 80px;
     height: 80px;
-    overflow: hidden;
-    z-index: 15;
-    pointer-events: none;
-  }
-
-  .rank-ribbon-content {
-    position: absolute;
-    display: block;
-    width: 120px;
-    background: linear-gradient(135deg, #ff0000, #ffcc00);
-    padding: 10px 0;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-    color: white;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-    transform: rotate(45deg);
-    top: 15px;
-    right: -30px;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-    animation: ribbon-shine 3s infinite linear;
-  }
-
-  /* Lightning effect */
-  .lightning {
-    position: absolute;
-    background: white;
-    opacity: 0;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-  }
-
-  /* Sparkle stars around the number */
-  .sparkle {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    z-index: 20;
-    pointer-events: none;
-  }
-
-  .sparkle:before, .sparkle:after {
-    content: "";
-    position: absolute;
-    background-color: gold;
-    height: 100%;
-    width: 2px;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .sparkle:after {
-    transform: translateX(-50%) rotate(90deg);
-  }
-
-  .sparkle .diagonal {
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background-color: gold;
-    transform-origin: center;
-  }
-
-  .sparkle .diagonal:nth-child(1) {
-    transform: rotate(45deg);
-  }
-
-  .sparkle .diagonal:nth-child(2) {
-    transform: rotate(-45deg);
-  }
-
-  /* Wave effect for card */
-  .wave {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 40%;
-    background: linear-gradient(to top, rgba(255,215,0,0.2), rgba(255,215,0,0));
     border-radius: 50%;
-    transform: scale(1.5, 0.3) translateY(70%);
-    animation: wave 2s infinite ease-in-out;
-    pointer-events: none;
-    z-index: -1;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: white;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 0 16px rgba(102,126,234,0.12), 0 0 0 32px rgba(102,126,234,0.06);
+    animation: tap-pulse 1.6s ease-in-out infinite;
   }
 
-  /* Animation keyframes */
-  @keyframes number-pop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+  .tap-icon-red {
+    background: var(--warning-gradient);
+    box-shadow: 0 0 0 16px rgba(245,87,108,0.12), 0 0 0 32px rgba(245,87,108,0.06);
   }
 
-  @keyframes float-up {
-    0% { transform: translateY(100px); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateY(-100px); opacity: 0; }
+  @keyframes tap-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
   }
 
-  @keyframes spotlight-pulse {
-    0% { opacity: 0.2; transform: scale(0.8); }
-    50% { opacity: 0.6; transform: scale(1.2); }
-    100% { opacity: 0.2; transform: scale(0.8); }
+  .tap-screen-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
   }
 
-  @keyframes crown-rotate {
-    0% { transform: translateX(-50%) rotateY(0deg); }
-    100% { transform: translateX(-50%) rotateY(360deg); }
-  }
-
-  @keyframes ribbon-shine {
-    0% { background-position: -120px; }
-    100% { background-position: 120px; }
-  }
-
-  @keyframes lightning-flash {
-    0% { opacity: 0; }
-    5% { opacity: 0.8; }
-    10% { opacity: 0; }
-    15% { opacity: 0.4; }
-    20% { opacity: 0; }
-    100% { opacity: 0; }
-  }
-
-  @keyframes wave {
-    0% { transform: scale(1.5, 0.3) translateY(70%) translateX(0); }
-    50% { transform: scale(1.5, 0.3) translateY(70%) translateX(5%); }
-    100% { transform: scale(1.5, 0.3) translateY(70%) translateX(0); }
-  }
-
-  @keyframes sparkle-rotate {
-    0% { transform: translate(-50%, -50%) rotate(0deg) scale(0.8); opacity: 0.7; }
-    50% { transform: translate(-50%, -50%) rotate(45deg) scale(1.2); opacity: 1; }
-    100% { transform: translate(-50%, -50%) rotate(90deg) scale(0.8); opacity: 0.7; }
-  }
-
-  /* Media queries for responsive design */
-  @media (max-width: 768px) {
-    .crown-3d {
-      top: -20px;
-      width: 40px;
-      height: 30px;
-    }
-    
-    .rank-ribbon {
-      top: -10px;
-      right: -10px;
-      width: 60px;
-      height: 60px;
-    }
-    
-    .rank-ribbon-content {
-      width: 90px;
-      padding: 5px 0;
-      font-size: 12px;
-      top: 12px;
-      right: -25px;
-    }
-    
-    .sparkle {
-      width: 8px;
-      height: 8px;
-    }
-  }
-  /* Base Modal Styles */
-.celebration-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
-  overflow: hidden;
-}
-
-.celebration-modal.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-content {
-  position: relative;
-  width: 90%;
-  max-width: 550px;
-  background: linear-gradient(135deg, #131862, #2e1f66);
-  border-radius: 16px;
-  padding: 4px;
-  transform: translateY(50px);
-  opacity: 0;
-  transition: transform 0.7s cubic-bezier(0.17, 0.67, 0.83, 0.67), opacity 0.7s ease;
-  box-shadow: 0 0 40px rgba(76, 0, 255, 0.5);
-}
-
-.modal-inner {
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
-  border-radius: 14px;
-  padding: 30px;
-  position: relative;
-  overflow: hidden;
-}
-
-.celebration-modal.show .modal-content {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* Trophy Styles */
-.trophy-container {
-  position: relative;
-  width: 180px;
-  height: 180px;
-  margin: 0 auto 20px;
-  perspective: 1000px;
-}
-
-.trophy {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  animation: trophy-rotate 12s infinite linear;
-}
-
-.trophy-cup {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 120px;
-  z-index: 2;
-}
-
-.cup-top {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 20px;
-  background: linear-gradient(to bottom, #ffde59, #ffd700);
-  border-radius: 40px 40px 0 0;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-}
-
-.cup-middle {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 70px;
-  background: linear-gradient(to right, #ffde59, #ffd700, #ffde59);
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-}
-
-.cup-bottom {
-  position: absolute;
-  top: 90px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 10px;
-  background: linear-gradient(to bottom, #ffde59, #ffd700);
-  border-radius: 0 0 40px 40px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-}
-
-.cup-handle {
-  position: absolute;
-  top: 30px;
-  width: 15px;
-  height: 40px;
-  border: 6px solid #ffde59;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.cup-handle.left {
-  left: -5px;
-  border-right: none;
-  border-radius: 10px 0 0 10px;
-}
-
-.cup-handle.right {
-  right: -5px;
-  border-left: none;
-  border-radius: 0 10px 10px 0;
-}
-
-.trophy-base {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 20px;
-  background: linear-gradient(to bottom, #ffde59, #ffd700);
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-}
-
-.trophy-plaque {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 30px;
-  background: linear-gradient(135deg, #e6c200, #ffd700);
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-}
-
-.trophy-plaque span {
-  font-family: 'Arial', sans-serif;
-  font-weight: bold;
-  font-size: 18px;
-  color: #16213e;
-}
-
-.trophy-shine {
-  position: absolute;
-  top: 30px;
-  left: 80px;
-  width: 20px;
-  height: 20px;
-  background: white;
-  border-radius: 50%;
-  filter: blur(4px);
-  opacity: 0.8;
-  animation: shine-move 4s infinite ease-in-out;
-}
-
-.trophy-particles {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-/* Text Styles */
-.celebration-text {
-  text-align: center;
-  margin-bottom: 25px;
-  position: relative;
-  z-index: 2;
-}
-
-.main-title {
-  font-family: 'Arial', sans-serif;
-  font-size: 42px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  background: linear-gradient(to right, #ffd700, #ffaa00, #ffd700);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
-  animation: title-glow 2s infinite alternate;
-}
-
-.rank-message {
-  font-size: 22px;
-  color: #ffffff;
-  margin-bottom: 15px;
-}
-
-.highlight {
-  color: #ffd700;
-  font-weight: bold;
-  position: relative;
-  display: inline-block;
-}
-
-.highlight::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, transparent, #ffd700, transparent);
-  animation: line-shimmer 2s infinite;
-}
-
-.rank-details {
-  background: rgba(26, 26, 46, 0.8);
-  border-radius: 30px;
-  padding: 10px 20px;
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.rank-label {
-  font-size: 18px;
-  color: #a0a0a0;
-  margin-right: 10px;
-}
-
-.rank-value {
-  font-size: 36px;
-  font-weight: bold;
-  color: #ffd700;
-  animation: pulse-scale 1.5s infinite alternate;
-}
-
-.rank-suffix {
-  font-size: 18px;
-  color: #ffd700;
-  margin-left: 2px;
-}
-
-.bonus-message {
-  font-size: 16px;
-  color: #a0a0a0;
-  font-style: italic;
-}
-
-/* Button Styles */
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-  position: relative;
-  z-index: 2;
-}
-
-.share-button, .close-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 30px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.share-button {
-  background: linear-gradient(135deg, #485ad0, #8357eb);
-  color: white;
-}
-
-.share-button:hover {
-  background: linear-gradient(135deg, #5671ff, #9969ff);
-  transform: translateY(-2px);
-}
-
-.close-button {
-  background: linear-gradient(135deg, #ffd700, #ffaa00);
-  color: #16213e;
-}
-
-.close-button:hover {
-  background: linear-gradient(135deg, #ffea00, #ffc400);
-  transform: translateY(-2px);
-}
-
-/* Confetti Styles */
-.confetti-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/* Fireworks Styles */
-.fireworks-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.firework-base {
-  position: absolute;
-  bottom: 0;
-  width: 10px;
-  height: 10px;
-  background: #ffd700;
-  border-radius: 50%;
-}
-
-.firework-base.left {
-  left: 25%;
-}
-
-.firework-base.right {
-  right: 25%;
-}
-
-/* Animations */
-@keyframes trophy-rotate {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); }
-}
-
-@keyframes title-glow {
-  0% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
-  100% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.5); }
-}
-
-@keyframes pulse-scale {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.1); }
-}
-
-@keyframes line-shimmer {
-  0% { background-position: -100px; }
-  100% { background-position: 100px; }
-}
-
-@keyframes shine-move {
-  0% { transform: translateX(0) translateY(0); opacity: 0.8; }
-  50% { transform: translateX(-40px) translateY(20px); opacity: 0.2; }
-  100% { transform: translateX(0) translateY(0); opacity: 0.8; }
-}
-
-@keyframes firework-rise {
-  0% { transform: translateY(0) scale(1); opacity: 1; }
-  70% { transform: translateY(-100px) scale(1); opacity: 1; }
-  100% { transform: translateY(-120px) scale(0.5); opacity: 0; }
-}
-
-@keyframes explode {
-  0% { transform: translate(0, 0) scale(0.1); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 0; }
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 768px) {
-  .trophy-container {
-    width: 150px;
-    height: 150px;
-  }
-  
-  .trophy-cup {
-    width: 80px;
-    height: 100px;
-  }
-  
-  .cup-top {
-    width: 70px;
-    height: 18px;
-  }
-  
-  .cup-middle {
-    width: 50px;
-    height: 60px;
-  }
-  
-  .cup-bottom {
-    top: 78px;
-    width: 70px;
-    height: 8px;
-  }
-  
-  .trophy-base {
-    width: 80px;
-    height: 18px;
-  }
-  
-  .main-title {
-    font-size: 36px;
-  }
-  
-  .rank-message {
-    font-size: 18px;
-  }
-  
-  .rank-details {
-    padding: 8px 16px;
-  }
-  
-  .rank-label {
-    font-size: 16px;
-  }
-  
-  .rank-value {
-    font-size: 30px;
-  }
-  
-  .share-button, .close-button {
-    padding: 10px 20px;
+  .tap-screen-sub {
     font-size: 14px;
+    color: var(--text-secondary);
   }
-}
 
-@media (max-width: 480px) {
-  .modal-inner {
-    padding: 20px 15px;
+  /* Skip button on video */
+  .skip-btn {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 5;
+    backdrop-filter: blur(4px);
+    transition: var(--transition);
   }
-  
-  .trophy-container {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 15px;
+
+  .skip-btn:active { transform: scale(0.95); }
+
+  .skip-btn-red {
+    border-color: rgba(245,87,108,0.4);
   }
-  
-  .main-title {
-    font-size: 30px;
+
+  /* Loser content */
+  .loser-animation {
+    text-align: center;
+    margin-bottom: 20px;
   }
-  
-  .rank-message {
-    font-size: 16px;
+
+  .loser-emoji {
+    font-size: 72px;
+    animation: shake 0.5s ease-in-out 3;
   }
-  
-  .rank-value {
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+  }
+
+  .loser-title {
     font-size: 28px;
+    margin: 0 0 12px 0;
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  
-  .action-buttons {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .share-button, .close-button {
-    width: 100%;
-  }
-}
-</style>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Countdown timer functionality
-    function updateCountdown() {
-      const now = new Date();
-      let updateTime = new Date();
-      
-      // Set the target time to 11:55 PM
-      updateTime.setHours(23, 56, 0, 0);
-      
-      // If it's already past 11:55 PM today, set for tomorrow
-      if (now > updateTime) {
-        updateTime.setDate(updateTime.getDate() + 1);
-      }
-      
-      const diff = updateTime - now;
-      
-      // Calculate hours, minutes, seconds
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      // Format and display
-      const timerElement = document.getElementById('countdown-timer');
-      timerElement.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      
-      // Add visual effects when under 1 hour
-      if (hours === 0) {
-        timerElement.classList.add('text-warning');
-        if (minutes < 5) {
-          timerElement.classList.remove('text-warning');
-          timerElement.classList.add('text-danger', 'pulse');
-        }
-      } else {
-        timerElement.classList.remove('text-warning', 'text-danger', 'pulse');
-      }
-    }
-    
-    // Initial call and set interval
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-    
-    // Optional: Add animation when points are updating (simulate)
-    function simulatePointsUpdate() {
-      const timerElement = document.getElementById('countdown-timer');
-      timerElement.innerHTML = "Updating...";
-      timerElement.classList.add('text-success', 'pulse-fast');
-      
-      setTimeout(() => {
-        timerElement.classList.remove('text-success', 'pulse-fast');
-        updateCountdown(); // Reset the timer
-      }, 5000); // Simulate 5 second update process
-    }
-    
-    // For demo purposes - would be triggered by your actual cron job
-    // document.getElementById('countdown-timer').addEventListener('click', simulatePointsUpdate);
-  });
-  document.addEventListener('DOMContentLoaded', function() {
-    // Original countdown timer code
-    // ...existing countdown code...
-    
-    // Add celebration effects for top rankings
-    const rankCells = document.querySelectorAll('td:nth-child(4)'); // Column with rankings
-    
-    rankCells.forEach(cell => {
-      const rankIcon = cell.querySelector('.bi');
-      if (!rankIcon) return;
-      
-      // Extract rank number from the class name
-      const rankClass = rankIcon.className;
-      const rankMatch = rankClass.match(/bi-(\d+)-circle/);
-      if (!rankMatch) return;
-      
-      const rankNumber = parseInt(rankMatch[1]);
-      
-      // Apply special effects for ranks 1-4
-      if (rankNumber >= 1 && rankNumber <= 4) {
-        // Create a container for relative positioning
-        cell.classList.add('ranking-container');
-        
-        // Add trophy badge for 1st place
-        if (rankNumber === 1) {
-          const trophyBadge = document.createElement('div');
-          trophyBadge.className = 'trophy-badge';
-          trophyBadge.innerHTML = '<i class="fas fa-trophy"></i>';
-          cell.appendChild(trophyBadge);
-        }
-        
-        // Add glow effect
-        cell.querySelector('h4').classList.add('top-rank-glow');
-        
-        // Add confetti container
-        const confettiContainer = document.createElement('div');
-        confettiContainer.className = 'confetti-container';
-        cell.appendChild(confettiContainer);
-        
-        // Generate confetti pieces
-        const confettiColors = ['#ffd700', '#ff0000', '#00ff00', '#0000ff', '#ff00ff'];
-        const confettiCount = 15;
-        
-        for (let i = 0; i < confettiCount; i++) {
-          const confetti = document.createElement('div');
-          confetti.className = 'confetti';
-          confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-          confetti.style.left = `${Math.random() * 100}%`;
-          confetti.style.animationDelay = `${Math.random() * 3}s`;
-          confettiContainer.appendChild(confetti);
-        }
-        
-        // Create fireworks function
-        const createFirework = () => {
-          if (!cell.isConnected) return; // Stop if element is no longer in DOM
-          
-          const firework = document.createElement('div');
-          firework.className = 'firework';
-          
-          // Random position around the rank
-          const x = Math.random() * 60 - 30; // -30px to +30px
-          const y = Math.random() * 60 - 30; // -30px to +30px
-          
-          firework.style.left = `calc(50% + ${x}px)`;
-          firework.style.top = `calc(50% + ${y}px)`;
-          
-          // Random color
-          const hue = Math.floor(Math.random() * 360);
-          firework.style.backgroundColor = `hsl(${hue}, 100%, 60%)`;
-          firework.style.boxShadow = `0 0 6px 2px hsl(${hue}, 100%, 60%)`;
-          
-          cell.appendChild(firework);
-          
-          // Remove after animation completes
-          setTimeout(() => {
-            if (firework.parentNode) {
-              firework.parentNode.removeChild(firework);
-            }
-          }, 1000);
-        };
-        
-        // Create fireworks periodically for top ranks
-        const fireworkInterval = setInterval(createFirework, rankNumber === 1 ? 300 : 600);
-        
-        // Clean up when leaving the page
-        window.addEventListener('beforeunload', () => {
-          clearInterval(fireworkInterval);
-        });
-      }
-    });
-  });
 
-  document.addEventListener('DOMContentLoaded', function() {
-  // Get the Overall Ranking card - adapt the selector to match your structure
-  const rankCard = document.querySelector('.col-4:nth-child(2) .card');
-  const rankValue = document.querySelector('.col-4:nth-child(2) h3');
-  
-  if (rankCard && rankValue) {
-    // Get the rank as a number
-    const currentRank = parseInt(rankValue.textContent.trim());
-    
-    // Apply celebration effects if rank is between 1 and 4
-    if (currentRank >= 1 && currentRank <= 4) {
-      // Add celebration class
-      rankCard.classList.add('celebration-active');
-      
-      // Add spotlight effect
-      const spotlight = document.createElement('div');
-      spotlight.className = 'spotlight';
-      rankCard.appendChild(spotlight);
-      
-      // Add particles container
-      const particlesContainer = document.createElement('div');
-      particlesContainer.className = 'particles-container';
-      rankCard.appendChild(particlesContainer);
-      
-      // Add wave effect
-      const wave = document.createElement('div');
-      wave.className = 'wave';
-      rankCard.appendChild(wave);
-      
-      // Add 3D crown for top positions (1-2)
-      if (currentRank <= 2) {
-        const crown = document.createElement('div');
-        crown.className = 'crown-3d';
-        
-        const crownFront = document.createElement('div');
-        crownFront.className = 'crown-front';
-        
-        const crownBack = document.createElement('div');
-        crownBack.className = 'crown-back';
-        
-        const crownLeft = document.createElement('div');
-        crownLeft.className = 'crown-left';
-        
-        const crownRight = document.createElement('div');
-        crownRight.className = 'crown-right';
-        
-        const crownTop = document.createElement('div');
-        crownTop.className = 'crown-top';
-        
-        crown.appendChild(crownFront);
-        crown.appendChild(crownBack);
-        crown.appendChild(crownLeft);
-        crown.appendChild(crownRight);
-        crown.appendChild(crownTop);
-        
-        rankCard.appendChild(crown);
-      }
-      
-      // Add rank ribbon with appropriate text
-      const ribbon = document.createElement('div');
-      ribbon.className = 'rank-ribbon';
-      
-      const ribbonContent = document.createElement('div');
-      ribbonContent.className = 'rank-ribbon-content';
-      
-      let ribbonText = '';
-      console.log("value of currentRank", currentRank)
-      switch(currentRank) {
-        case 1: ribbonText = '1st'; break;
-        case 2: ribbonText = '2nd'; break;
-        case 3: ribbonText = '3rd'; break;
-        case 4: ribbonText = '4th'; break;
-      }
-      
-      ribbonContent.textContent = ribbonText;
-      ribbon.appendChild(ribbonContent);
-      rankCard.appendChild(ribbon);
-      
-      // Add lightning effect
-      const lightning = document.createElement('div');
-      lightning.className = 'lightning';
-      rankCard.appendChild(lightning);
-      
-      // Create the lightning flash effect
-      const flashLightning = () => {
-        lightning.style.animation = 'none';
-        void lightning.offsetWidth; // Trigger reflow
-        lightning.style.animation = 'lightning-flash 4s';
-        
-        // Schedule the next flash at a random interval
-        setTimeout(flashLightning, Math.random() * 3000 + 2000);
-      };
-      
-      // Start lightning effect
-      flashLightning();
-      
-      // Create golden particles that float up
-      const createParticles = () => {
-        if (!rankCard.isConnected) return; // Stop if element is no longer in DOM
-        
-        // Create a new particle
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        
-        // Random position at the bottom of the card
-        const x = Math.random() * 100;
-        particle.style.left = `${x}%`;
-        particle.style.bottom = '0';
-        
-        // Random size
-        const size = Math.random() * 6 + 4;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        
-        // Apply animation
-        particle.style.animation = `float-up ${Math.random() * 2 + 2}s linear forwards`;
-        
-        // Add to the container
-        particlesContainer.appendChild(particle);
-        
-        // Remove particle after animation completes
-        setTimeout(() => {
-          if (particle.parentNode) {
-            particle.parentNode.removeChild(particle);
-          }
-        }, 4000);
-      };
-      
-      // Create particles periodically
-      const particleInterval = setInterval(createParticles, 200);
-      
-      // Create sparkle stars around the rank number
-      const createSparkles = () => {
-        // Create 4 sparkles around the number
-        for (let i = 0; i < 4; i++) {
-          const sparkle = document.createElement('div');
-          sparkle.className = 'sparkle';
-          
-          // Add diagonals for star effect
-          const diagonal1 = document.createElement('div');
-          diagonal1.className = 'diagonal';
-          const diagonal2 = document.createElement('div');
-          diagonal2.className = 'diagonal';
-          
-          sparkle.appendChild(diagonal1);
-          sparkle.appendChild(diagonal2);
-          
-          // Position around the number
-          const angle = i * (Math.PI / 2); // Distribute evenly
-          const distance = 30 + (currentRank === 1 ? 10 : 0); // Further for rank 1
-          
-          const x = 50 + Math.cos(angle) * distance;
-          const y = 50 + Math.sin(angle) * distance;
-          
-          sparkle.style.left = `${x}%`;
-          sparkle.style.top = `${y}%`;
-          sparkle.style.animation = `sparkle-rotate 1.5s infinite ease-in-out ${i * 0.2}s`;
-          
-          rankCard.appendChild(sparkle);
-        }
-      };
-      
-      // Create sparkles
-      createSparkles();
-      
-      // Clean up intervals when leaving the page
-      window.addEventListener('beforeunload', () => {
-        clearInterval(particleInterval);
-      });
-      
-      // Apply special background for rank 1
-      if (currentRank === 1) {
-        rankCard.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,165,0,0.3))';
-        // Slightly tilt the card
-        rankCard.style.transform = 'perspective(1000px) rotateX(5deg)';
-        
-        // Add pulsing border
-        rankCard.style.border = '2px solid gold';
-        rankCard.style.animation = 'pulse-glow 2s infinite ease-in-out';
-      }
-    }
+  .loser-continue-btn {
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%) !important;
   }
-});
-document.addEventListener('DOMContentLoaded', function() {
-  // Get the current rank - adapt this selector to match your structure
-  const rankElement = document.querySelector('.col-4:nth-child(2) h3');
-  
-  if (!rankElement) return; // Exit if element not found
-  
-  const currentRank = parseInt(rankElement.textContent.trim());
-  
-  // Check if user is in the winning zone (ranks 1-4)
-  if (currentRank >= 1 && currentRank <= 4) {
-    const modal = document.getElementById('celebration-modal');
-    const rankValue = document.getElementById('modal-rank-value');
-    const rankSuffix = document.getElementById('rank-suffix');
-    const userRankDisplay = document.getElementById('user-rank-display');
-    const closeButton = document.getElementById('close-celebration');
-    const confettiContainer = document.querySelector('.confetti-container');
-    const fireworksLeft = document.querySelector('.firework-base.left');
-    const fireworksRight = document.querySelector('.firework-base.right');
-    
-    // Set the rank in the modal
-    rankValue.textContent = currentRank;
-    userRankDisplay.textContent = currentRank;
-    
-    // Set the correct suffix
-    let suffix = 'th';
-    if (currentRank === 1) suffix = 'st';
-    else if (currentRank === 2) suffix = 'nd';
-    else if (currentRank === 3) suffix = 'rd';
-    rankSuffix.textContent = suffix;
-    
-    // Create confetti pieces
-    const confettiColors = [
-      '#ffd700', '#ffaa00', '#ff8800', '#ff4400', 
-      '#4834d4', '#3525b0', '#ffffff', '#00aaff'
-    ];
-    
-    for (let i = 0; i < 80; i++) {
-      const confetti = document.createElement('div');
-      confetti.style.position = 'absolute';
-      confetti.style.width = `${Math.random() * 10 + 5}px`;
-      confetti.style.height = `${Math.random() * 6 + 3}px`;
-      confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-      confetti.style.top = '-5%';
-      confetti.style.left = `${Math.random() * 100}%`;
-      confetti.style.opacity = Math.random() * 0.8 + 0.2;
-      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-      confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-      
-      // Set animation properties
-      const duration = Math.random() * 3 + 2;
-      const delay = Math.random() * 2;
-      
-      confetti.style.animation = `
-        fall ${duration}s linear ${delay}s infinite,
-        sway ${duration * 0.5}s ease-in-out ${delay}s infinite alternate
-      `;
-      
-      // Add keyframe animations dynamically
-      const styleSheet = document.styleSheets[0];
-      
-      // Fall animation
-      if (!document.querySelector('style[data-animation="fall"]')) {
-        const fallKeyframes = `
-          @keyframes fall {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            70% { opacity: 1; }
-            100% { transform: translateY(${window.innerHeight}px) rotate(360deg); opacity: 0; }
-          }
-        `;
-        const styleElement = document.createElement('style');
-        styleElement.setAttribute('data-animation', 'fall');
-        styleElement.textContent = fallKeyframes;
-        document.head.appendChild(styleElement);
-      }
-      
-      // Sway animation
-      if (!document.querySelector('style[data-animation="sway"]')) {
-        const swayKeyframes = `
-          @keyframes sway {
-            0% { transform: translateX(-20px) rotate(-10deg); }
-            100% { transform: translateX(20px) rotate(10deg); }
-          }
-        `;
-        const styleElement = document.createElement('style');
-        styleElement.setAttribute('data-animation', 'sway');
-        styleElement.textContent = swayKeyframes;
-        document.head.appendChild(styleElement);
-      }
-      
-      confettiContainer.appendChild(confetti);
+</style>
+
+<!-- Scripts -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Countdown Timer ───────────────────────────────────────────────
+    function updateCountdown() {
+      try {
+        const now = new Date();
+        const target = new Date();
+        target.setHours(23, 40, 0, 0);
+        if (now >= target) target.setDate(target.getDate() + 1);
+        const total = Math.max(0, Math.floor((target - now) / 1000));
+        const h = Math.floor(total / 3600).toString().padStart(2, '0');
+        const m = Math.floor((total % 3600) / 60).toString().padStart(2, '0');
+        const s = (total % 60).toString().padStart(2, '0');
+        const el = document.getElementById('countdown-timer');
+        if (el) el.textContent = `${h}:${m}:${s}`;
+      } catch (e) { console.error(e); }
     }
-    
-    // Create fireworks function
-    const createFirework = (baseElement) => {
-      // Rocket rising animation
-      baseElement.style.animation = 'firework-rise 1s ease-out forwards';
-      
-      // When rocket reaches top height, create explosion
-      setTimeout(() => {
-        // Create explosion particles
-        for (let i = 0; i < 30; i++) {
-          const particle = document.createElement('div');
-          particle.className = 'firework-particle';
-          particle.style.position = 'absolute';
-          particle.style.width = '4px';
-          particle.style.height = '4px';
-          particle.style.borderRadius = '50%';
-          
-          // Calculate position (where the rocket ended)
-          const rect = baseElement.getBoundingClientRect();
-          const modalRect = modal.getBoundingClientRect();
-          
-          particle.style.left = `${rect.left - modalRect.left + rect.width/2}px`;
-          particle.style.top = `${rect.top - modalRect.top}px`;
-          
-          // Random color for particles
-          const hue = Math.floor(Math.random() * 60 + 30); // Golden-ish color range
-          particle.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
-          particle.style.boxShadow = `0 0 6px 2px hsl(${hue}, 100%, 60%)`;
-          
-          // Random direction
-          const angle = Math.random() * Math.PI * 2;
-          const distance = Math.random() * 100 + 50;
-          const tx = Math.cos(angle) * distance;
-          const ty = Math.sin(angle) * distance;
-          
-          // Set CSS variables for the animation
-          particle.style.setProperty('--tx', `${tx}px`);
-          particle.style.setProperty('--ty', `${ty}px`);
-          
-          // Apply animation
-          particle.style.animation = `explode 1s ease-out forwards`;
-          
-          fireworksLeft.parentNode.appendChild(particle);
-          
-          // Remove particle after animation
-          setTimeout(() => {
-            if (particle.parentNode) {
-              particle.parentNode.removeChild(particle);
-            }
-          }, 1000);
-        }
-        
-        // Reset the rocket for next launch
-        baseElement.style.animation = 'none';
-        setTimeout(() => {
-          if (baseElement.isConnected) {
-            createFirework(baseElement);
-          }
-        }, Math.random() * 2000 + 1000);
-        
-      }, 1000); // Match the duration of the rise animation
-    };
-    
-    // Function to create trophy particle
-    const createTrophyParticle = () => {
-      const trophyParticles = document.querySelector('.trophy-particles');
-      if (!trophyParticles || !trophyParticles.isConnected) return;
-      
-      const particle = document.createElement('div');
-      particle.style.position = 'absolute';
-      particle.style.width = '6px';
-      particle.style.height = '6px';
-      particle.style.backgroundColor = 'rgba(255, 215, 0, 0.7)';
-      particle.style.borderRadius = '50%';
-      
-      // Random position around the trophy
-      const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * 30 + 40;
-      const x = 50 + Math.cos(angle) * distance;
-      const y = 50 + Math.sin(angle) * distance;
-      
-      particle.style.left = `${x}%`;
-      particle.style.top = `${y}%`;
-      
-      // Animate the particle
-      particle.style.animation = 'trophy-particle 1.5s ease-out forwards';
-      
-      // Add keyframe animations dynamically if not already added
-      if (!document.querySelector('style[data-animation="trophy-particle"]')) {
-        const keyframes = `
-          @keyframes trophy-particle {
-            0% { transform: scale(0); opacity: 0; }
-            20% { opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-          }
-        `;
-        const styleElement = document.createElement('style');
-        styleElement.setAttribute('data-animation', 'trophy-particle');
-        styleElement.textContent = keyframes;
-        document.head.appendChild(styleElement);
-      }
-      
-      trophyParticles.appendChild(particle);
-      
-      // Remove particle after animation
-      setTimeout(() => {
-        if (particle.parentNode) {
-          particle.parentNode.removeChild(particle);
-        }
-      }, 1500);
-    };
-    
-    // Show modal with animation after a short delay
-    setTimeout(() => {
-      modal.classList.add('show');
-      
-      // Start fireworks
-      createFirework(fireworksLeft);
-      setTimeout(() => createFirework(fireworksRight), 300);
-      
-      // Start trophy particles
-      const trophyParticleInterval = setInterval(createTrophyParticle, 200);
-      
-      // Close button event
-      closeButton.addEventListener('click', () => {
-        modal.classList.remove('show');
-        clearInterval(trophyParticleInterval);
-        
-        // Store in session storage to not show again in this session
-        sessionStorage.setItem('celebrationShown', 'true');
-        
-        // Remove modal after animation completes
-        setTimeout(() => {
-          if (modal.parentNode) {
-            modal.parentNode.removeChild(modal);
-          }
-        }, 500);
+    updateCountdown();
+    const timerInterval = setInterval(updateCountdown, 1000);
+    window.addEventListener('beforeunload', () => clearInterval(timerInterval));
+
+    // ── Helpers ───────────────────────────────────────────────────────
+    function showEl(el)  { if (el) el.style.display = 'block'; }
+    function hideEl(el)  { if (el) el.style.display = 'none'; }
+    function closeModal(modal) { if (modal) modal.classList.remove('show'); }
+
+    // ── Rails rank ────────────────────────────────────────────────────
+    const currentRank = <%= @current_rank || 0 %>;
+
+    // ════════════════════════════════════════════════════════════════
+    // VICTORY MODAL  (ranks 1–4)
+    // Flow: modal opens → tap screen → user taps → video plays with
+    //       sound (tap = user gesture) → video ends → victory content
+    // ════════════════════════════════════════════════════════════════
+    const victoryModal    = document.getElementById('victory-modal');
+    const victoryTapScreen = document.getElementById('victory-tap-screen');
+    const memeVideoWrap   = document.getElementById('meme-video-container');
+    const memeVideo       = document.getElementById('meme-video');
+    const victoryContent  = document.getElementById('victory-content');
+    const closeVictory    = document.getElementById('close-victory');
+    const continueVictory = document.getElementById('continue-victory');
+    const skipVictoryBtn  = document.getElementById('skip-victory-video');
+
+    function playVictoryVideo() {
+      hideEl(victoryTapScreen);
+      showEl(memeVideoWrap);
+      memeVideo.muted = false;
+      memeVideo.play().catch(() => {
+        // Very old iOS fallback — muted play if truly blocked
+        memeVideo.muted = true;
+        memeVideo.play().catch(console.error);
       });
-      
-      // Also close when clicking outside
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeButton.click();
+    }
+
+    function showVictoryContent() {
+      hideEl(memeVideoWrap);
+      showEl(victoryContent);
+    }
+
+    if (currentRank >= 1 && currentRank <= 4 && !sessionStorage.getItem('victoryShown')) {
+      sessionStorage.setItem('victoryShown', 'true');
+      setTimeout(() => { if (victoryModal) victoryModal.classList.add('show'); }, 800);
+    }
+
+    // Tap screen click → play video (this tap IS the user gesture)
+    if (victoryTapScreen) {
+      victoryTapScreen.addEventListener('click', playVictoryVideo);
+    }
+
+    // Video ends → show victory content
+    if (memeVideo) {
+      memeVideo.addEventListener('ended', showVictoryContent);
+    }
+
+    // Skip button → jump straight to victory content
+    if (skipVictoryBtn) {
+      skipVictoryBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        memeVideo.pause();
+        showVictoryContent();
+      });
+    }
+
+    // Close / continue buttons
+    if (closeVictory)    closeVictory.addEventListener('click',    () => { memeVideo && memeVideo.pause(); closeModal(victoryModal); });
+    if (continueVictory) continueVictory.addEventListener('click', () => closeModal(victoryModal));
+
+    // Overlay click closes
+    document.getElementById('victory-overlay')?.addEventListener('click', () => {
+      memeVideo && memeVideo.pause();
+      closeModal(victoryModal);
+    });
+
+    // Share button
+    const shareBtn = document.querySelector('.btn-share-victory');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', () => {
+        const text = `🎉 I'm ranked #${currentRank} in our Patel-Predicts! 🏆`;
+        if (navigator.share) {
+          navigator.share({ title: 'Fantasy Cricket Achievement', text }).catch(() => {});
+        } else {
+          window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
       });
-      
-    }, 1000); // Delay before showing modal
-  }
-  
-  // Show only once per session
-  if (sessionStorage.getItem('celebrationShown')) {
-    const modal = document.getElementById('celebration-modal');
-    if (modal && modal.parentNode) {
-      modal.parentNode.removeChild(modal);
     }
-  }
-});
+
+    // ════════════════════════════════════════════════════════════════
+    // LOSER MODAL  (ranks 7–10)
+    // Flow: modal opens → tap screen → user taps → video plays with
+    //       sound → video ends → loser content stays open
+    // ════════════════════════════════════════════════════════════════
+    const loserModal      = document.getElementById('loser-modal');
+    const loserTapScreen  = document.getElementById('loser-tap-screen');
+    const loserVideoWrap  = document.getElementById('loser-video-container');
+    const loserVideo      = document.getElementById('loser-video');
+    const loserContent    = document.getElementById('loser-content');
+    const closeLoser      = document.getElementById('close-loser');
+    const continueLoser   = document.getElementById('continue-loser');
+    const skipLoserBtn    = document.getElementById('skip-loser-video');
+
+    function playLoserVideo() {
+      hideEl(loserTapScreen);
+      showEl(loserVideoWrap);
+      loserVideo.muted = false;
+      loserVideo.play().catch(() => {
+        loserVideo.muted = true;
+        loserVideo.play().catch(console.error);
+      });
+    }
+
+    function showLoserContent() {
+      hideEl(loserVideoWrap);
+      showEl(loserContent);
+    }
+
+    if (currentRank >= 7 && currentRank <= 10 && !sessionStorage.getItem('loserShown')) {
+      sessionStorage.setItem('loserShown', 'true');
+      setTimeout(() => { if (loserModal) loserModal.classList.add('show'); }, 800);
+    }
+
+    if (loserTapScreen) {
+      loserTapScreen.addEventListener('click', playLoserVideo);
+    }
+
+    if (loserVideo) {
+      loserVideo.addEventListener('ended', showLoserContent);
+    }
+
+    if (skipLoserBtn) {
+      skipLoserBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        loserVideo.pause();
+        showLoserContent();
+      });
+    }
+
+    if (closeLoser) closeLoser.addEventListener('click', () => { loserVideo && loserVideo.pause(); closeModal(loserModal); });
+    if (continueLoser) continueLoser.addEventListener('click', () => closeModal(loserModal));
+
+    document.getElementById('loser-overlay')?.addEventListener('click', () => {
+      // Don't close on overlay during video — intentional, user should watch or skip
+    });
+
+    // ── Row click ─────────────────────────────────────────────────────
+    document.querySelectorAll('.match-row').forEach(row => {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function (e) {
+        if (!e.target.closest('.btn-view-compact')) {
+          const btn = this.querySelector('.btn-view-compact');
+          if (btn) window.location.href = btn.href;
+        }
+      });
+    });
+
+    // ── Notification toggle ───────────────────────────────────────────
+    document.getElementById('notification-toggle')?.addEventListener('click', () => {
+    });
+
+  });
 </script>

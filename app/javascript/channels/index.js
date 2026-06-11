@@ -1,3 +1,3 @@
-// import "./auction_room_channel"
-// import "./channels/step_channel.js"
-import "./channels//auction_room_channel.js"
+// app/javascript/channels/index.js
+
+import "./auction_room_channel"

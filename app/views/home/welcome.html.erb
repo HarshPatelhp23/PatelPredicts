@@ -1,67 +1,221 @@
-<!-- app/views/welcome/index.html.erb -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patel Predicts</title>
-  <%= stylesheet_link_tag 'custom', media: 'all', 'data-turbolinks-track': 'reload' %>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>PatelPredicts - Fantasy Cricket</title>
+  <%= stylesheet_link_tag 'custom', media: 'all' %>
   <style>
-    /* Move the styles to your stylesheet for better organization */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
-
+    
     .hero-section {
-      background-image: url(<%= asset_path('wp-6.jpg') %>);
+      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(<%= asset_path('wp-6.jpg') %>);
       background-repeat: no-repeat;
       background-position: center center;
       background-size: cover;
-      text-align: center;
-      color: white; /* Change text color to white for better contrast */
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      min-height: 100vh; /* Set minimum height to viewport height */
+      justify-content: center;
+      padding: 20px;
     }
-
+    
     .hero-text {
-      max-width: 600px; /* Limit text width for better readability */
-      margin: 0 auto; /* Center align the text */
-      padding: 50px; /* Add padding for better spacing */
-      background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
-      border-radius: 10px; /* Add border radius for a rounded section */
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+      max-width: 500px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 20px;
     }
-
+    
     .hero-text h1 {
-      font-size: 3rem; /* Increase the font size for impact */
-      margin-bottom: 20px; /* Add some space below the heading */
+      font-size: 2rem;
+      margin-bottom: 15px;
+      color: #fff;
+      text-align: center;
+      font-weight: 700;
     }
-
+    
     .hero-text h5 {
-      font-size: 1.5rem; /* Increase the font size for subheading */
-      margin-bottom: 30px; /* Add more space below the subheading */
+      font-size: 1rem;
+      margin-bottom: 25px;
+      color: #e0e0e0;
+      text-align: center;
+      font-weight: 400;
+      line-height: 1.5;
     }
-
-    /* CSS for the placeholder */
-    .placeholder-for-navbar {
-      height: 35px; /* Adjust height as needed */
+    
+    .user-type-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .user-type-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .card-icon {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #333;
+    }
+    
+    .card-description {
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    
+    .btn-mobile {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .btn-primary-mobile {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary-mobile:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-success-mobile {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+    
+    .btn-outline-mobile {
+      background: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+    
+    .divider {
+      text-align: center;
+      margin: 25px 0;
+      position: relative;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 45%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .divider::before {
+      left: 0;
+    }
+    
+    .divider::after {
+      right: 0;
+    }
+    
+    .divider span {
+      background: transparent;
+      padding: 0 10px;
+      color: white;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 480px) {
+      .hero-text h1 {
+        font-size: 1.75rem;
+      }
+      
+      .user-type-card {
+        padding: 20px;
+      }
+      
+      .card-title {
+        font-size: 1.25rem;
+      }
     }
   </style>
 </head>
 <body>
-  <%= render 'navbar' %>
-  <div class="placeholder-for-navbar"></div>
   <section class="hero-section">
-    <div class="container">
-      <div class="hero-text">
-        <h1>Welcome to PatelPredicts</h1>
-        <h5>Register as an owner if you don't have an account.</h5>
-        <!-- Update your existing code for the signup button -->
-        <%= link_to 'Sign Up!', new_user_registration_path, class: 'btn btn-success btn-lg text-white', style: 'text-decoration: none;' %>
+    <div class="hero-text">
+      <h1>🏏 PatelPredicts</h1>
+      <h5>Your Ultimate Fantasy Cricket Platform</h5>
+      
+      <!-- International Cricket Users -->
+      <div class="user-type-card">
+        <div class="card-icon">🌍</div>
+        <div class="card-title">International Cricket</div>
+        <div class="card-description">
+          Play fantasy cricket for international tournaments and matches worldwide
+        </div>
+        <% if user_signed_in? %>
+          <%= link_to 'Go to Dashboard', dashboard_path, class: 'btn-mobile btn-primary-mobile' %>
+        <% else %>
+          <%= link_to 'Sign In / Register', new_user_session_path, class: 'btn-mobile btn-primary-mobile' %>
+        <% end %>
+      </div>
+      
+      <div class="divider">
+        <span>OR</span>
+      </div>
+      
+      <!-- SPL Users -->
+      <div class="user-type-card">
+        <div class="card-icon">🏆</div>
+        <div class="card-title">Sugam Premier League (SPL)</div>
+        <div class="card-description">
+          Join our society's exclusive SPL tournament. Create your team and compete with neighbors!
+        </div>
+        <% if spl_user_signed_in? %>
+          <%= link_to 'SPL Dashboard', spl_dashboard_path, class: 'btn-mobile btn-success-mobile' %>
+        <% else %>
+          <%= link_to 'SPL Sign In / Register', new_spl_user_session_path, class: 'btn-mobile btn-success-mobile' %>
+        <% end %>
+      </div>
+      
+      <div class="divider">
+        <span>⚡</span>
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <small style="color: rgba(255,255,255,0.7);">Download our app for better experience</small>
       </div>
     </div>
   </section>

@@ -2,4 +2,28 @@
 // Run that command whenever you add a new controller or create them with
 // ./bin/rails generate stimulus controllerName
 
-// import { application } from "./application"
+import { application } from "./application"
+
+import AuctionInsightsController from "./auction_insights_controller"
+application.register("auction-insights", AuctionInsightsController)
+
+import AuctionStatsController from "./auction_stats_controller"
+application.register("auction-stats", AuctionStatsController)
+
+import CountdownTimerController from "./countdown_timer_controller"
+application.register("countdown-timer", CountdownTimerController)
+
+import FlashController from "./flash_controller"
+application.register("flash", FlashController)
+
+import HelloController from "./hello_controller"
+application.register("hello", HelloController)
+
+import PlayerCardController from "./player_card_controller"
+application.register("player-card", PlayerCardController)
+
+import SplRegistrationController from "./spl_registration_controller"
+application.register("spl-registration", SplRegistrationController)
+
+import SplSessionController from "./spl_session_controller"
+application.register("spl-session", SplSessionController)

@@ -63,7 +63,7 @@ class PlayerPerfomacePoint < ApplicationRecord
     stumping: 12,
 
     #MOM points
-    bonus_mom: 30
+    bonus_mom: 0
   }.freeze
 
   class << self

@@ -1,229 +1,1024 @@
-<div class="text-center mt-3 mb-4">
-  <%= link_to 'Back', root_path, class:'btn btn-success back-button theme-btn-back' %>
-</div>
-<div class="container mb-4">
-  <h1 class="auction-header text-center text-primary">Auction Room</h1>
-</div>
-<% color_classes = ["text-bg-primary", "text-bg-success", "text-bg-warning", "text-bg-danger"] %>
+<%# app/views/auctions/auctions_table.html.erb %>
+<% provide(:title, "Auction Room") if respond_to?(:provide) %>
 
-<div class="container mb-4">
-  <h4 class="text-center text-secondary">Team Rankings</h4>
-  <div class="row justify-content-center team-rankings-container">
-    <% @users.each_with_index do |user, index| %>
-      <% tag = user.username.split.last %>
-      <% badge_color = color_classes[index % color_classes.size] %>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-      <div class="col-3 text-center mb-2">
-        <div class="card shadow-sm border-0" style="border-radius: 10px;">
-          <div class="card-body p-2">
-            <h6><span class="fw-bold mb-0 badge badge-sm <%= badge_color %>">
-              <%= tag %>
-            </span></h6>
-            <p class="small mb-1 text-muted">Rank <%= index + 1 %></p>
-            <p class="fw-bold text-danger mb-0">
-              <%= TeamSkillEvaluator.calculate_winning_chances(user) %>
-            </p>
-          </div>
-        </div>
-      </div>
-    <% end %>
-  </div>
-</div>
+<div class="at-shell" id="at-shell">
 
-<div class="row">
-  <%= link_to 'Auction List', auction_list_path, class: 'btn btn-primary auction-list text-white mb-4', style: 'text-decoration: none; max-width: 30%; height: 20%; margin-left: 55px;' %>
-  <%= link_to 'Hotpicks', hotpicks_path, class: 'btn btn-danger text-right text-white mx-5 mb-4', style: 'text-decoration: none; max-width: 30%; height: 40px;' %>
-</div>
-
-<div id="user-cards" class="row">
-  <% @users.each do |user| %>
-    <div class="col-lg-6 col-md-12 auction-card-container">
-      <div class="card shadow-lg border-0">
-        <!-- User Image -->
-        <div class="text-center">
-          <% image = "#{user.username.split.join('_').downcase}" %>
-          <%= image_tag "#{image}.jpg", class: "captain-image rounded-circle shadow-sm", alt: 'default_player_image.jpeg', style: "width: 120px; height: 120px; object-fit: cover; border: 5px solid #007bff; margin-top: 20px;" %>
-        </div>
-
-        <!-- User Card Body -->
-        <div class="card-body text-center" data-user-id="<%= user.id %>">
-          <h5 class="card-title text-uppercase text-secondary fw-bold"><%= user.username %></h5>
-
-          <div class="container px-3 mb-4">
-            <div class="row gx-3">
-              <!-- Total Purse Card -->
-              <div class="col-6 col-md-3 mb-3">
-                <div class="card text-white bg-success shadow-sm">
-                  <div class="card-body text-center">
-                    <i class="fas fa-wallet fa-2x mb-2"></i>
-                    <h6 class="card-title mb-1">Total Purse</h6>
-                    <p class="fw-bold mb-0"><%= CurrencyFormatter.format(user.total_purse) %></p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Remaining Purse Card -->
-              <div class="col-6 col-md-3 mb-3">
-                <div class="card text-white bg-info shadow-sm">
-                  <div class="card-body text-center">
-                    <i class="fas fa-coins fa-2x mb-2"></i>
-                    <h6 class="card-title mb-1">Remaining Purse</h6>
-                    <p class="fw-bold mb-0 remaining-purse"><%= CurrencyFormatter.format(user.remaining_purse) %></p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Captain's Max Bid Card -->
-              <div class="col-6 col-md-3 mb-3">
-                <div class="card text-white bg-purple shadow-sm">
-                  <div class="card-body text-center">
-                    <i class="fas fa-gavel fa-2x mb-2"></i>
-                    <h6 class="card-title mb-1">Captain's Max Bid</h6>
-                    <p class="fw-bold mb-0 max-bid"><%= TeamSkillEvaluator.all_team_max_bid.dig(user.id) %></p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Winning Chances Card -->
-              <div class="col-6 col-md-3 mb-3">
-                <div class="card text-white bg-danger shadow-sm">
-                  <div class="card-body text-center">
-                    <i class="fas fa-trophy fa-2x mb-2"></i>
-                    <h6 class="card-title mb-1">Winning Chances</h6>
-                    <p class="fw-bold mb-0 winning-chances"><%= TeamSkillEvaluator.calculate_winning_chances(user) %></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Team Batting -->
-          <h4>Team Batting</h4>
-          <div class="progress auction-progress mb-3">
-            <div class="progress-bar progress-bar-striped bg-success team-batting" data-user-id="<%= user.id %>" style="width: <%= TeamSkillEvaluator.calculate_strength(user, 'batting') %>%; font-size: 20px;">
-              <%= TeamSkillEvaluator.calculate_strength(user, 'batting') %>%
-            </div>
-          </div>
-
-          <!-- Team Bowling -->
-          <h4>Team Bowling</h4>
-          <div class="progress auction-progress mb-3">
-            <div class="progress-bar progress-bar-striped bg-warning team-bowling" data-user-id="<%= user.id %>" style="width: <%= TeamSkillEvaluator.calculate_strength(user, 'bowling') %>%; font-size: 20px;">
-              <%= TeamSkillEvaluator.calculate_strength(user, 'bowling') %>%
-            </div>
-          </div>
-
-          <hr class="my-3">
-
-          <!-- Players List -->
-          <h6 class="fw-bold text-secondary">Players</h6>
-          <ul class="list-group">
-            <% @auction_rooms.each do |player| %>
-              <% next if player.user != user %>
-              <li class="list-group-item auction-player-item d-flex align-items-center justify-content-between border rounded shadow-sm mb-2" data-player-name="<%= player.player_name %>" style="margin-left: 10px; width: 100%;">
-                <div class="d-flex align-items-center w-100">
-                  <!-- Section 1: Player Image and Name -->
-                  <div class="d-flex align-items-center" style="flex: 1; margin-right: 20px;">
-                    <%= image_tag 'default_player_image.jpeg', class: "player-image rounded-circle", alt: "Player Image", style: "width: 50px; height: 50px; object-fit: cover; border: 2px solid #007bff; margin-right: 15px;" %>
-                    <div>
-                      <div class="fw-bold"><%= player.player_name %></div>
-                      <% amount_unit = player.amount_unit == 'crores' ? 'CR' : 'L' %>
-                      <% sold_amount = '₹' + player.amount.to_s + amount_unit %>
-                      <% amount = sold_amount == '₹0.0CR' ? '👑 Captain' : sold_amount %>
-                        <div class="text-muted fw-bold <%= 'captain-badge' if amount == '👑 Captain' %>"><%= amount %></div>
-                    </div>
-                  </div>
-
-                  <!-- Section 2: Batting and Bowling Progress Bars -->
-                  <div class="progress-section d-flex flex-column text-center" style="flex: 1; margin-right: 20px; margin-right: 30px;">
-                    <div class="mb-2">
-                      <span class="small text-muted">Batting:</span>
-                      <div class="progress" style="height: 18px;">
-                        <div class="progress-bar bg-success" style="width: <%= player.auction_player.batting %>%;"><%= player.auction_player.batting %>%</div>
-                      </div>
-                    </div>
-                    <div>
-                      <span class="small text-muted">Bowling:</span>
-                      <div class="progress" style="height: 18px;">
-                        <div class="progress-bar bg-warning" style="width: <%= player.auction_player.bowling %>%;"><%= player.auction_player.bowling %>%</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Section 3: Purchase Insight -->
-                  <div style="flex: 0 0 50px; display: flex; justify-content: center; align-items: center;">
-                    <% image = player.is_a_captain? ? 'captain.jpeg' : "#{TeamSkillEvaluator.categorize_buy(player.auction_player.base_price, player.auction_player.total_skill, player.current_integer_amount)}.jpeg" %>
-                    <%= image_tag "#{image}", alt: "Insight", class: "rounded-circle shadow-sm", style: "width: 50px; height: 50px;" %>
-                  </div>
-                </div>
-              </li>
-            <% end %>
-          </ul>
+  <!-- ══ TOP BAR ══ -->
+  <div class="at-topbar">
+    <div class="at-topbar-left">
+      <%= link_to spl_dashboard_path, class: "at-back-btn" do %>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+      <% end %>
+      <div class="at-brand">
+        <div class="at-brand-icon">🏏</div>
+        <div>
+          <div class="at-brand-name">Auction Room</div>
+          <div class="at-brand-sub">SPL · Live Standings</div>
         </div>
       </div>
     </div>
-  <% end %>
+    <div class="at-topbar-right">
+      <%= link_to auction_list_path, class: "at-nav-btn blue-btn" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>Lineup</span>
+      <% end %>
+      <%= link_to hotpicks_path, class: "at-nav-btn red-btn" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c0 0-4 5-4 9a4 4 0 0 0 8 0c0-4-4-9-4-9z"/><path d="M12 22v-4"/></svg>
+        <span>Hotpicks</span>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- ══ LIVE RANKINGS STRIP ══ -->
+  <div class="at-rankings-section">
+    <div class="at-section-hdr">
+      <div class="at-live-badge">
+        <span class="at-live-dot"></span>LIVE
+      </div>
+      <div class="at-section-title">Team Rankings</div>
+      <div class="at-section-line"></div>
+    </div>
+
+    <div class="at-rankings-scroll">
+      <%# data-user-id on each rank card lets JS reorder & update them live %>
+      <div class="at-rankings-grid" id="at-rankings-grid">
+        <% @users.each_with_index do |user, index| %>
+          <% tag = user.username.split.first %>
+          <% chance = TeamSkillEvaluator.calculate_winning_chances(user).to_f %>
+          <% rank_classes = ["gold-rank","silver-rank","bronze-rank","green-rank"] %>
+          <% rank_class = rank_classes[index] || "" %>
+
+          <div class="at-rank-card <%= rank_class %>"
+               data-user-id="<%= user.id %>"
+               data-rank="<%= index + 1 %>"
+               onclick="scrollToTeam(<%= user.id %>)">
+
+            <div class="at-rank-num" data-rank-label>#<%= index + 1 %></div>
+
+            <div class="at-rank-ring">
+              <svg viewBox="0 0 36 36" class="at-ring-svg">
+                <path class="at-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <path class="at-ring-fill"
+                      data-ring-fill
+                      stroke-dasharray="<%= chance %>, 100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              </svg>
+              <div class="at-ring-inner">
+                <div class="at-ring-pct">
+                  <span data-win-pct><%= chance.round(0) %></span><span>%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="at-rank-tag"><%= spl_team_name(user.username) %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DESKTOP LAYOUT WRAPPER ══ -->
+  <div class="at-main-body">
+
+    <!-- Desktop sidebar: team navigator -->
+    <div class="at-sidebar" id="at-sidebar">
+      <div class="at-sidebar-hdr">Teams</div>
+      <% @users.each_with_index do |user, index| %>
+        <% tag = user.username.split.first %>
+        <% chance = TeamSkillEvaluator.calculate_winning_chances(user).to_f %>
+        <div class="at-sidebar-item"
+             onclick="scrollToTeam(<%= user.id %>)"
+             id="nav-<%= user.id %>"
+             data-user-id="<%= user.id %>">
+          <div class="at-sidebar-rank" data-sidebar-rank>#<%= index + 1 %></div>
+          <div class="at-sidebar-av"><%= tag.first(2).upcase %></div>
+          <div class="at-sidebar-info">
+            <div class="at-sidebar-name"><%= spl_team_name(user.username) %></div>
+            <div class="at-sidebar-pct" data-sidebar-pct><%= chance.round(1) %>% win</div>
+          </div>
+          <div class="at-sidebar-bar-wrap">
+            <div class="at-sidebar-bar" data-sidebar-bar style="width:<%= chance %>%"></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- ══ TEAM CARDS ══ -->
+    <div class="at-teams-feed" id="at-teams-feed">
+      <% @users.each_with_index do |user, index| %>
+        <% tag = user.username.split.first %>
+        <% chance = TeamSkillEvaluator.calculate_winning_chances(user).to_f %>
+        <% batting_str = TeamSkillEvaluator.calculate_strength(user, 'batting') %>
+        <% bowling_str = TeamSkillEvaluator.calculate_strength(user, 'bowling') %>
+        <% rank_labels = ["🥇 1st Place","🥈 2nd Place","🥉 3rd Place","4th Place"] %>
+        <% rank_colors = ["gold-team","silver-team","bronze-team","green-team"] %>
+
+        <div class="at-team-card <%= rank_colors[index] || "" %>"
+             id="team-<%= user.id %>"
+             data-user-id="<%= user.id %>">
+
+          <!-- Card Header -->
+          <div class="at-card-header">
+            <div class="at-card-header-bg"></div>
+            <div class="at-card-header-content">
+              <div class="at-card-avatar-wrap">
+                <!-- <#%= image_tag "default_player_image.jpeg", class: "at-card-avatar", alt: tag %> -->
+                <%= spl_team_logo(user.username)%>
+                <div class="at-card-rank-crown" data-rank-crown><%= rank_labels[index] || "##{index+1}" %></div>
+              </div>
+              <div class="at-card-meta">
+                <div class="at-card-team-name"><%= spl_team_name(user.username) %></div>
+                <div class="at-card-username">👑:- <%= user.username %></div>
+                <div class="at-card-win-pct">
+                  <%# data-win-pct-num → updated live by JS %>
+                  <span class="at-win-pct-num" data-win-pct-num><%= chance.round(1) %>%</span>
+                  <span class="at-win-pct-lbl">Win Probability</span>
+                </div>
+              </div>
+              <div class="at-card-stats-grid">
+                <div class="at-card-stat">
+                  <div class="at-stat-icon">💰</div>
+                  <div class="at-stat-val"><%= CurrencyFormatter.format(user.total_purse) %></div>
+                  <div class="at-stat-lbl">Total Purse</div>
+                </div>
+                <div class="at-card-stat">
+                  <div class="at-stat-icon">💎</div>
+                  <%# data-remaining-purse → updated live by JS %>
+                  <div class="at-stat-val" data-remaining-purse><%= CurrencyFormatter.format(user.remaining_purse) %></div>
+                  <div class="at-stat-lbl">Remaining</div>
+                </div>
+                <div class="at-card-stat highlight-stat">
+                  <div class="at-stat-icon">🏆</div>
+                  <%# data-win-chance → updated live by JS %>
+                  <div class="at-stat-val" data-win-chance><%= chance.round(1) %>%</div>
+                  <div class="at-stat-lbl">Win Chance</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skill Bars -->
+          <div class="at-skills-section">
+            <div class="at-skill-row">
+              <div class="at-skill-label">
+                <span class="at-skill-icon bat-icon">🏏</span>
+                Batting
+              </div>
+              <div class="at-skill-track">
+                <%# data-bat-bar → width & text updated live by JS %>
+                <div class="at-skill-bar bat-bar" data-bat-bar style="width:<%= batting_str %>%">
+                  <span data-bat-bar-label><%= batting_str %>%</span>
+                </div>
+              </div>
+            </div>
+            <div class="at-skill-row">
+              <div class="at-skill-label">
+                <span class="at-skill-icon bowl-icon">🎯</span>
+                Bowling
+              </div>
+              <div class="at-skill-track">
+                <%# data-bowl-bar → width & text updated live by JS %>
+                <div class="at-skill-bar bowl-bar" data-bowl-bar style="width:<%= bowling_str %>%">
+                  <span data-bowl-bar-label><%= bowling_str %>%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Players Squad -->
+          <div class="at-squad-section">
+            <div class="at-squad-hdr">
+              <div class="at-squad-title">Team Squad</div>
+              <% squad_count = @auction_rooms.count { |p| p.user == user } %>
+              <%# data-squad-count → incremented live by JS when a player is added %>
+              <div class="at-squad-count" data-squad-count><%= squad_count %> Players</div>
+            </div>
+
+            <%# data-players-grid is the insertion point for new player cards via JS %>
+            <div class="at-players-grid" data-players-grid>
+              <% @auction_rooms.each do |player| %>
+                <% next if player.user != user %>
+                <% buy_suggestion_image = TeamSkillEvaluator.categorize_buy(
+                     player.auction_player.base_price,
+                     player.auction_player.total_skill,
+                     player.current_integer_amount
+                   ).presence || 'worst_buy' %>
+                <% insight = player.is_a_captain? ? 'captain' : buy_suggestion_image %>
+                <% bat_pct = player.auction_player.batting %>
+                <% bowl_pct = player.auction_player.bowling %>
+
+                <%# data-player on each card lets JS check for duplicates before inserting %>
+                <div class="at-player-card" data-player="<%= player.player_name %>">
+                  <!-- Insight strip -->
+                  <div class="at-player-insight">
+                    <%= image_tag "#{insight}.jpeg", class: "at-insight-img", alt: insight %>
+                  </div>
+
+                  <!-- Avatar -->
+                  <div class="at-player-av-wrap">
+                    <%= image_tag "default_player_image.jpeg", class: "at-player-av", alt: player.player_name %>
+                    <% if player.is_a_captain? %>
+                      <div class="at-captain-badge">👑</div>
+                    <% end %>
+                  </div>
+
+                  <!-- Info -->
+                  <div class="at-player-info">
+                    <div class="at-player-name"><%= player.player_name %></div>
+                    <div class="at-player-price">
+                      <% if player.is_a_captain? %>
+                        <span class="at-captain-pill">Captain</span>
+                      <% else %>
+                        <%= "₹#{player.amount}#{player.amount_unit == 'crores' ? 'CR' : 'L'}" %>
+                      <% end %>
+                    </div>
+                  </div>
+
+                  <!-- Mini skill bars -->
+                  <div class="at-player-skills">
+                    <div class="at-mini-skill">
+                      <div class="at-mini-track">
+                        <div class="at-mini-bar bat-mini" style="width:<%= bat_pct %>%"></div>
+                      </div>
+                      <div class="at-mini-label">Bat <%= bat_pct %>%</div>
+                    </div>
+                    <div class="at-mini-skill">
+                      <div class="at-mini-track">
+                        <div class="at-mini-bar bowl-mini" style="width:<%= bowl_pct %>%"></div>
+                      </div>
+                      <div class="at-mini-label">Bowl <%= bowl_pct %>%</div>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div><!-- /at-main-body -->
+
+  <!-- Notifications -->
+  <div id="at-notifications" class="at-notifications"></div>
 </div>
 
+<!-- ══════════════════════════════════
+     STYLES
+══════════════════════════════════ -->
 <style>
-  @media (min-width: 983px) {
-    .auction-list{
-      align-items: flex-start;
-      width: 20% !important;
-      margin-right: 800px;
-    }
+/* ── TOKENS ── */
+:root {
+  --bg:     #0f172a;
+  --bg2:    #1e293b;
+  --bg3:    #243044;
+  --bg4:    #2d3f5a;
+  --surface: #1e293b;
+  --surface2: #243044;
+  --gold:   #f59e0b;
+  --gold2:  #fbbf24;
+  --gold-d: #d97706;
+  --gold-dim: rgba(245,158,11,0.15);
+  --green:  #10b981;
+  --green2: #34d399;
+  --green-dim: rgba(16,185,129,0.12);
+  --red:    #ef4444;
+  --red-dim: rgba(239,68,68,0.12);
+  --blue:   #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --text:   #f1f5f9;
+  --text2:  #94a3b8;
+  --text3:  #64748b;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --gold-border: rgba(245,158,11,0.3);
+  --r:      16px;
+  --r-sm:   10px;
+  --fd: 'Rajdhani', sans-serif;
+  --fb: 'Nunito', sans-serif;
+  --top-h: 60px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body { background: var(--bg); color: var(--text); font-family: var(--fb); }
+
+/* ── SHELL ── */
+.at-shell {
+  min-height: 100dvh;
+  background: var(--bg);
+  padding-bottom: 40px;
+}
+
+/* ══ TOP BAR ══ */
+.at-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: var(--top-h);
+  background: rgba(15,23,42,0.95);
+  border-bottom: 1px solid var(--border2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  gap: 12px;
+}
+
+.at-topbar-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+
+.at-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.at-back-btn:hover { background: var(--bg3); color: var(--text); }
+
+.at-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.at-brand-icon { font-size: 22px; flex-shrink: 0; }
+.at-brand-name {
+  font-family: var(--fd);
+  font-size: 18px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.at-brand-sub { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+.at-topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.at-nav-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-family: var(--fb);
+  font-size: 12px; font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.at-nav-btn.blue-btn {
+  background: var(--blue-dim);
+  border-color: rgba(59,130,246,0.25);
+  color: #93c5fd;
+}
+.at-nav-btn.blue-btn:hover { background: rgba(59,130,246,0.2); border-color: var(--blue); color: #fff; }
+.at-nav-btn.red-btn {
+  background: var(--red-dim);
+  border-color: rgba(239,68,68,0.25);
+  color: #fca5a5;
+}
+.at-nav-btn.red-btn:hover { background: rgba(239,68,68,0.2); border-color: var(--red); color: #fff; }
+
+@media (max-width: 480px) {
+  .at-nav-btn span { display: none; }
+  .at-nav-btn { padding: 8px; border-radius: 8px; }
+  .at-brand-sub { display: none; }
+}
+
+/* ══ RANKINGS SECTION ══ */
+.at-rankings-section {
+  padding: 20px 16px 16px;
+  background: linear-gradient(180deg, rgba(15,23,42,0.8) 0%, transparent 100%);
+}
+
+.at-section-hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.at-live-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-family: var(--fd);
+  font-size: 11px; font-weight: 700;
+  color: var(--red);
+  letter-spacing: 1.5px;
+  flex-shrink: 0;
+}
+.at-live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--red);
+  animation: at-pulse 1.2s infinite;
+}
+@keyframes at-pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.at-section-title {
+  font-family: var(--fd);
+  font-size: 16px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.3px;
+}
+.at-section-line { flex: 1; height: 1px; background: var(--border2); }
+
+.at-rankings-scroll { overflow-x: auto; scrollbar-width: none; }
+.at-rankings-scroll::-webkit-scrollbar { display: none; }
+
+.at-rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .at-rankings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Rank card */
+.at-rank-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.at-rank-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04), transparent 70%);
+  pointer-events: none;
+}
+.at-rank-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border2);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+}
+.at-rank-card:active { transform: scale(0.98); }
+
+.at-rank-card.gold-rank   { border-color: rgba(245,158,11,0.4); background: linear-gradient(145deg, rgba(245,158,11,0.1), rgba(30,41,59,1)); }
+.at-rank-card.silver-rank { border-color: rgba(148,163,184,0.4); background: linear-gradient(145deg, rgba(148,163,184,0.1), rgba(30,41,59,1)); }
+.at-rank-card.bronze-rank { border-color: rgba(205,127,50,0.4);  background: linear-gradient(145deg, rgba(205,127,50,0.1),  rgba(30,41,59,1)); }
+.at-rank-card.green-rank  { border-color: rgba(16,185,129,0.4);  background: linear-gradient(145deg, rgba(16,185,129,0.1),  rgba(30,41,59,1)); }
+
+.at-rank-num {
+  font-family: var(--fd);
+  font-size: 11px; font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.gold-rank   .at-rank-num { color: var(--gold2); }
+.silver-rank .at-rank-num { color: #cbd5e1; }
+.bronze-rank .at-rank-num { color: #cd7f32; }
+.green-rank  .at-rank-num { color: var(--green2); }
+
+/* Ring */
+.at-rank-ring {
+  position: relative;
+  width: 72px; height: 72px;
+  flex-shrink: 0;
+}
+.at-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.at-ring-bg  { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 3; }
+.at-ring-fill {
+  fill: none; stroke-width: 3; stroke-linecap: round;
+  animation: at-ring-grow 1s ease-out both;
+  stroke: var(--green);
+}
+@keyframes at-ring-grow { from { stroke-dasharray: 0,100; } }
+.gold-rank   .at-ring-fill { stroke: var(--gold2); }
+.silver-rank .at-ring-fill { stroke: #94a3b8; }
+.bronze-rank .at-ring-fill { stroke: #cd7f32; }
+.green-rank  .at-ring-fill { stroke: var(--green2); }
+
+.at-ring-inner {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.at-ring-pct {
+  font-family: var(--fd);
+  font-size: 16px; font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.at-ring-pct span { font-size: 10px; color: var(--text3); }
+
+.at-rank-tag {
+  font-family: var(--fd);
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ══ MAIN BODY (desktop splits into sidebar + feed) ══ */
+.at-main-body {
+  display: flex;
+  gap: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px;
+  align-items: flex-start;
+}
+
+/* ── SIDEBAR ── (desktop only) */
+.at-sidebar {
+  display: none; /* hidden on mobile */
+}
+
+@media (min-width: 1024px) {
+  .at-main-body { padding: 0 24px; gap: 24px; }
+
+  .at-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    overflow: hidden;
+    position: sticky;
+    top: calc(var(--top-h) + 16px);
+    max-height: calc(100dvh - var(--top-h) - 32px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
   }
 
-  .badge-sm {
-    font-size: 0.65rem; /* Smaller font size */
-    padding: 0.2em 0.2em; /* Smaller padding */
-    line-height: 1; /* Adjust line height */
+  .at-sidebar-hdr {
+    font-family: var(--fd);
+    font-size: 11px; font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px 14px 8px;
+    border-bottom: 1px solid var(--border);
   }
 
-  .auction-total {
-    background-color: #28a745; /* Success Green */
-    color: white;
-    font-size: 20px;
+  .at-sidebar-item {
+    padding: 11px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 22px 32px 1fr;
+    grid-template-rows: auto auto;
+    gap: 0 8px;
+    align-items: center;
+  }
+  .at-sidebar-item:last-child { border-bottom: none; }
+  .at-sidebar-item:hover { background: rgba(255,255,255,0.03); }
+  .at-sidebar-item.active { background: var(--gold-dim); border-left: 2px solid var(--gold); }
+
+  .at-sidebar-rank {
+    font-family: var(--fd);
+    font-size: 11px; font-weight: 700;
+    color: var(--text3);
+    grid-row: 1 / 3;
+  }
+  .at-sidebar-av {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--fd); font-size: 11px; font-weight: 700;
+    color: var(--text2);
+    grid-row: 1 / 3;
+  }
+  .at-sidebar-name {
+    font-size: 12px; font-weight: 700;
+    color: var(--text); text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .at-sidebar-pct { font-size: 10px; color: var(--green2); font-weight: 600; }
+  .at-sidebar-bar-wrap {
+    grid-column: 3; height: 2px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 1px; overflow: hidden;
+    margin-top: 3px;
+  }
+  .at-sidebar-bar { height: 100%; background: var(--green); border-radius: 1px; transition: width 1s ease; }
+}
+
+/* ══ TEAMS FEED ══ */
+.at-teams-feed {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  padding: 16px 0 0;
+}
+
+@media (min-width: 1024px) {
+  .at-teams-feed { padding-top: 16px; }
+}
+
+/* ══ TEAM CARD ══ */
+.at-team-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+  animation: at-cardin 0.5s ease both;
+}
+@keyframes at-cardin {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.at-team-card:hover { box-shadow: 0 16px 40px rgba(0,0,0,0.35); }
+
+/* Card color accents */
+.at-team-card.gold-team   { border-color: rgba(245,158,11,0.35); }
+.at-team-card.silver-team { border-color: rgba(148,163,184,0.3); }
+.at-team-card.bronze-team { border-color: rgba(205,127,50,0.3); }
+.at-team-card.green-team  { border-color: rgba(16,185,129,0.3); }
+
+/* ── CARD HEADER ── */
+.at-card-header {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+.at-card-header-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f4c2a 60%, #1a4a2e 100%);
+}
+.gold-team   .at-card-header-bg { background: linear-gradient(135deg, #3d2b00, #1a1400, #1a1a00); }
+.silver-team .at-card-header-bg { background: linear-gradient(135deg, #1a2535, #0f1a2a, #151f2e); }
+.bronze-team .at-card-header-bg { background: linear-gradient(135deg, #3d1f00, #1a1000, #1a1500); }
+.green-team  .at-card-header-bg { background: linear-gradient(135deg, #003d1a, #001a0d, #001a12); }
+
+/* Grid lines texture on header */
+.at-card-header-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 28px);
+}
+
+.at-card-header-content {
+  position: relative; z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+  .at-card-header-content { flex-wrap: nowrap; align-items: center; padding: 24px 28px; }
+}
+
+.at-card-avatar-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  flex-shrink: 0;
+}
+.at-card-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.2);
+  object-fit: cover;
+}
+.gold-team   .at-card-avatar { border-color: rgba(245,158,11,0.6); box-shadow: 0 0 16px rgba(245,158,11,0.25); }
+.silver-team .at-card-avatar { border-color: rgba(148,163,184,0.6); }
+.bronze-team .at-card-avatar { border-color: rgba(205,127,50,0.5); }
+.green-team  .at-card-avatar { border-color: rgba(16,185,129,0.5); }
+
+.at-card-rank-crown {
+  font-size: 10px; font-weight: 700;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  padding: 3px 8px;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.gold-team .at-card-rank-crown   { background: rgba(245,158,11,0.3); border-color: rgba(245,158,11,0.5); color: var(--gold2); }
+.silver-rank .at-card-rank-crown { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+.bronze-rank .at-card-rank-crown { background: rgba(205,127,50,0.2); color: #d4a85a; }
+
+.at-card-meta { flex: 1; min-width: 0; }
+.at-card-team-name {
+  font-family: var(--fd);
+  font-size: 26px; font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.gold-team .at-card-team-name   { color: var(--gold2); }
+.silver-team .at-card-team-name { color: #e2e8f0; }
+.bronze-team .at-card-team-name { color: #e8c084; }
+.green-team .at-card-team-name  { color: var(--green2); }
+
+.at-card-username {
+  font-size: 12px; color: rgba(255,255,255,0.45);
+  margin-top: 2px; letter-spacing: 0.5px;
+}
+.at-card-win-pct {
+  display: flex; align-items: baseline; gap: 6px;
+  margin-top: 10px;
+}
+.at-win-pct-num {
+  font-family: var(--fd);
+  font-size: 28px; font-weight: 700;
+  color: var(--green2); line-height: 1;
+}
+.gold-team .at-win-pct-num   { color: var(--gold2); }
+.silver-team .at-win-pct-num { color: #94a3b8; }
+.bronze-team .at-win-pct-num { color: #cd7f32; }
+.at-win-pct-lbl {
+  font-size: 10px; color: rgba(255,255,255,0.35);
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+
+/* Stats grid in header */
+.at-card-stats-grid {
+  display: flex; gap: 8px;
+  flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .at-card-stats-grid { width: 100%; justify-content: space-between; }
+}
+.at-card-stat {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+  min-width: 80px;
+}
+.at-card-stat.highlight-stat {
+  background: rgba(16,185,129,0.15);
+  border-color: rgba(16,185,129,0.3);
+}
+.gold-team .at-card-stat.highlight-stat {
+  background: rgba(245,158,11,0.15);
+  border-color: rgba(245,158,11,0.3);
+}
+.at-stat-icon { font-size: 16px; margin-bottom: 4px; }
+.at-stat-val {
+  font-family: var(--fd);
+  font-size: 14px; font-weight: 700;
+  color: #fff; line-height: 1;
+}
+.at-stat-lbl {
+  font-size: 9px; color: rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;
+}
+
+/* ── SKILLS SECTION ── */
+.at-skills-section {
+  padding: 14px 20px;
+  background: rgba(0,0,0,0.2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+@media (min-width: 640px) {
+  .at-skills-section { flex-direction: row; gap: 20px; padding: 14px 28px; }
+  .at-skill-row { flex: 1; }
+}
+
+.at-skill-row { display: flex; flex-direction: column; gap: 5px; }
+.at-skill-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+  display: flex; align-items: center; gap: 5px;
+}
+.at-skill-track {
+  height: 22px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 11px;
+  overflow: hidden;
+}
+.at-skill-bar {
+  height: 100%; border-radius: 11px;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px;
+  font-size: 10px; font-weight: 700;
+  color: rgba(0,0,0,0.7);
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  min-width: 40px;
+}
+.bat-bar  { background: linear-gradient(90deg, #059669, #10b981); }
+.bowl-bar { background: linear-gradient(90deg, #d97706, #f59e0b); }
+
+/* ── SQUAD SECTION ── */
+.at-squad-section { padding: 16px 16px 20px; }
+@media (min-width: 640px) { .at-squad-section { padding: 20px 28px 24px; } }
+
+.at-squad-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border2);
+}
+.at-squad-title {
+  font-family: var(--fd);
+  font-size: 15px; font-weight: 700;
+  color: var(--text); letter-spacing: 0.3px;
+}
+.at-squad-count {
+  font-size: 11px; font-weight: 600;
+  background: var(--green-dim);
+  border: 1px solid rgba(16,185,129,0.2);
+  color: var(--green2);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+/* ── PLAYERS GRID ── */
+.at-players-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 500px) { .at-players-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .at-players-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px) { .at-players-grid { grid-template-columns: repeat(4, 1fr); } }
+
+/* ── PLAYER CARD ── */
+.at-player-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.at-player-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: transparent;
+  transition: background 0.2s;
+}
+.at-player-card:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+.at-player-card:hover::before { background: var(--green); }
+
+/* Insight color side-strip */
+.at-player-insight { flex-shrink: 0; }
+.at-insight-img {
+  width: 32px; height: 32px; border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,0.12);
+}
+
+.at-player-av-wrap { position: relative; flex-shrink: 0; }
+.at-player-av {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(59,130,246,0.4);
+  object-fit: cover;
+}
+.at-captain-badge {
+  position: absolute; top: -4px; right: -4px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  border: 2px solid var(--surface2);
+}
+
+.at-player-info { flex: 1; min-width: 0; }
+.at-player-name {
+  font-family: var(--fd);
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+}
+.at-player-price {
+  font-size: 10px; color: var(--text3);
+  margin-top: 2px; font-weight: 600;
+}
+.at-captain-pill {
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  color: var(--gold2);
+  padding: 2px 7px; border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Mini skill bars */
+.at-player-skills { flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; min-width: 64px; }
+.at-mini-skill { display: flex; flex-direction: column; gap: 2px; }
+.at-mini-track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px; overflow: hidden;
+}
+.at-mini-bar { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+.bat-mini  { background: #10b981; }
+.bowl-mini { background: #f59e0b; }
+.at-mini-label { font-size: 9px; color: var(--text3); font-weight: 600; letter-spacing: 0.3px; }
+
+/* ══ NOTIFICATIONS ══ */
+.at-notifications {
+  position: fixed; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 1000;
+}
+
+/* notification toast */
+.at-toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: at-toast-in 0.3s ease-out both;
+  max-width: 320px;
+}
+@keyframes at-toast-in {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes at-toast-out {
+  to { opacity: 0; transform: translateX(40px); }
+}
+.at-toast-icon { font-size: 18px; flex-shrink: 0; }
+.at-toast-text { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+
+/* ── SCROLLBAR ── */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .spl-team-logo {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 180px;
+    height: auto;
   }
 
-  .auction-remaining {
-    background-color: #17a2b8; /* Info Blue */
-    color: white;
+  .img-fluid {
+    width: 100%;
+    max-width: 200px; /* adjust as needed */
   }
 
-  .max-bid {
-    background-color: #6f42c1; /* Purple */
-    color: white;
-  }
 
-  .winning-chances {
-    background-color: #dc3545; /* Danger Red */
-    color: white;
-  }
-
-  .bg-purple {
-    background-color: #6f42c1;
-  }
-
-  .card i {
-    font-size: 24px;
-  }
-
-  .card p {
-    font-size: 18px;
-  }
-
-  @media (max-width: 768px) {
-    .card-title {
-      font-size: 12px;
-    }
-
-    .card p {
-      font-size: 14px;
-    }
-
-    .card i {
-      font-size: 20px;
-    }
-  }
 </style>
+
+<!-- ══ JS ══ -->
+<script>
+function scrollToTeam(userId) {
+  const el = document.getElementById('team-' + userId);
+  if (!el) return;
+  const topbar = document.querySelector('.at-topbar');
+  const offset = topbar ? topbar.offsetHeight + 16 : 76;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
+
+  document.querySelectorAll('.at-sidebar-item').forEach(i => i.classList.remove('active'));
+  const nav = document.getElementById('nav-' + userId);
+  if (nav) nav.classList.add('active');
+}
+
+// Stagger card animations
+document.querySelectorAll('.at-team-card').forEach((card, i) => {
+  card.style.animationDelay = (i * 80) + 'ms';
+});
+
+// IntersectionObserver for sidebar active state on desktop
+if (window.matchMedia('(min-width: 1024px)').matches) {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const uid = entry.target.dataset.userId;
+        document.querySelectorAll('.at-sidebar-item').forEach(i => i.classList.remove('active'));
+        const nav = document.getElementById('nav-' + uid);
+        if (nav) nav.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.at-team-card').forEach(card => observer.observe(card));
+}
+</script>

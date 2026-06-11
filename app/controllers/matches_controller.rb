@@ -55,26 +55,27 @@ class MatchesController < ApplicationController
   def match_players
     team_name = []
     @selected_user = User.find(params[:user_id])
-    @selected_teams = params[:match_name].split(' vs ').select { |team| team_name << match_country_code[team] }
+    # @selected_teams = params[:match_name].split(' vs ').select { |team| team_name << match_country_code[team] }
     if team_name.compact_blank.blank?
       t1,t2 = params[:match_name].split(' vs ')
-      u_t1 = match_country_code[t1].upcase
-      u_t2 = match_country_code[t2].upcase
-      team_name = [ut1,ut2]
+      t1 = match_country_code[t1]
+      t2 = match_country_code[t2]
+      team_name = [t1,t2]
     end 
     # team_name = @selected_teams if team_name.include?(nil) # for super-8
     @user_team = @selected_user.teams.where(auction: default_auction)&.first
     if @selected_user.weekly_user_teams.count > 1
       current_week_team = @selected_user.weekly_user_teams
                                          .where(team: @user_team)
-                                         .where("week_end_date >= ?", Date.current)&.first || @selected_user.weekly_user_teams.where(team: @user_team)&.first
+                                         .where("week_end_date >= ?", Date.current)&.first || @selected_user.weekly_user_teams.where(team: @user_team)&.last
       current_week_player_ids = current_week_team.playing11
     else
       current_week_team = @selected_user&.weekly_user_teams&.where(team: @user_team)&.last
       current_week_player_ids = current_week_team&.playing11
     end
     @auction  = default_auction
-    team_name = team_name.map(&:upcase)
+    # team_name = team_name&.map(&:upcase)
+    # team_name = 'RSA' if team_name == 'SA'
     @selected_user_team = @selected_user.teams.where(auction: @auction)
     @rank = @auction.teams.order(grand_total: :desc).index(@selected_user_team).present? ? @auction.teams.order(grand_total: :desc).index(@selected_user_team) + 1 : '-'
     @players = @selected_user_team.first.players.where(id: current_week_player_ids, team_name: team_name)
@@ -115,16 +116,16 @@ class MatchesController < ApplicationController
       'Papua New Guinea' => 'PNG',
       'Scotland' => 'SCOT',
       'Uganda' => 'UG',
-      'Chennai Super Kings' => 'csk',
-      'Rajasthan Royals' => 'rr',
-      'Kolkata Knight Riders' => 'kkr',
-      'Sunrisers Hyderabad' => 'srh',
-      'Royal Challengers Bengaluru' => 'rcb',
-      'Delhi Capitals' => 'dc',
-      'Punjab Kings' => 'pbks',
-      'Mumbai Indians' => 'mi',
-      'Gujarat Titans' => 'gt',
-      'Lucknow Super Giants' => 'lsg'
+      'Chennai Super Kings' => 'CSK',
+      'Rajasthan Royals' => 'RR',
+      'Kolkata Knight Riders' => 'KKR',
+      'Sunrisers Hyderabad' => 'SRH',
+      'Royal Challengers Bengaluru' => 'RCB',
+      'Delhi Capitals' => 'DC',
+      'Punjab Kings' => 'PBKS',
+      'Mumbai Indians' => 'MI',
+      'Gujarat Titans' => 'GT',
+      'Lucknow Super Giants' => 'LSG'
     }
   end
 

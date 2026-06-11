@@ -9,14 +9,22 @@
 <% end %>
 
 <div class="card mb-4 shadow-lg rounded <%= set_background_color(player.team_name) %>">
-  <!-- <#% text_colour = set_background_color(player.team_name) == 'bg-csk' ? 'text-dark' : 'text-white' %> -->
   <% text_colour = set_background_color(player.team_name) == 'bg-csk' ? 'text-dark' : 'text-white' %>
+ <!--  <#% text_colour = set_background_color(player.team_name) == 'bg-aus' ? 'text-dark' : 'text-white' %> -->
   <div class="card-body d-flex flex-column align-items-center justify-content-center" style="height: 400px; position: relative;">
     <%= player_card_image(player) %>
     <h5 class="<%= text_colour %> card-title mb-2"><%= player.name %></h5>
     <p class="card-text mb-3">
-      <strong class="<%= text_colour %>">Points:</strong>
+      <strong class="<%= text_colour %>">P-XI Points:</strong>
       <span class="<%= text_colour %> font-weight-bold"><%= player.players_teams.where(team: @team)&.first&.points %></span>
+    </p>
+    <p>
+      <strong class="<%= text_colour %>">Bench Points:</strong>
+      <span class="<%= text_colour %> font-weight-bold"><%= player.matches.sum(:bench_points) %></span>
+    </p>
+    <p>
+      <strong class="<%= text_colour %>">Team:</strong>
+      <b><span class="<%= text_colour %> font-weight-bold"><%= player.team_name %></span></b>
     </p>
     <p class="card-text mb-3">
       <div class="team-logo"><%= ipl_team_logo(player.team_name.downcase) %></div>
@@ -24,7 +32,7 @@
     <div class="role-section d-flex align-items-center">
       <strong class="<%= text_colour %>">Role:</strong>
       <span class="badge text-uppercase bg-dark mx-2"><%= player.role.to_s.titleize %></span>
-      <%= image_tag set_image, class: 'role-image mx-2', alt: "Role Image" %>
+      <%= image_tag set_image, class: 'role-image mx-2 text-white', alt: "Role Image" %>
     </div>
   </div>
   <div class="card-footer player-card-footer d-flex justify-content-between align-items-center">
@@ -57,13 +65,44 @@
                                               border: 2px solid #4CAF50; animation: pulse 1.5s infinite; opacity: 0.6;"></div>
         </div>
       </div>
+
+      <% if defined?(@current_week_matches) && @current_week_matches.present? %>
+        <% 
+          # Get player's matches for current week
+          player_has_matches = false
+          @current_week_matches.each do |match|
+            t1, t2 = match.match_name.split(' vs ')
+            t1 = 'TBC' if t1.blank?
+            t2 = 'TBC' if t2.blank?
+            t1 = match_country_code[t1]
+            t2 = match_country_code[t2]
+            if t1 == player.team_name || t2 == player.team_name
+              player_has_matches = true
+              break
+            end
+          end
+        %>
+      <% if player_has_matches %>
+        <% 
+          match_count = 0
+          @current_week_matches.each do |match|
+            t1, t2 = match.match_name.split(' vs ')
+            t1 = 'TBC' if t1.blank?
+            t2 = 'TBC' if t2.blank?
+            t1 = match_country_code[t1]
+            t2 = match_country_code[t2]
+            match_count += 1 if t1 == player.team_name || t2 == player.team_name
+          end
+        %>
       
+    <% end%>
+    <% end%>
       <!-- Match Text with Highlight -->
       <div class="d-flex flex-column align-items-center">
         <div class="d-flex align-items-center">
           <span class="match-count position-relative px-2" 
                 style="font-size: 16px; font-weight: 600; background: linear-gradient(45deg, #FF6B6B, #FF8E53); 
-                       border-radius: 20px; color: white; margin-right: 10px; padding: 2px 10px;"><%= player.current_week_matches_count(@current_week_matches, @current_week_start_date, @current_week_end_date) %></span>
+                       border-radius: 20px; color: white; margin-right: 10px; padding: 2px 10px;"><%= match_count || 0 %></span>
           <span style="font-size: 15px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase;">Upcoming Matches</span>
         </div>
         <div class="match-subtitle mt-1" style="font-size: 12px; opacity: 0.8; font-style: italic;">Tap to view details</div>
@@ -89,16 +128,25 @@
             Next Week's Fixtures
           </span>
           <span style="font-size: 12px; opacity: 0.8;">
-            <%= @next_week_start_date.strftime("%b %d") %> - <%= @next_week_end_date&.strftime("%b %d") %>
+            <%= @week_start_date.strftime("%b %d") %> - <%= @week_end_date&.strftime("%b %d") %>
           </span>
         </div>
+
 
         <div class="match-timeline py-2">
           <% @current_week_matches.each do |match| %>
             <% t1,t2 = match.match_name.split(' vs ') %>
-            <% u_t1 = match_country_code[t1].upcase %>
-            <% u_t2 = match_country_code[t2].upcase %>
-            <% if u_t1.include?(player.team_name) || u_t2.include?(player.team_name) %>
+            <!-- <#% u_t1 = match_country_code[t1]&.upcase %> -->
+            <!-- <#% u_t2 = match_country_code[t2]&.upcase %> -->
+
+            <% if t1.blank? || t2.blank? %>
+              <% t1 = t2 = 'TBC' %>
+            <% end %>
+            
+            <% t1 = match_country_code[t1] %>
+            <% t2 = match_country_code[t2] %>
+
+            <% if t1 == player.team_name || t2 == player.team_name %>
               <% 
                 match_date = match.match_date
                 home_team, away_team = match.match_name.split(" vs ")
@@ -125,21 +173,22 @@
                   <!-- Teams with Logos -->
                   <div class="match-teams d-flex align-items-center" style="flex: 1;">
                     <div class="team d-flex flex-column align-items-center me-2" style="min-width: 40px;">
-                        <div class="team-logo-small" style="width: 25px; height: 25px; background-color: <%= team_color(u_t1) %>; border-radius: 50%;"></div>
-                        <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= u_t1 %></span>
-                      <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= home_team_abbr %></span>
+                        <div class="team-logo-small" style="width: 25px; height: 25px; background-color: <%= team_color(t1) %>; border-radius: 50%;"></div>
+                        <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= t1 %></span>
+                      <!-- <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= home_team_abbr %></span> -->
                     </div>
                     <span style="font-weight: 300; color: rgba(255,255,255,0.7); margin: 0 10px;">vs</span>
                     <div class="team d-flex flex-column align-items-center" style="min-width: 40px;">
-                      <div class="team-logo-small" style="width: 25px; height: 25px; background-color: <%= team_color(u_t2) %>; border-radius: 50%;"></div>
-                        <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= u_t2 %></span>
-                      <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= away_team_abbr %></span>
+                      <div class="team-logo-small" style="width: 25px; height: 25px; background-color: <%= team_color(t2) %>; border-radius: 50%;"></div>
+                        <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= t2 %></span>
+                     <!--  <span style="font-size: 12px; font-weight: 600; margin-top: 3px;"><%= away_team_abbr %></span> -->
                     </div>
                   </div>
                   
                   <!-- Match Details -->
                   <div class="match-meta d-flex flex-column align-items-end" style="min-width: 90px;">
-                    <div class="match-time" style="font-size: 12px; font-weight: 600;"><%= match.time&.strftime("%l:%M %p") || "TBD" %></div>
+                    <% match_time = match.time.is_a?(String) ? match.time : match.time&.strftime("%l:%M %p") %>
+                    <div class="match-time" style="font-size: 12px; font-weight: 600;"><%= match_time || "TBD" %></div>
                     <div class="match-venue" style="font-size: 11px; opacity: 0.7;"><%= match.stadium %></div>
                   </div>
                 </div>

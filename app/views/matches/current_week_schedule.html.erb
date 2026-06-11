@@ -90,38 +90,52 @@
 </div>
 <div class="matches-container">
   <% @current_week_matches.each do |match| %>
-    <div class="match-card <%= match.match_date == Date.current ? 'today-match' : '' %>">
-      <% if match.match_date == Date.current %>
-        <div class="today-badge">TODAY</div>
-      <% end %>
-      <div class="match-date"><%= match.match_date.strftime('%d/%m') %></div>
-      <div class="match-teams">
-        <% teams = match.match_name.split(' vs ') %>
-
-        <div class="team">
-          <div class="team-name"><%= match_country_code[teams[0]] %></div>
-          <div class="team-name"><%= ipl_team_logo(teams[0], min_height: true) %></div>
-        </div>
-
-        <div class="versus">VS</div>
-
-        <div class="team">
-          <div class="team-name"><%= match_country_code[teams[1]] %></div>
-          <div class="team-name"><%= ipl_team_logo(teams[1], min_height: true) %></div>
-        </div>
+    <!-- Updated match-card section with enhanced stadium display and city column -->
+<div class="match-card <%= match.match_date == Date.current ? 'today-match' : '' %>">
+  <% if match.match_date == Date.current %>
+    <div class="today-badge">TODAY</div>
+  <% end %>
+  <div class="match-date"><%= match.match_date.strftime('%d/%m') %></div>
+    <div class="match-teams">
+      <% teams = match.match_name.split(' vs ') %>
+      <div class="team">
+        <div class="team-name"><%= teams[0] %></div>
+        <div class="team-name"><%= ipl_team_logo(teams[0], min_height: true) %></div>
+          <!-- <#%= teams[0] = 'RSA' if teams[0] == 'SA' %> -->
+        <!-- <div class="team-name"><#%= wc_team_logo(teams[0]) %></div> -->
       </div>
-
-      <div class="match-details">
-        <div class="stadium-info">
-          <i class="fas fa-map-marker-alt stadium-icon"></i>
-          <%= match.stadium %>
-        </div>
-
-        <button class="select-owner-btn" type="button" data-bs-toggle="modal" data-bs-target="#ownerModal<%= match.id %>">
-          Select Owner <i class="fas fa-users ms-1"></i>
-        </button>
+      <div class="versus">VS</div>
+      <div class="team">
+        <div class="team-name"><%= teams[1] %></div>
+        <div class="team-name"><%= ipl_team_logo(teams[1], min_height: true) %></div>
+        <!-- <div class="team-name"><#%= wc_team_logo(teams[1]) %></div> -->
       </div>
     </div>
+
+    <div class="match-details">
+      <div class="location-info">
+        <div class="stadium-details">
+          <div class="stadium-name">
+            <i class="fas fa-landmark stadium-icon"></i>
+            <span class="stadium-title"><%= match.stadium %></span>
+          </div>
+          <div class="stadium-city">
+            <i class="fas fa-map-marker-alt city-icon"></i>
+            <span class="city-name"><%= match.city %></span>
+          </div>
+        </div>
+        <div class="match-time">
+          <i class="far fa-clock time-icon"></i>
+          <% match_time = match.time&.is_a?(String) ? match.time : match.time.strftime('%I:%M %p') %>
+          <span class="time-value"><%= match_time %></span>
+        </div>
+      </div>
+
+      <button class="select-owner-btn" type="button" data-bs-toggle="modal" data-bs-target="#ownerModal<%= match.id %>">
+        Select Owner <i class="fas fa-users ms-1"></i>
+      </button>
+    </div>
+  </div>
   <% end %>
 </div> <!-- Closing matches-container properly -->
 
@@ -276,6 +290,7 @@
     box-shadow: 0 3px 10px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
     position: relative;
+    margin-left: 100px;
   }
   
   .match-card:hover {
@@ -426,6 +441,78 @@
     background: #f8f9fa;
     transform: scale(1.02);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Add these styles to your existing CSS */
+  .location-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stadium-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stadium-name, .stadium-city, .match-time {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .stadium-icon, .city-icon, .time-icon {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+  }
+
+  .stadium-icon {
+    color: #5e35b1;
+  }
+
+  .city-icon {
+    color: #ff5722;
+  }
+
+  .time-icon {
+    color: #4caf50;
+  }
+
+  .stadium-title {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .city-name {
+    color: #666;
+  }
+
+  .time-value {
+    color: #333;
+    font-weight: 500;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .location-info {
+      padding: 8px;
+    }
+    
+    .stadium-name, .stadium-city, .match-time {
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width:  768px) {
+    .match-card {
+      margin-left: 5px;
+    }
   }
 
 </style>

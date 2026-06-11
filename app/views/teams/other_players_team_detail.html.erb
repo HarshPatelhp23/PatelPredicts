@@ -3,647 +3,833 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fantasy Cricket Team</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Team Squad - Patel-Predicts</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --primary-color: #1e40af;
-      --secondary-color: #3b82f6;
-      --accent-color: #60a5fa;
-      --light-bg: #f0f9ff;
-      --dark-text: #1e293b;
-      --success-color: #10b981;
-      --danger-color: #ef4444;
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --gold-gradient: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+      
+      --bg-dark: #0f0f23;
+      --bg-darker: #080813;
+      --bg-card: #1a1a2e;
+      --bg-card-hover: #252540;
+      
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0c0;
+      --text-muted: #6b6b8f;
+      
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+      --accent-yellow: #fbbf24;
+      --accent-red: #ef4444;
+      
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
-
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8fafc;
-      color: var(--dark-text);
-    }
-
-    /* Add these CSS styles to fix dropdown positioning */
-    /* Update CSS styles for right-aligned dropdown */
-    .week-selector {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-darker);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
       position: relative;
-      display: inline-block;
-      z-index: 1000;
-      margin-bottom: 20px;
     }
-
-    #weekDropdown {
-      position: fixed; /* Using fixed positioning for more reliable placement */
-      display: none;
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-      z-index: 1001;
-      width: auto;
-      min-width: 120px;
-      transform: none; /* Remove centering transform */
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+      animation: backgroundShift 20s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
     }
-
-    #weekSelectorButton {
-      min-width: 120px;
-      background-color: var(--primary-color);
-      border: none;
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-weight: 600;
-      color: white;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    @keyframes backgroundShift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(5%, -5%) rotate(2deg); }
+      66% { transform: translate(-5%, 5%) rotate(-2deg); }
     }
-
-    .team-container {
-      max-width: 1200px;
+    
+    .container {
+      max-width: 480px;
       margin: 0 auto;
-      padding: 16px;
-    }
-
-    .team-header {
+      padding: 0;
       position: relative;
-      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: white;
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1;
+      min-height: 100vh;
     }
-
-    .team-name {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .points-badge {
-      background-color: rgba(255, 255, 255, 0.2);
-      border-radius: 50px;
-      padding: 8px 16px;
-      font-weight: 600;
-      font-size: 1.1rem;
-      display: inline-block;
-    }
-
-    .points-value {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #ffffff;
-    }
-
-    .week-selector {
-      position: relative;
-      z-index: 10;
-      margin-bottom: 20px;
-    }
-
-    .week-selector .btn {
-      background-color: var(--primary-color);
-      border: none;
-      border-radius: 50px;
-      padding: 10px 20px;
-      font-weight: 600;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .week-selector .dropdown-menu {
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .week-selector .dropdown-item {
-      border-radius: 8px;
-      padding: 8px 16px;
-      margin: 4px 0;
-    }
-
-    .week-selector .dropdown-item:hover {
-      background-color: var(--light-bg);
-      color: var(--primary-color);
-    }
-
-    .squad-section {
-      background-color: white;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .section-header {
-      padding: 16px 20px;
-      background-color: var(--light-bg);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--primary-color);
-      margin: 0;
-    }
-
-    .section-count {
-      background-color: var(--primary-color);
-      color: white;
-      border-radius: 50px;
-      padding: 4px 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .player-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      padding: 20px;
-    }
-
-    .player-card {
-      background-color: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-
-    .player-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .player-card.changed-in {
-      border-left: 4px solid var(--success-color);
-    }
-
-    .player-card.changed-out {
-      border-left: 4px solid var(--danger-color);
-    }
-
-    .player-header {
-      display: flex;
-      padding: 12px;
-      background-color: var(--light-bg);
-      align-items: center;
-    }
-
-    .player-img-container {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 2px solid white;
-      margin-right: 12px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      position: relative;
-      background-color: #e5e7eb;
-    }
-
-    .player-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .player-img-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary-color);
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-
-    .player-role-badge {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid white;
-    }
-
-    .role-badge-wk {
-      background-color: #10b981;
-    }
-
-    .role-badge-bat {
-      background-color: #ef4444;
-    }
-
-    .role-badge-bowl {
-      background-color: #3b82f6;
-    }
-
-    .role-badge-ar {
-      background-color: #8b5cf6;
-    }
-
-    .player-role-badge i {
-      color: white;
-      font-size: 0.7rem;
-    }
-
-    .player-header-details {
-      flex-grow: 1;
-    }
-
-    .player-name {
-      font-weight: 600;
-      font-size: 1rem;
-      margin-bottom: 2px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .overseas-badge {
-      display: inline-flex;
-      align-items: center;
-      background-color: #7c3aed;
-      color: white;
-      border-radius: 4px;
-      padding: 1px 6px;
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    .overseas-badge i {
-      font-size: 0.7rem;
-      margin-right: 3px;
-    }
-
-    .player-team {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-
-    .team-flag {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .player-stats {
-      display: flex;
-      padding: 12px;
-      justify-content: space-around;
-      border-top: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .stat-item {
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-
-    .stat-label {
-      font-size: 0.8rem;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin: 16px 0 32px;
-      padding: 10px 24px;
-      background-color: var(--primary-color);
-      color: white;
-      border-radius: 50px;
-      font-weight: 600;
-      text-decoration: none;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: background-color 0.2s;
-    }
-
-    .back-link:hover {
-      background-color: #153e75;
-      color: white;
-    }
-
-    /* Add these styles to your existing <style> section */
-    .player-card.changed-in {
-      border-left: 4px solid var(--success-color);
+    
+    /* ── Hero Banner ── */
+    .hero-banner {
+      z-index: 1;
+      background: var(--primary-gradient);
+      padding: 1.5rem 1.25rem 2.5rem;
       position: relative;
       overflow: visible;
     }
-
-    .player-card.changed-in::after {
-      content: "Added";
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      background-color: var(--success-color);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: bold;
-      padding: 3px 8px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 1;
+    .hero-banner::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+      opacity: 0.3;
     }
+    .hero-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; position: relative;
+    }
+    .back-btn-hero {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: white; text-decoration: none; transition: all 0.3s ease;
+    }
+    .back-btn-hero:hover { background: rgba(255,255,255,0.25); transform: translateX(-3px); }
+    .hero-actions { display: flex; gap: 0.5rem; }
+    .hero-icon-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: white; cursor: pointer; transition: all 0.3s ease;
+    }
+    .hero-icon-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
+    .team-owner-info { text-align: center; position: relative; margin-bottom: 1.5rem; }
+    .owner-name {
+      font-size: 2rem; font-weight: 900; color: white; margin-bottom: 0.5rem;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.3); letter-spacing: -0.02em;
+    }
+    .team-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.85); font-weight: 500; }
 
-    .player-card.changed-out {
-      border-left: 4px solid var(--danger-color);
+    /* ── Points display — now a 2-column grid ── */
+    .points-mega-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 1.25rem;
       position: relative;
-      overflow: visible;
+    }
+    .points-icon {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    /* Right side: stack total pts + bench pts */
+    .points-info { display: flex; flex-direction: column; gap: 0.5rem; }
+    .points-info-row { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; }
+    .points-label {
+      font-size: 0.8rem; color: rgba(255,255,255,0.8); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;
+    }
+    .points-mega-value {
+      font-size: 2.25rem; font-weight: 900; color: white;
+      font-family: 'Space Mono', monospace; line-height: 1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    /* Bench pts pill inside hero */
+    .bench-pts-hero {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(6, 182, 212, 0.25);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #a5f3fc;
+      padding: 0.25rem 0.65rem; border-radius: 10px;
+      font-size: 0.78rem; font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      white-space: nowrap;
+    }
+    .bench-pts-hero i { font-size: 0.85rem; opacity: 0.9; }
+
+    /* ── Floating Week Selector ── */
+    .week-selector-float {
+      position: absolute; bottom: -20px; left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      width: calc(100% - 2.5rem); max-width: 300px;
+    }
+    .week-btn {
+      width: 100%; padding: 0.875rem 1.25rem;
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 16px; color: var(--text-primary);
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: 'Outfit', sans-serif;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .week-btn:hover {
+      background: var(--bg-card-hover); border-color: var(--accent-purple);
+      transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    }
+    .week-dropdown {
+      position: fixed; display: none;
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      max-height: 320px; overflow-y: auto; z-index: 1002;
+      min-width: 220px; padding: 0.5rem;
+    }
+    .week-dropdown::-webkit-scrollbar { width: 6px; }
+    .week-dropdown::-webkit-scrollbar-track { background: var(--bg-darker); border-radius: 10px; }
+    .week-dropdown::-webkit-scrollbar-thumb { background: var(--accent-purple); border-radius: 10px; }
+    .week-option {
+      padding: 0.875rem 1.25rem; color: var(--text-secondary);
+      text-decoration: none; display: flex; align-items: center; justify-content: space-between;
+      border-radius: 12px; transition: all 0.3s ease; font-weight: 600; font-size: 0.95rem;
+    }
+    .week-option:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+    .week-option.active { background: var(--primary-gradient); color: white; box-shadow: 0 4px 12px rgba(139,92,246,0.3); }
+    .week-option.active i { display: block; }
+    .week-option i { display: none; font-size: 0.8rem; }
+    .week-dropdown.show { display: block !important; }
+
+    /* ── Tab Navigation ── */
+    .tabs-nav {
+      display: flex; gap: 0.5rem;
+      padding: 2.5rem 1.25rem 1rem;
+      position: sticky; top: 0; z-index: 50;
+      background: var(--bg-darker); border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(10px);
+    }
+    .tab-btn {
+      flex: 1; padding: 0.875rem 1rem;
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 14px; color: var(--text-secondary);
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex; flex-direction: column; align-items: center; gap: 0.375rem;
+      font-family: 'Outfit', sans-serif;
+    }
+    .tab-btn i { font-size: 1.25rem; }
+    .tab-count {
+      font-size: 0.75rem; background: rgba(139,92,246,0.15); color: var(--accent-purple);
+      padding: 0.125rem 0.5rem; border-radius: 10px; font-family: 'Space Mono', monospace;
+    }
+    .tab-btn.active { background: var(--primary-gradient); border-color: transparent; color: white; box-shadow: 0 4px 16px rgba(139,92,246,0.4); }
+    .tab-btn.active .tab-count { background: rgba(255,255,255,0.25); color: white; }
+    .tab-btn:hover:not(.active) { background: var(--bg-card-hover); border-color: var(--accent-purple); color: var(--text-primary); }
+
+    /* ── Squad Content ── */
+    .squad-content { padding: 1rem 1.25rem 2rem; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeInUp 0.4s ease-out; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .players-compact-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    /* ── Player Card ── */
+    .player-compact-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 16px; padding: 1rem;
+      display: flex; align-items: center; gap: 1rem;
+      transition: all 0.3s ease; position: relative;
+      animation: slideInLeft 0.5s ease-out backwards;
+    }
+    .player-compact-card:hover {
+      background: var(--bg-card-hover); border-color: var(--accent-purple);
+      transform: translateX(4px); box-shadow: 0 8px 24px rgba(139,92,246,0.2);
+    }
+    .player-compact-card.changed-in  { border-left: 3px solid var(--accent-green); }
+    .player-compact-card.changed-out { border-left: 3px solid var(--accent-red); opacity: 0.65; }
+
+    .change-badge {
+      position: absolute; top: -8px; right: 1rem;
+      padding: 0.25rem 0.625rem; border-radius: 10px;
+      font-size: 0.65rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .badge-in  { background: var(--accent-green); color: white; }
+    .badge-out { background: var(--accent-red);   color: white; }
+
+    /* ── Player Avatar ── */
+    .player-avatar-section { position: relative; flex-shrink: 0; }
+    .player-avatar-compact {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2));
+      border: 2px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .player-avatar-compact img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-placeholder { font-size: 1.25rem; font-weight: 800; color: var(--accent-purple); }
+    .role-indicator {
+      position: absolute; bottom: -6px; right: -6px;
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--bg-card); font-size: 0.65rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .role-indicator i { color: white !important; }
+    .role-wk   { background: #10b981 !important; }
+    .role-bat  { background: #ef4444 !important; }
+    .role-bowl { background: #3b82f6 !important; }
+    .role-ar   { background: #8b5cf6 !important; }
+
+    /* ── Player Info ── */
+    .player-info-compact { flex: 1; min-width: 0; }
+    .player-name-line {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 0.25rem; flex-wrap: wrap;
+    }
+    .player-name-compact { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+    .os-tag {
+      background: linear-gradient(135deg,#7c3aed,#a855f7); color: white;
+      padding: 0.125rem 0.5rem; border-radius: 8px;
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.03em;
+      display: inline-flex; align-items: center; gap: 0.25rem;
+    }
+    .os-tag i { font-size: 0.55rem; }
+    .player-meta-line {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.8rem;
+    }
+    .meta-item { display: flex; align-items: center; gap: 0.375rem; color: var(--text-muted); }
+    .meta-item i { font-size: 0.7rem; color: var(--accent-purple); }
+    .meta-item.price { color: var(--accent-yellow); font-weight: 700; font-family: 'Space Mono', monospace; }
+
+    /* ── Player Stats ── */
+    .player-stats-compact {
+      display: flex; flex-direction: column; gap: 0.375rem;
+      align-items: flex-end; flex-shrink: 0;
+    }
+    .stat-compact { text-align: right; }
+    .stat-value-compact {
+      font-size: 1.25rem; font-weight: 800; color: var(--accent-purple);
+      font-family: 'Space Mono', monospace; line-height: 1;
+    }
+    .stat-label-compact {
+      font-size: 0.7rem; color: var(--text-muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
     }
 
-    .player-card.changed-out::after {
-      content: "Removed";
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      background-color: var(--danger-color);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: bold;
-      padding: 3px 8px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 1;
+    /* ── Per-card bench points badge ── */
+    .bench-pts-card {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      color: #22d3ee;
+      padding: 0.18rem 0.45rem; border-radius: 7px;
+      font-size: 0.85rem; font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      white-space: nowrap; line-height: 1.4;
+      margin-top: 0.25rem;
     }
+    .bench-pts-card i { font-size: 0.55rem; opacity: 0.85; }
 
-    /* Add animation for added players */
-    @keyframes highlight-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    /* ── Empty State ── */
+    .empty-state { text-align: center; padding: 3rem 1.5rem; }
+    .empty-icon {
+      width: 80px; height: 80px; border-radius: 20px;
+      background: rgba(139,92,246,0.1);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem; font-size: 2rem; color: var(--accent-purple);
     }
+    .empty-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+    .empty-text  { color: var(--text-secondary); font-size: 0.95rem; }
 
-    .player-card.changed-in {
-      animation: highlight-pulse 2s infinite;
+    /* ── Replacement Player ── */
+    .replacement-compact-card {
+      border-color: rgba(245,158,11,0.3) !important;
+      padding-top: 16px !important;
     }
-
-    /* Ensure mobile responsiveness */
-    @media (max-width: 768px) {
-      .player-card.changed-in::after,
-      .player-card.changed-out::after {
-        font-size: 0.65rem;
-        padding: 2px 6px;
-        right: -5px;
-        top: -8px;
-      }
-      
-      .player-card.changed-in,
-      .player-card.changed-out {
-        margin-top: 15px;
-      }
+    .avatar-replacement {
+      background: linear-gradient(135deg,rgba(245,158,11,0.25),rgba(234,88,12,0.2)) !important;
+      border-color: rgba(245,158,11,0.4) !important;
     }
+    .swap-icon-badge {
+      position: absolute; top: -5px; left: -5px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #f59e0b; border: 2px solid var(--bg-card);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2; animation: swap-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes swap-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .replacement-chip {
+      display: flex; align-items: center; gap: 5px;
+      margin-top: 3px; margin-bottom: 4px;
+      font-size: 11px; color: #a0a0c0; font-weight: 500;
+    }
+    .replacement-chip strong { color: #fbbf24; font-weight: 600; }
+    .repl-blink-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #f59e0b; flex-shrink: 0;
+      animation: repl-blink 1.5s ease-in-out infinite;
+    }
+    @keyframes repl-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .team-header {
-        padding: 16px;
-      }
-      
-      .team-name {
-        font-size: 1.4rem;
-      }
-      
-      .player-grid {
-        grid-template-columns: 1fr;
-        padding: 12px;
-      }
-      
-      .points-badge {
-        font-size: 1rem;
-        padding: 6px 12px;
-      }
-      
-      .player-card {
-        margin-bottom: 12px;
-      }
-      
-      .section-header {
-        padding: 12px 16px;
-      }
-      
-      .section-title {
-        font-size: 1.1rem;
-      }
-
-      .team-container {
-        padding: 8px;
-      }
-
-      .back-link {
-        width: 100%;
-        text-align: center;
-      }
+    /* ── Desktop ── */
+    @media (min-width: 768px) {
+      .container { max-width: 1200px; padding: 2rem; }
+      .hero-banner { border-radius: 24px; padding: 2rem 3rem 3rem; margin-bottom: 3rem; }
+      .back-btn-hero, .hero-icon-btn { width: 48px; height: 48px; border-radius: 14px; }
+      .owner-name { font-size: 2.75rem; }
+      .team-subtitle { font-size: 1.125rem; }
+      .points-mega-display { padding: 1.75rem 2rem; max-width: 420px; margin: 0 auto; }
+      .points-icon { width: 64px; height: 64px; font-size: 2rem; }
+      .points-mega-value { font-size: 3rem; }
+      .bench-pts-hero { font-size: 0.85rem; padding: 0.5rem 0.95rem; }
+      .week-selector-float { position: absolute; z-index: 1001; }
+      .week-btn { padding: 1rem 1.5rem; font-size: 1.05rem; }
+      .tabs-nav { padding: 0 0 1.5rem; position: static; background: transparent; border: none; gap: 1rem; }
+      .tab-btn { padding: 1.125rem 1.5rem; font-size: 1rem; }
+      .tab-btn i { font-size: 1.5rem; }
+      .squad-content { padding: 1.5rem 0 3rem; }
+      .players-compact-grid { gap: 1rem; }
+      .player-compact-card { padding: 1.5rem; border-radius: 18px; }
+      .player-avatar-compact { width: 72px; height: 72px; border-radius: 16px; }
+      .avatar-placeholder { font-size: 1.75rem; }
+      .role-indicator { width: 28px; height: 28px; font-size: 0.75rem; }
+      .player-name-compact { font-size: 1.25rem; }
+      .player-meta-line { font-size: 0.9rem; }
+      .stat-value-compact { font-size: 1.5rem; }
+      .stat-label-compact { font-size: 0.75rem; }
+    }
+    @media (min-width: 1024px) {
+      .players-compact-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
+      .player-compact-card:hover { transform: translateY(-4px); }
+    }
+    @media (min-width: 1400px) {
+      .container { max-width: 1400px; }
+      .players-compact-grid { gap: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .bench-pts-hero { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+      .bench-pts-card { font-size: 0.6rem; padding: 0.15rem 0.35rem; }
+    }
+    @media (max-width: 380px) {
+      .owner-name { font-size: 1.75rem; }
+      .points-mega-value { font-size: 2rem; }
+      .bench-pts-hero { font-size: 0.65rem; padding: 0.15rem 0.4rem; }
+      .bench-pts-card { font-size: 0.55rem; padding: 0.12rem 0.3rem; }
+      .player-avatar-compact { width: 48px; height: 48px; }
+      .role-indicator { width: 20px; height: 20px; font-size: 0.6rem; }
+      .player-name-compact { font-size: 0.95rem; }
+      .player-meta-line { font-size: 0.75rem; }
+      .stat-value-compact { font-size: 1.125rem; }
     }
   </style>
 </head>
 <body>
-  <div class="team-container">
+  <div class="container">
     <% start_date = Date.strptime(Auction::IPL_FIRST_WEEK_DATE, '%d/%m/%Y') %>
     <% weeks_count = ((Date.today - start_date).to_i / 7) + 1 %>
     <% weeks_count = [weeks_count, 1].max %>
-    <% weeks_count = weeks_count == 1 ? weeks_count : weeks_count %>
     <% set_week = params[:week].present? ? params[:week] : weeks_count %>
-    <!-- <#% set_week = 2 %> -->
-    <!-- Team Header -->
-    <div class="team-header">
-      <div class="team-name"><%= @user.username %>'s Team</div>
-      <div class="points-badge">
-        Total Points: <span class="points-value"><%= @user_team.is_a?(ActiveRecord::Relation) ? @user_team&.first.grand_total : @user_team.grand_total %></span>
-      </div>
-    </div>
 
-    <!-- Week Selector -->
-    <!-- Week Selector -->
-    <!-- Week Selector -->
-    <div class="week-selector text-center">
-      <button class="btn btn-primary" id="weekSelectorButton" data-no-loader="true">
-        <i class="fas fa-calendar-week me-2"></i> Week <%= set_week %>
-        <i class="fas fa-caret-down ms-1"></i>
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-top">
+        <a data-turbo="false" href="<%= other_players_team_path %>" class="back-btn-hero">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="hero-actions">
+          <div class="hero-icon-btn" onclick="window.location.reload()">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          <div class="hero-icon-btn">
+            <i class="fas fa-share-alt"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="team-owner-info">
+        <h1 class="owner-name"><%= @user.username %></h1>
+        <p class="team-subtitle">Patel-Predicts Squad</p>
+      </div>
+      
+      <div class="points-mega-display">
+        <div class="points-icon">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <div class="points-info">
+          <%
+            team_obj = @user_team.is_a?(ActiveRecord::Relation) ? @user_team&.first : @user_team
+          %>
+          <div class="points-label">Total Points</div>
+          <div class="points-mega-value">
+            <%= team_obj.grand_total %>
+          </div>
+          <%# ── BENCH POINTS in hero ── %>
+          <div class="bench-pts-hero">
+            <i class="fas fa-user-clock"></i> <%= team_obj.total_bench_points %> bench pts
+          </div>
+        </div>
+      </div>
+      
+      <!-- Floating Week Selector -->
+      <div class="week-selector-float">
+        <button class="week-btn" id="weekSelectorBtn" data-no-loader="true">
+          <span>
+            <i class="fas fa-calendar-week"></i>
+            Week <%= set_week %>
+          </span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div id="weekDropdown" class="week-dropdown">
+          <% (1..12).each do |week_number| %>
+            <% active_week = set_week.to_i == week_number %>
+            <a href="<%= team_deatails_path(@user, week: week_number) %>" 
+               class="week-option <%= 'active' if active_week %>">
+              <span>Week <%= week_number %></span>
+              <i class="fas fa-check"></i>
+            </a>  
+          <% end %>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab Navigation -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="playing11">
+        <i class="fas fa-users"></i>
+        <span>Playing XI</span>
+        <span class="tab-count"><%= @playing11_players.count %></span>
       </button>
-      <div id="weekDropdown" class="dropdown-menu">
-        <% (1..3).map do |week_number| %>
-          <% active_week = set_week.to_i == week_number %>
-          <a href="<%= team_deatails_path(@user, week: week_number) %>" class="dropdown-item <%= 'active' if active_week %>">Week <%= week_number %></a>
-        <% end %>
-      </div>
-    </div>
-    <!-- Playing 11 Section -->
-    <div class="squad-section" id="playing11-section">
-      <div class="section-header">
-        <h2 class="section-title"><i class="fas fa-users me-2"></i> Playing XI</h2>
-        <span class="section-count"><%= @playing11_players.count %>/11</span>
-      </div>
-      <div class="player-grid">
-        <% sort_players_by_role(@playing11_players).each do |player| %>
-          <% changed_class = @playing_11_changed_player_ids&.include?(player.id) ? 'changed-in' : '' %>
-          <div class="player-card <%= changed_class %>">
-            <div class="player-header">
-              <div class="player-img-container">
-                <!-- Assuming you have a player.image_url method or attribute -->
-                <%= player_team_detail_image(player) %>
-                <!-- Role badge -->
+      <button class="tab-btn" data-tab="bench">
+        <i class="fas fa-chair"></i>
+        <span>Bench</span>
+        <span class="tab-count"><%= @bench_players.count %></span>
+      </button>
+    </nav>
+
+    <!-- Squad Content -->
+    <div class="squad-content">
+
+      <!-- Playing XI Tab -->
+      <div class="tab-panel active" id="playing11">
+        <% if @playing11_players.any? %>
+          <div class="players-compact-grid">
+            <% sort_players_by_role(@playing11_players).each_with_index do |player, index| %>
+              <% changed_class = @playing_11_changed_player_ids&.include?(player.id) ? 'changed-in' : '' %>
+              <div class="player-compact-card <%= changed_class %>" 
+                   style="animation-delay: <%= index * 0.05 %>s;">
                 
-              </div>
-              
-              <div class="player-header-details">
-                <div class="player-name">
-                  <%= player.name %>
-                  <% if player.foreigner %>
-                    <span class="overseas-badge"><i class="fas fa-plane"></i> OS</span>
+                <% if @playing_11_changed_player_ids&.include?(player.id) %>
+                  <span class="change-badge badge-in">Added</span>
+                <% end %>
+                
+                <div class="player-avatar-section">
+                  <div class="player-avatar-compact">
+                    <%= player_team_detail_image(player) %>
+                    <% is_replacement = player.replacement_of.present? %>
+                    <% if is_replacement %>
+                      <div class="swap-icon-badge">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                             stroke="#1a1a2e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="1 4 1 10 7 10"/>
+                          <polyline points="23 20 23 14 17 14"/>
+                          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                        </svg>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="role-indicator role-<%= player.role&.downcase %>">
+                    <i class="fas fa-<%= case player.role&.downcase
+                      when 'wicket_keeper' then 'hands'
+                      when 'batsman' then 'baseball-bat-ball'
+                      when 'bowler' then 'bowling-ball'
+                      when 'all_rounder' then 'star'
+                      else 'user'
+                      end %>"></i>
+                  </div>
+                </div>
+                
+                <div class="player-info-compact">
+                  <div class="player-name-line">
+                    <span class="player-name-compact"><%= player.name.truncate(25) %></span>
+                    <% if player.foreigner? %>
+                      <span class="os-tag"><i class="fas fa-plane"></i>OS</span>
+                    <% end %>
+                  </div>
+                  <% if is_replacement %>
+                    <div class="replacement-chip">
+                      <span class="repl-blink-dot"></span>
+                      Replaces <strong><%= player.replacement_of %></strong>
+                    </div>
                   <% end %>
+                  <div class="player-meta-line">
+                    <div class="meta-item price">
+                      <i class="fas fa-coins"></i>
+                      <%= format_indian_currency(player.players_teams.where(team: @user_team)&.first&.sold_price) %>
+                    </div>
+                    <div class="meta-item">
+                      <i class="fas fa-shield-alt"></i>
+                      <%= player.team_name %>
+                    </div>
+                    <div class="meta-item">
+                      <i class="fas fa-user-tag"></i>
+                      <%= set_role(player) %>
+                    </div>
+                  </div>
                 </div>
-                <div class="player-team">
-                  <% if display_team_flags(player.team_name).present? %>
-                    <%= display_team_flags(player.team_name) %>
-                  <% else %>
-                    <i class="fas fa-shield-alt me-1"></i>
-                    <span><%= player.team_name %></span>
-                  <% end %>
+                
+                <div class="player-stats-compact">
+                  <div class="stat-compact">
+                    <div class="stat-value-compact">
+                      <%= player.players_teams.where(team_id: @user.teams.pluck(:id))&.first&.points || 0 %>
+                    </div>
+                    <div class="stat-label-compact">Pts</div>
+                  </div>
+                  <% player_bench_pts = player.matches.sum(:bench_points) %>
+                  <div class="bench-pts-card">
+                    <i class="fas fa-user-clock"></i><%= player_bench_pts %>b
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="player-stats">
-              <div class="stat-item">
-                <div class="stat-value"><%= player.players_teams.where(team_id: @user.teams.pluck(:id))&.first&.points || 0 %></div>
-                <div class="stat-label">Points</div>
-              </div>
-              
-              <!-- You can add more stats here if available -->
-              <div class="stat-item">
-                <div class="stat-value">
-                  <%= set_role(player) %>
-                </div>
-                <div class="stat-label">Role</div>
-              </div>
-            </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-users-slash"></i></div>
+            <h3 class="empty-title">No Players Selected</h3>
+            <p class="empty-text">Playing XI hasn't been set for this week yet</p>
           </div>
         <% end %>
       </div>
-    </div>
 
-    <!-- Bench Players Section -->
-    <div class="squad-section" id="bench-section">
-      <div class="section-header">
-        <h2 class="section-title"><i class="fas fa-chair me-2"></i> Bench Players</h2>
-        <span class="section-count"><%= @bench_players.count %></span>
-      </div>
-      <div class="player-grid">
-        <% sort_players_by_role(@bench_players).each do |player| %>
-          <% changed_class = @bench_changed_player_ids&.include?(player.id) ? 'changed-out' : '' %>
-          <div class="player-card <%= changed_class %>">
-            <div class="player-header">
-              <div class="player-img-container">
-                <!-- Assuming you have a player.image_url method or attribute -->
-                <%= player_team_detail_image(player) %>
-              </div>
-              
-              <div class="player-header-details">
-                <div class="player-name">
-                  <%= player.name %>
-                  <% if player.foreigner %>
-                    <span class="overseas-badge"><i class="fas fa-plane"></i> OS</span>
+      <!-- Bench Tab -->
+      <div class="tab-panel" id="bench">
+        <% if @bench_players.any? %>
+          <div class="players-compact-grid">
+            <% sort_players_by_role(@bench_players).each_with_index do |player, index| %>
+              <% changed_class = @bench_changed_player_ids&.include?(player.id) ? 'changed-out' : '' %>
+              <div class="player-compact-card <%= changed_class %>" 
+                   style="animation-delay: <%= index * 0.05 %>s;">
+                
+                <% if @bench_changed_player_ids&.include?(player.id) %>
+                  <span class="change-badge badge-out">Removed</span>
+                <% end %>
+
+                <div class="player-avatar-section">
+                  <div class="player-avatar-compact">
+                    <%= player_team_detail_image(player) %>
+                    <% is_replacement = player.replacement_of.present? %>
+                    <% if is_replacement %>
+                      <div class="swap-icon-badge">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                             stroke="#1a1a2e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="1 4 1 10 7 10"/>
+                          <polyline points="23 20 23 14 17 14"/>
+                          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                        </svg>
+                      </div>
+                    <% end %>
+                  </div>
+                  <div class="role-indicator role-<%= player.role&.downcase %>">
+                    <i class="fas fa-<%= case player.role&.downcase
+                      when 'wicket_keeper' then 'hands'
+                      when 'batsman' then 'baseball-bat-ball'
+                      when 'bowler' then 'bowling-ball'
+                      when 'all_rounder' then 'star'
+                      else 'user'
+                      end %>"></i>
+                  </div>
+                </div>
+                
+                <div class="player-info-compact">
+                  <div class="player-name-line">
+                    <span class="player-name-compact"><%= player.name.truncate(25) %></span>
+                    <% if player.foreigner? %>
+                      <span class="os-tag"><i class="fas fa-plane"></i>OS</span>
+                    <% end %>
+                  </div>
+                  <% if is_replacement %>
+                    <div class="replacement-chip">
+                      <span class="repl-blink-dot"></span>
+                      Replaces <strong><%= player.replacement_of %></strong>
+                    </div>
                   <% end %>
+                  <div class="player-meta-line">
+                    <div class="meta-item price">
+                      <i class="fas fa-coins"></i>
+                      <%= format_indian_currency(player.players_teams.where(team: @user_team)&.first&.sold_price) %>
+                    </div>
+                    <div class="meta-item">
+                      <i class="fas fa-shield-alt"></i>
+                      <%= player.team_name %>
+                    </div>
+                    <div class="meta-item">
+                      <i class="fas fa-user-tag"></i>
+                      <%= set_role(player) %>
+                    </div>
+                  </div>
                 </div>
-                <div class="player-team">
-                  <% if display_team_flags(player.team_name).present? %>
-                    <%= display_team_flags(player.team_name) %>
-                  <% else %>
-                    <i class="fas fa-shield-alt me-1"></i>
-                    <span><%= player.team_name %></span>
-                  <% end %>
+                
+                <div class="player-stats-compact">
+                  <div class="stat-compact">
+                    <div class="stat-value-compact">
+                      <%= player.players_teams.where(team_id: @user.teams.pluck(:id))&.first&.points || 0 %>
+                    </div>
+                    <div class="stat-label-compact">Pts</div>
+                  </div>
+                  <% player_bench_pts = player.matches.sum(:bench_points) %>
+                  <div class="bench-pts-card">
+                    <i class="fas fa-user-clock"></i><%= player_bench_pts %>b
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="player-stats">
-              <div class="stat-item">
-                <div class="stat-value"><%= player.players_teams.where(team_id: @user.teams.pluck(:id))&.first&.points || 0 %></div>
-                <div class="stat-label">Points</div>
-              </div>
-              
-              <!-- You can add more stats here if available -->
-              <div class="stat-item">
-                <div class="stat-value">
-                  <%= set_role(player) %>
-                </div>
-                <div class="stat-label">Role</div>
-              </div>
-            </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-chair"></i></div>
+            <h3 class="empty-title">No Bench Players</h3>
+            <p class="empty-text">All players are in the playing XI</p>
           </div>
         <% end %>
       </div>
-    </div>
 
-    <!-- Back Button -->
-    <div class="text-center">
-      <%= link_to other_players_team_path, class: "back-link", style: 'text-decoration: none;' do %>
-        <i class="fas fa-arrow-left me-2"></i> Back to Teams
-      <% end %>
     </div>
   </div>
 
-  <!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const button = document.getElementById('weekSelectorButton');
-    const dropdown = document.getElementById('weekDropdown');
-    
-    if (button && dropdown) {
-      button.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        if (dropdown.style.display === 'none') {
-          dropdown.style.display = 'block';
-          
-          // Position the dropdown at the right edge of the button
-          const buttonRect = button.getBoundingClientRect();
-          
-          dropdown.style.top = (buttonRect.bottom + 5) + 'px'; // Add 5px gap
-          dropdown.style.left = 'auto'; // Clear any previous left positioning
-          dropdown.style.right = (window.innerWidth - buttonRect.right) + 'px'; // Align to right edge
-          
-          // Set a minimum width for the dropdown
-          dropdown.style.minWidth = '120px';
-          
-        } else {
-          dropdown.style.display = 'none';
-        }
-      });
-      
-      // Close dropdown when clicking outside
-      document.addEventListener('click', function(e) {
-        if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && e.target !== button) {
-          dropdown.style.display = 'none';
-        }
-      });
-    }
+  <script>
+  // Week Selector - Center Screen Positioning
+  const weekBtn = document.getElementById('weekSelectorBtn');
+  const weekDropdown = document.getElementById('weekDropdown');
+  
+  if (weekBtn && weekDropdown) {
+    weekBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (weekDropdown.style.display === 'block') {
+        weekDropdown.style.display = 'none';
+        return;
+      }
+      weekDropdown.style.display = 'block';
+      weekDropdown.style.position = 'fixed';
+      weekDropdown.style.zIndex = '99999';
+      weekDropdown.style.top = '50%';
+      weekDropdown.style.left = '50%';
+      weekDropdown.style.transform = 'translate(-50%, -50%)';
+      weekDropdown.style.width = '280px';
+      weekDropdown.style.maxWidth = '90vw';
+    };
+    document.onclick = function(e) {
+      if (!weekBtn.contains(e.target) && !weekDropdown.contains(e.target)) {
+        weekDropdown.style.display = 'none';
+      }
+    };
+    document.onkeydown = function(e) {
+      if (e.key === 'Escape') weekDropdown.style.display = 'none';
+    };
+  }
+  
+  // Tab Switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  tabBtns.forEach(btn => {
+    btn.onclick = function() {
+      const targetTab = this.dataset.tab;
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById(targetTab).classList.add('active');
+    };
   });
-</script>
+  
+  // Share functionality
+  document.addEventListener('turbo:load', function() { initializeShareButton(); });
+  document.addEventListener('DOMContentLoaded', function() { initializeShareButton(); });
+
+  function initializeShareButton() {
+    const shareBtn = document.querySelector('.hero-actions .hero-icon-btn:last-child');
+    if (!shareBtn) return;
+    shareBtn.onclick = async function() {
+      const originalIcon = this.innerHTML;
+      this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+      this.style.opacity = '0.7';
+      this.style.pointerEvents = 'none';
+      try {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const playing11Players = collectPlayersFromTab('playing11');
+        const benchPlayers     = collectPlayersFromTab('bench');
+        const ownerName    = document.querySelector('.owner-name')?.innerText || 'Unknown';
+        const totalPoints  = document.querySelector('.points-mega-value')?.innerText || '0';
+        const benchPtsEl   = document.querySelector('.bench-pts-hero');
+        const benchPtsText = benchPtsEl ? `\n🪑 Bench Points: ${benchPtsEl.innerText.replace(/\s+/g,' ').trim()}` : '';
+        const currentWeek  = document.querySelector('#weekSelectorBtn span')?.innerText || 'Week 1';
+        let shareText = `🏏 *${ownerName}'s Patel-Predicts Squad*\n`;
+        shareText += `📅 ${currentWeek}\n`;
+        shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        shareText += `📊 Total Points: ${totalPoints}${benchPtsText}\n`;
+        shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        shareText += `🏏 PLAYING XI (${playing11Players.length}/11)\n`;
+        shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        if (playing11Players.length > 0) {
+          playing11Players.forEach(p => {
+            shareText += `${p.index}. ${p.name}${p.isOverseas ? ` ${p.isOverseas}` : ''}\n   ${p.role} | ${p.price} | ${p.points} pts\n\n`;
+          });
+        } else {
+          shareText += `No players selected\n\n`;
+        }
+        if (benchPlayers.length > 0) {
+          shareText += `🪑 BENCH (${benchPlayers.length}/4)\n`;
+          shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+          benchPlayers.forEach(p => {
+            shareText += `${p.index}. ${p.name}${p.isOverseas ? ` ${p.isOverseas}` : ''}\n   ${p.role} | ${p.price} | ${p.points} pts\n\n`;
+          });
+        } else {
+          shareText += `🪑 BENCH: No bench players\n\n`;
+        }
+        shareText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        shareText += `📱 View full team: ${window.location.href}\n`;
+        shareText += `#Patel-Predicts #IPL2026\n`;
+        if (navigator.share) {
+          await navigator.share({ title: `${ownerName}'s Squad`, text: shareText, url: window.location.href });
+        } else {
+          await navigator.clipboard.writeText(shareText);
+          showToast('✅ Copied to clipboard!', 'success');
+        }
+      } catch (err) {
+        console.error('Share error:', err);
+        showToast('❌ Failed to share', 'error');
+      } finally {
+        this.innerHTML = originalIcon;
+        this.style.opacity = '1';
+        this.style.pointerEvents = 'auto';
+      }
+    };
+  }
+
+  function collectPlayersFromTab(tabId) {
+    const players = [];
+    document.querySelectorAll(`#${tabId} .player-compact-card`).forEach((card, index) => {
+      const nameEl   = card.querySelector('.player-name-compact');
+      const roleEl   = card.querySelector('.meta-item:last-child');
+      const priceEl  = card.querySelector('.meta-item.price');
+      const pointsEl = card.querySelector('.stat-value-compact');
+      const osTag    = card.querySelector('.os-tag');
+      if (nameEl && nameEl.innerText.trim()) {
+        players.push({
+          name: nameEl.innerText.trim(),
+          role: roleEl  ? roleEl.innerText.trim()  : 'Player',
+          price: priceEl ? priceEl.innerText.trim() : '₹0',
+          points: pointsEl ? pointsEl.innerText.trim() : '0',
+          isOverseas: osTag ? '✈️' : '',
+          index: index + 1
+        });
+      }
+    });
+    return players;
+  }
+  </script>
 </body>
 </html>

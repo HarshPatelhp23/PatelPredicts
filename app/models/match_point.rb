@@ -3,17 +3,24 @@
 class MatchPoint < ApplicationRecord
   belongs_to :team
   validates :total_points, presence: true
+  # default_scope { order(match_date: :desc) }
 
-  scope :leader_of_match, ->(match_name, auction, user) { joins(:team).where(match_name:, teams: { auction: }).order(total_points: :desc).first.team.user.username }
-  scope :leader_points_of_match, ->(match_name, auction, user) { joins(:team).where(match_name:, teams: { auction: }).order(total_points: :desc).first.total_points }
+  scope :leader_of_match, ->(match_name, auction, match_date) { joins(:team).where(match_name:, match_date:, teams: { auction: }).order(total_points: :desc).first.team.user.username }
+  scope :leader_points_of_match, ->(match_name, auction, match_date) {
+    joins(:team)
+      .where(match_name: match_name, match_date:, teams: { auction: auction })
+      .order(created_at: :desc).pluck(:total_points).max
+  }
+
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[created_at id team_id total_points updated_at match_name]
+    %w[created_at id team_id player_id total_points updated_at match_name]
   end
 
   def self.ransackable_associations(_auth_object = nil)
-    ['team']
+    ['team', 'player']
   end
+
 
   class << self
 

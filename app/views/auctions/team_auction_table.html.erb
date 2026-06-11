@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPL Auction Table with TTS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: slideInRight 0.5s ease-out, slideOutRight 0.5s ease-in 3s forwards;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 3px solid #ffd700;
+        }
+
+        .toast-icon {
+            font-size: 2rem;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Dealer Toggle Button */
+        .dealer-toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            color: white;
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(255,107,157,0.4);
+            transition: all 0.3s ease;
+            margin-top: -220px;
+            margin-left: 120px;
+        }
+
+        .dealer-toggle-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(255,107,157,0.6);
+        }
+
+        /* Dealer Modal */
+        .dealer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dealer-modal.active {
+            display: flex;
+        }
+
+        .dealer-modal-content {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(255,215,0,0.6);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .dealer-modal h3 {
+            color: #ffd700;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .dealer-form-group {
+            margin-bottom: 20px;
+        }
+
+        .dealer-form-group label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.9rem;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .dealer-form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,215,0,0.4);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .dealer-form-group select:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(255,255,255,0.25);
+        }
+
+        .dealer-form-group select option {
+            background: #2d3748;
+            color: white;
+        }
+
+        .dealer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .dealer-option {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,215,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .dealer-option:hover {
+            transform: scale(1.05);
+            border-color: #ffd700;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .dealer-option.active {
+            border-color: #ffd700;
+            background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(255,215,0,0.2));
+            box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+
+        .dealer-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+
+        .dealer-name {
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .dealer-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .dealer-modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dealer-modal-btn.confirm {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(16,185,129,0.4);
+        }
+
+        .dealer-modal-btn.confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16,185,129,0.6);
+        }
+
+        .dealer-modal-btn.cancel {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(239,68,68,0.4);
+        }
+
+        .dealer-modal-btn.cancel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(239,68,68,0.6);
+        }
+
+        /* Speech Bubble Styles */
+        .speech-bubble {
+            position: absolute;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: bubbleAppear 0.3s ease-out, fadeOut 0.5s ease-in 4s forwards;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            border: 3px solid #ffd700;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: white transparent transparent;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 23px 23px 0;
+            border-style: solid;
+            border-color: #ffd700 transparent transparent;
+            z-index: -1;
+        }
+
+        @keyframes bubbleAppear {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .auctioneer {
+            position: relative;
+        }
+
+        .auction-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .auction-table-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 50px 0;
+        }
+
+        .table-surface {
+            position: relative;
+            width: 1200px;
+            height: 800px;
+            margin: 0 auto;
+            background: radial-gradient(ellipse at center, #1a472a 0%, #0d2818 100%);
+            border-radius: 50%;
+            border: 20px solid #8b4513;
+            box-shadow: 
+                0 0 0 10px #654321,
+                0 20px 60px rgba(0,0,0,0.5),
+                inset 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table-center {
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            background: radial-gradient(circle, rgba(45,80,22,0.95) 0%, rgba(26,61,15,0.95) 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            border: 5px solid rgba(255,215,0,0.3);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .auctioneer {
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .auctioneer-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 65px;
+            margin: 0 auto 10px;
+            box-shadow: 
+                0 10px 30px rgba(255,107,157,0.4),
+                0 0 0 5px rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auctioneer-image:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 15px 40px rgba(255,107,157,0.6),
+                0 0 0 8px rgba(255,255,255,0.3);
+        }
+
+        .auctioneer-image.speaking {
+            animation: speaking 0.3s ease-in-out infinite;
+        }
+
+        @keyframes speaking {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .sound-waves {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .sound-waves.active {
+            opacity: 1;
+        }
+
+        .wave {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border: 3px solid #ffd700;
+            border-radius: 50%;
+            animation: soundWave 1.5s ease-out infinite;
+        }
+
+        .wave:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .wave:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes soundWave {
+            0% {
+                width: 100%;
+                height: 100%;
+                opacity: 1;
+            }
+            100% {
+                width: 200%;
+                height: 200%;
+                opacity: 0;
+            }
+        }
+
+        .auctioneer-name {
+            color: #ffd700;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .auctioneer-title {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+
+        .center-controls {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .current-bid-display {
+            text-align: center;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(251,191,36,0.4);
+        }
+
+        .current-bid-display .label {
+            color: rgba(0,0,0,0.7);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .current-bid-display .amount {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            display: block;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255,215,0,0.4);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            background: rgba(255,255,255,0.25);
+        }
+
+        .control-group select option {
+            background: #2d3748;
+            color: white;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .player-search-input {
+            padding-left: 38px !important;
+        }
+
+        .amount-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+        }
+
+        .player-dropdown {
+            position: absolute;
+            z-index: 1000;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #2d3748;
+            border: 2px solid rgba(255,215,0,0.5);
+            border-radius: 8px;
+            bottom: 100%;
+            margin-bottom: 5px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+
+        .player-item {
+            padding: 10px 12px;
+            color: white;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .player-item:hover {
+            background: rgba(255,215,0,0.2);
+        }
+
+        .player-item:last-child {
+            border-bottom: none;
+        }
+
+        .player-item-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+            font-size: 0.9rem;
+        }
+
+        .player-item-details {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .sold-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(16,185,129,0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .sold-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16,185,129,0.6);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .sold-button:active {
+            transform: translateY(0);
+        }
+
+        .sold-button:disabled {
+            background: rgba(156,163,175,0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .owner-seat {
+            position: absolute;
+            width: 180px;
+            text-align: center;
+            transform-origin: center;
+            animation: fadeIn 1s ease-out backwards;
+        }
+
+        .owner-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,215,0,0.5);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .owner-card:hover {
+            transform: scale(1.1) translateY(-5px);
+            border-color: #ffd700;
+            box-shadow: 0 15px 50px rgba(255,215,0,0.4);
+            background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.15));
+        }
+
+        .owner-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            margin: 0 auto 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            border: 3px solid rgba(255,215,0,0.6);
+        }
+
+        .owner-name {
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .team-name {
+            color: #ffd700;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .purse-amount {
+            background: rgba(34,197,94,0.2);
+            color: #4ade80;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 0.91rem;
+            font-weight: bold;
+            border: 1px solid rgba(34,197,94,0.4);
+        }
+
+        .position-0 { top: -80px; left: 27%; transform: translateX(-50%); animation-delay: 0.1s; }
+        .position-1 { top: -80px; right: 250px; animation-delay: 0.2s; }
+        .position-2 { top: -50px; right: 10px; animation-delay: 0.3s; }
+        .position-3 { top: 205px; right: -135px; animation-delay: 0.4s; }
+        .position-4 { bottom: 70px; right: -50px; animation-delay: 0.5s; }
+        .position-5 { bottom: -72px; left: 909px; transform: translateX(-50%); animation-delay: 0.6s; }
+        .position-6 { bottom: -70px; left: 160px; animation-delay: 0.7s; }
+        .position-7 { top: 460px; left: -60px; animation-delay: 0.8s; }
+        .position-8 { top: 190px; left: -130px; animation-delay: 0.9s; }
+        .position-9 { top: -65px; left: -10px; animation-delay: 1s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .voice-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .voice-row .control-group {
+            margin-bottom: 0;
+        }
+
+        .voice-row label {
+            font-size: 0.7rem;
+        }
+
+        .voice-row select {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1024px) {
+            .table-surface {
+                width: 700px;
+                height: 700px;
+            }
+
+            .table-center {
+                width: 420px;
+                height: 420px;
+            }
+
+            .owner-seat {
+                width: 150px;
+            }
+        }
+  @keyframes dance {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg);
+            }
+            10% { 
+                transform: translateY(-10px) rotate(-5deg);
+            }
+            20% { 
+                transform: translateY(-5px) rotate(5deg);
+            }
+            30% { 
+                transform: translateY(-15px) rotate(-8deg);
+            }
+            40% { 
+                transform: translateY(-8px) rotate(8deg);
+            }
+            50% { 
+                transform: translateY(-20px) rotate(0deg) scale(1.1);
+            }
+            60% { 
+                transform: translateY(-8px) rotate(-8deg);
+            }
+            70% { 
+                transform: translateY(-15px) rotate(8deg);
+            }
+            80% { 
+                transform: translateY(-5px) rotate(-5deg);
+            }
+            90% { 
+                transform: translateY(-10px) rotate(5deg);
+            }
+        }
+
+        /* Confetti Animation */
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100%) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(600px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .auctioneer-image.dancing {
+            animation: dance 0.8s ease-in-out infinite;
+        }
+
+        /* Celebration overlay */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            animation: confetti-fall 3s linear forwards;
+        }
+
+        /* High bid glow effect */
+        .auctioneer-image.high-bid {
+            box-shadow: 
+                0 10px 30px rgba(255,107,157,0.4),
+                0 0 0 5px rgba(255,255,255,0.2),
+                0 0 50px rgba(255,215,0,0.8),
+                0 0 100px rgba(255,215,0,0.6);
+        }
+
+        /* Pulsing current bid display for high bids */
+        .current-bid-display.high-bid {
+            animation: bidPulse 1s ease-in-out infinite;
+            background: linear-gradient(135deg, #ff6b9d 0%, #fbbf24 100%);
+        }
+
+        @keyframes bidPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 5px 20px rgba(251,191,36,0.4);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 10px 40px rgba(255,107,157,0.8);
+            }
+        }
+
+        /* Party time text */
+        .party-text {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.8);
+            animation: partyBounce 0.6s ease-in-out infinite;
+            z-index: 100;
+        }
+
+        @keyframes partyBounce {
+            0%, 100% { 
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+            50% { 
+                transform: translateX(-50%) translateY(-10px) scale(1.2);
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="auction-container">
+    <!-- Auction Table -->
+    <div class="auction-table-wrapper">
+      <div class="table-surface">
+        <div class="table-center">
+            <div class="auctioneer">
+                <div class="auctioneer-image" id="auctioneerImage">
+                    👩‍💼
+                    <div class="sound-waves" id="soundWaves">
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                    </div>
+                </div>
+                <div class="auctioneer-name" id="auctioneerName">Priya Sharma</div>
+                <div class="auctioneer-title" id="auctioneerTitle">Lead Auctioneer</div>
+            </div>
+            <!-- Dealer Toggle Button -->
+            <button class="dealer-toggle-btn" onclick="openDealerModal()">
+                🎭 Change Auctioneer
+            </button>
+
+            <!-- Dealer Selection Modal -->
+            <div class="dealer-modal" id="dealerModal">
+                <div class="dealer-modal-content">
+                    <h3>🎭 Change Auctioneer</h3>
+                    
+                    <div class="dealer-form-group">
+                        <label for="userSelect">Who wants to change?</label>
+                        <select id="userSelect">
+                            <option value="">Select User...</option>
+                            <% if defined?(@teams) && @teams && @teams.any? %>
+                                <% @teams.first(10).each do |team| %>
+                                    <option value="<%= team.user&.username || 'Owner' %>"><%= team.user&.username || 'Owner' %> - <%= team.team_name %></option>
+                                <% end %>
+                            <% else %>
+                                <option value="Owner 1">Owner 1</option>
+                                <option value="Owner 2">Owner 2</option>
+                                <option value="Owner 3">Owner 3</option>
+                            <% end %>
+                        </select>
+                    </div>
+
+                    <div class="dealer-form-group">
+                        <label>Select New Auctioneer</label>
+                        <div class="dealer-grid">
+                            <div class="dealer-option active" data-dealer="0" onclick="selectDealer(0, '👩‍💼', 'Priya Sharma', 'Lead Auctioneer')">
+                                <div class="dealer-emoji">👩‍💼</div>
+                                <div class="dealer-name">Priya Sharma</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="1" onclick="selectDealer(1, '👩‍🎤', 'Anjali Mehta', 'Celebrity Host')">
+                                <div class="dealer-emoji">👩‍🎤</div>
+                                <div class="dealer-name">Anjali Mehta</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="2" onclick="selectDealer(2, '🧙‍♀️', 'Meera Patel', 'Mystical Dealer')">
+                                <div class="dealer-emoji">🧙‍♀️</div>
+                                <div class="dealer-name">Meera Patel</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="3" onclick="selectDealer(3, '👩‍🏫', 'Kavita Desai', 'Expert Dealer')">
+                                <div class="dealer-emoji">👩‍🏫</div>
+                                <div class="dealer-name">Kavita Desai</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="4" onclick="selectDealer(4, '👸', 'Riya Verma', 'Royal Auctioneer')">
+                                <div class="dealer-emoji">👸</div>
+                                <div class="dealer-name">Riya Verma</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="5" onclick="selectDealer(5, '👩‍🚀', 'Neha Gupta', 'Future Host')">
+                                <div class="dealer-emoji">👩‍🚀</div>
+                                <div class="dealer-name">Neha Gupta</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="6" onclick="selectDealer(6, '👩‍⚕️', 'Dr. Sneha Roy', 'Professional Host')">
+                                <div class="dealer-emoji">👩‍⚕️</div>
+                                <div class="dealer-name">Dr. Sneha Roy</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="7" onclick="selectDealer(7, '👩‍🎓', 'Divya Kulkarni', 'Academic Host')">
+                                <div class="dealer-emoji">👩‍🎓</div>
+                                <div class="dealer-name">Divya Kulkarni</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="8" onclick="selectDealer(8, '👩‍💻', 'Pooja Singh', 'Tech Auctioneer')">
+                                <div class="dealer-emoji">👩‍💻</div>
+                                <div class="dealer-name">Pooja Singh</div>
+                            </div>
+                            <div class="dealer-option" data-dealer="9" onclick="selectDealer(9, '👩‍🎨', 'Isha Joshi', 'Creative Host')">
+                                <div class="dealer-emoji">👩‍🎨</div>
+                                <div class="dealer-name">Isha Joshi</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dealer-modal-buttons">
+                        <button class="dealer-modal-btn confirm" onclick="confirmDealerChange()">✓ Confirm Change</button>
+                        <button class="dealer-modal-btn cancel" onclick="closeDealerModal()">✗ Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div class="center-controls">
+                <div class="current-bid-display">
+                    <div class="label">FINAL SELLING AMOUNT</div>
+                    <div class="amount" id="currentBidAmount">₹0</div>
+                </div>
+
+                <div class="control-group">
+                    <label for="auctionSelect">Select Auction</label>
+                    <select id="auctionSelect" name="auction_id">
+                        <option value="">Choose Auction...</option>
+                        <% if defined?(@auctions) && @auctions %>
+                            <% @auctions.each do |auction| %>
+                                <option value="<%= auction.id %>"><%= auction.name %></option>
+                            <% end %>
+                        <% end %>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="teamSelect">Select Team</label>
+                    <select id="teamSelect" name="team_id" disabled>
+                        <option value="">Choose Team...</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Final Amount</label>
+                    <div class="amount-group">
+                        <input type="number" id="amountValue" name="amount_value" placeholder="Amount" min="0" step="0.01">
+                        <select id="amountUnit" name="amount_unit">
+                            <option value="lakh">Lakhs</option>
+                            <option value="crore">Crores</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="playerSearch">Search Player (500+)</label>
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="playerSearch" name="player_search" class="player-search-input" placeholder="Type player name..." autocomplete="off">
+                        <div id="playerDropdown" class="player-dropdown" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <div class="voice-row" style="visibility: hidden;">
+                    <div class="control-group">
+                        <label>Voice</label>
+                        <select id="voiceSelect">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Language</label>
+                        <select id="languageSelect">
+                            <option value="en">English</option>
+                            <option value="gu">ગુજરાતી</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Speed</label>
+                        <select id="rateSelect">
+                            <option value="0.8">Slow</option>
+                            <option value="1" selected>Normal</option>
+                            <option value="1.2">Fast</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="sold-button" id="soldButton" onclick="announceAuction()">
+                    🔨 SOLD! ANNOUNCE
+                </button>
+            </div>
+          </div>
+          <% if defined?(@teams) && @teams && @teams.any? %>
+            <% @teams.first(10).each_with_index do |team, index| %>
+              <div class="owner-seat position-<%= index %>" data-team-id="<%= team.id %>">
+                <div class="owner-card">
+                  <% if team.user.profile_picture.attached? %>
+                    <%= image_tag team.user.profile_picture, class: "owner-avatar" %>
+                  <% else %>
+                    <div class="owner-avatar">
+                        <%= team.team_name[0].upcase %>
+                    </div>
+                  <% end %>
+                  <div class="owner-name"><%= team.user&.username || 'Owner' %></div>
+                  <div class="purse-amount">
+                      Total:- ₹<%= ((team&.total_purse || 0) / 10000000.0).round(2) %> Cr
+                  </div>
+                  <div class="purse-amount">
+                     Remaining:- ₹<%= ((team&.remaining_purse || 0) / 10000000.0).round(2) %> Cr
+                  </div>
+                  <div class="purse-amount">
+                      No. Players:- <%= team.players_teams.count || 0 %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          <% else %>
+              <!-- Default 10 seats when no data -->
+              <% 10.times do |index| %>
+                  <div class="owner-seat position-<%= index %>" data-team-id="<%= index + 1 %>">
+                      <div class="owner-card">
+                          <div class="owner-avatar">👤</div>
+                          <div class="owner-name">Owner <%= index + 1 %></div>
+                          <div class="team-name">Team <%= index + 1 %></div>
+                          <div class="purse-amount">₹50 Cr</div>
+                      </div>
+                  </div>
+              <% end %>
+          <% end %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+      let players = <%= raw (@players.to_json rescue '[]') %>;
+      let selectedPlayer = null;
+      let selectedTeamName = '';
+      let selectedOwnerName = '';
+      let selectedTeamId = null;
+
+      // Dealer selection state
+      let tempSelectedDealer = {index: 0, emoji: '👩‍💼', name: 'Priya Sharma', title: 'Lead Auctioneer'};
+
+      // Text-to-Speech functionality
+      let synth = window.speechSynthesis;
+      let voices = [];
+
+      function loadVoices() {
+          voices = synth.getVoices();
+          updateVoiceOptions();
+      }
+
+      function updateVoiceOptions() {
+          const voiceSelect = document.getElementById('voiceSelect');
+          const language = document.getElementById('languageSelect').value;
+          
+          let filteredVoices;
+          
+          if (language === 'gu') {
+              filteredVoices = voices.filter(voice => 
+                  voice.lang.includes('gu') || 
+                  voice.lang.includes('hi') ||
+                  voice.name.includes('Hindi') ||
+                  voice.name.includes('Gujarati')
+              );
+          } else {
+              filteredVoices = voices.filter(voice => 
+                  voice.lang.startsWith('en') &&
+                  (voice.name.toLowerCase().includes('female') || 
+                   voice.name.toLowerCase().includes('woman') ||
+                   voice.name.toLowerCase().includes('samantha') ||
+                   voice.name.toLowerCase().includes('zira') ||
+                   voice.name.toLowerCase().includes('susan') ||
+                   voice.name.toLowerCase().includes('karen') ||
+                   voice.name.toLowerCase().includes('moira') ||
+                   voice.name.toLowerCase().includes('raveena') ||
+                   voice.name.toLowerCase().includes('veena') ||
+                   voice.name.toLowerCase().includes('tessa') ||
+                   voice.name.includes('Nicky') ||
+                   voice.name.includes('Fiona'))
+              );
+          }
+          
+          if (filteredVoices.length === 0) {
+              filteredVoices = voices.filter(v => 
+                  language === 'gu' ? (v.lang.includes('hi') || v.lang.includes('gu')) : v.lang.startsWith('en')
+              );
+          }
+          
+          voiceSelect.innerHTML = '';
+          
+          if (filteredVoices.length === 0) {
+              voiceSelect.innerHTML = '<option value="">No voices available</option>';
+              return;
+          }
+          
+          filteredVoices.forEach((voice, i) => {
+              const option = document.createElement('option');
+              option.value = voices.indexOf(voice);
+              const displayName = voice.name.length > 25 ? voice.name.substring(0, 25) + '...' : voice.name;
+              option.textContent = `${displayName} (${voice.lang})`;
+              voiceSelect.appendChild(option);
+          });
+      }
+
+      if (synth.onvoiceschanged !== undefined) {
+          synth.onvoiceschanged = loadVoices;
+      }
+      loadVoices();
+
+      document.getElementById('languageSelect').addEventListener('change', updateVoiceOptions);
+
+      // Dealer modal functions
+      function openDealerModal() {
+          document.getElementById('dealerModal').classList.add('active');
+      }
+
+      function closeDealerModal() {
+          document.getElementById('dealerModal').classList.remove('active');
+      }
+
+      function selectDealer(index, emoji, name, title) {
+          tempSelectedDealer = {index, emoji, name, title};
+          document.querySelectorAll('.dealer-option').forEach(opt => opt.classList.remove('active'));
+          document.querySelector(`[data-dealer="${index}"]`).classList.add('active');
+      }
+
+      function confirmDealerChange() {
+          const userSelect = document.getElementById('userSelect');
+          const selectedUser = userSelect.value;
+          
+          if (!selectedUser) {
+              alert('Please select who wants to change the auctioneer!');
+              return;
+          }
+
+          // Update auctioneer visual
+          document.getElementById('auctioneerImage').innerHTML = `
+              ${tempSelectedDealer.emoji}
+              <div class="sound-waves" id="soundWaves">
+                  <div class="wave"></div>
+                  <div class="wave"></div>
+                  <div class="wave"></div>
+              </div>
+          `;
+          document.getElementById('auctioneerName').textContent = tempSelectedDealer.name;
+          document.getElementById('auctioneerTitle').textContent = tempSelectedDealer.title;
+          
+          // Close modal
+          closeDealerModal();
+          
+          // Show toast
+          showToast(`🎭 Auctioneer changed to ${tempSelectedDealer.name}!`);
+          
+          // Speak Gujarati greeting
+          const gujaratiGreeting = `માતાજી સુખી રાખે તને યાર ${selectedUser}`;
+          speakGreeting(gujaratiGreeting);
+          
+          // Reset user selection
+          userSelect.value = '';
+      }
+
+      function speakGreeting(text) {
+          synth.cancel();
+
+          const utterance = new SpeechSynthesisUtterance(text);
+          
+          // Try to use a Hindi/Gujarati voice for greeting
+          const gujaratiVoice = voices.find(voice => 
+              voice.lang.includes('gu') || voice.lang.includes('hi')
+          );
+          
+          if (gujaratiVoice) {
+              utterance.voice = gujaratiVoice;
+          }
+
+          utterance.rate = 0.9;
+          utterance.pitch = 1;
+          utterance.volume = 1;
+
+          const auctioneerImage = document.getElementById('auctioneerImage');
+          const soundWaves = document.getElementById('soundWaves');
+
+          utterance.onstart = function() {
+              auctioneerImage.classList.add('speaking');
+              soundWaves.classList.add('active');
+          };
+
+          utterance.onend = function() {
+              auctioneerImage.classList.remove('speaking');
+              soundWaves.classList.remove('active');
+          };
+
+          synth.speak(utterance);
+      }
+
+      // Toast notification function
+      function showToast(message) {
+          const existingToast = document.querySelector('.toast');
+          if (existingToast) {
+              existingToast.remove();
+          }
+          
+          const toast = document.createElement('div');
+          toast.className = 'toast';
+          toast.innerHTML = `
+              <div class="toast-icon">🎉</div>
+              <div>${message}</div>
+          `;
+          document.body.appendChild(toast);
+          
+          setTimeout(() => {
+              if (toast.parentNode) {
+                  toast.remove();
+              }
+          }, 3500);
+      }
+
+      // Enable team select when auction is selected
+      document.getElementById('auctionSelect').addEventListener('change', function() {
+          const teamSelect = document.getElementById('teamSelect');
+          const auctionId = this.value;
+          
+          if (auctionId) {
+              fetch(`/auctions/${auctionId}/teams.json`)
+                  .then(response => response.json())
+                  .then(teams => {
+                      teamSelect.innerHTML = '<option value="">Choose Team...</option>';
+                      teams.forEach(team => {
+                          const option = document.createElement('option');
+                          option.value = team.id;
+                          option.textContent = team.team_name;
+                          option.dataset.teamName = team.team_name;
+                          option.dataset.ownerName = team.user?.username || 'Owner';
+                          teamSelect.appendChild(option);
+                      });
+                      teamSelect.disabled = false;
+                  })
+                  .catch(error => {
+                      console.error('Error fetching teams:', error);
+                      teamSelect.disabled = false;
+                  });
+          } else {
+              teamSelect.disabled = true;
+              teamSelect.innerHTML = '<option value="">Choose Team...</option>';
+          }
+      });
+
+      // Store team info when selected
+      document.getElementById('teamSelect').addEventListener('change', function() {
+          const selectedOption = this.options[this.selectedIndex];
+          selectedTeamId = this.value;
+          selectedTeamName = selectedOption.dataset.teamName || '';
+          selectedOwnerName = selectedOption.dataset.ownerName || '';
+      });
+
+      // Player search with dropdown
+      const playerSearch = document.getElementById('playerSearch');
+      const playerDropdown = document.getElementById('playerDropdown');
+
+      playerSearch.addEventListener('input', function() {
+          const query = this.value.toLowerCase().trim();
+          
+          if (query.length < 2) {
+              playerDropdown.style.display = 'none';
+              return;
+          }
+
+          const filteredPlayers = players.filter(player => 
+              player.name.toLowerCase().includes(query)
+          );
+
+          if (filteredPlayers.length > 0) {
+              playerDropdown.innerHTML = filteredPlayers.map(player => `
+                  <div class="player-item" onclick="selectPlayer(${player.id}, '${player.name.replace(/'/g, "\\'")}')">
+                      <div class="player-item-name">${player.name}</div>
+                      <div class="player-item-details">
+                          Base Price: ₹${(player.base_price / 10000000).toFixed(2)} Cr
+                      </div>
+                  </div>
+              `).join('');
+              playerDropdown.style.display = 'block';
+          } else {
+              playerDropdown.innerHTML = '<div class="player-item">No players found</div>';
+              playerDropdown.style.display = 'block';
+          }
+      });
+
+      function selectPlayer(playerId, playerName) {
+          selectedPlayer = playerId;
+          document.getElementById('playerSearch').value = playerName;
+          document.getElementById('playerDropdown').style.display = 'none';
+      }
+
+      document.addEventListener('click', function(e) {
+          if (!e.target.closest('.search-wrapper')) {
+              playerDropdown.style.display = 'none';
+          }
+      });
+
+      // Update final amount display
+      document.getElementById('amountValue').addEventListener('input', updateFinalAmount);
+      document.getElementById('amountUnit').addEventListener('change', updateFinalAmount);
+
+      function updateFinalAmount() {
+          const value = parseFloat(document.getElementById('amountValue').value) || 0;
+          const unit = document.getElementById('amountUnit').value;
+          
+          let finalAmount = value;
+          if (unit === 'lakh') {
+              finalAmount = value * 100000;
+          } else if (unit === 'crore') {
+              finalAmount = value * 10000000;
+          }
+          
+          const crores = (finalAmount / 10000000).toFixed(2);
+          document.getElementById('currentBidAmount').textContent = `₹${crores} Cr`;
+      }
+
+      // Clear form function
+      function clearForm() {
+          document.getElementById('auctionSelect').value = '';
+          document.getElementById('teamSelect').value = '';
+          document.getElementById('teamSelect').disabled = true;
+          document.getElementById('teamSelect').innerHTML = '<option value="">Choose Team...</option>';
+          document.getElementById('playerSearch').value = '';
+          document.getElementById('amountValue').value = '';
+          document.getElementById('currentBidAmount').textContent = '₹0';
+          selectedPlayer = null;
+          selectedTeamId = null;
+          selectedTeamName = '';
+          selectedOwnerName = '';
+          playerDropdown.style.display = 'none';
+      }
+
+      // Main announce auction function
+      function announceAuction() {
+          const auctionId = document.getElementById('auctionSelect').value;
+          const playerName = document.getElementById('playerSearch').value.trim();
+          const amountValue = parseFloat(document.getElementById('amountValue').value) || 0;
+          const amountUnit = document.getElementById('amountUnit').value;
+          const language = document.getElementById('languageSelect').value;
+
+          if (!auctionId || !selectedTeamId || !playerName || !selectedPlayer || amountValue === 0) {
+              alert('Please select Auction, Team, Player, and enter the Amount!');
+              return;
+          }
+
+          let amountInCrores = amountValue;
+          let amountInPaisa = amountValue * 10000000;
+          
+          if (amountUnit === 'lakh') {
+              amountInCrores = amountValue / 100;
+              amountInPaisa = amountValue * 100000;
+          }
+
+          let announcement;
+          if (language === 'gu') {
+              // Gujarati announcements with inspirational quotes in Devayat Khavad style
+              const gujaratiAnnouncements = [
+                  `વાહ! ${playerName} વેચાયા ${amountInCrores.toFixed(2)} કરોડમાં! યાર ${selectedOwnerName}, જીવન એ જીવવાનું નામ છે, હારવાનું નહિ!`,
+                  `ધમાલ! ${selectedTeamName}ને મળ્યા ${playerName}! યાર ${selectedOwnerName}, સપનાં જોવાં છે તો મોટાં જોવાં, ${amountInCrores.toFixed(2)} કરોડ આપ્યા છે તો જીત લાવજો!`,
+                  `કમાલ છે યાર! ${playerName} હવે ${selectedTeamName}ના! ${selectedOwnerName}, મહેનત કરો, મજા કરો, જીતવા જાઓ!`,
+                  `શાબ્બાશ ${selectedOwnerName}! ${playerName} તમારા થયા ${amountInCrores.toFixed(2)} કરોડમાં! યાદ રાખજો, હાર નથી માનવાની, આગળ જ વધવાનું છે!`,
+                  `વેચાયા! ${playerName}! ${amountInCrores.toFixed(2)} કરોડ! યાર ${selectedOwnerName}, જીંદગીમાં બસ મઝા કરો અને આગળ વધો!`
+              ];
+              announcement = gujaratiAnnouncements[Math.floor(Math.random() * gujaratiAnnouncements.length)];
+          } else {
+              const announcements = [
+                  `Sold! ${playerName} is sold to ${selectedTeamName} for ${amountInCrores.toFixed(2)} crore rupees. Congratulations ${selectedOwnerName}!`,
+                  `Going once, going twice, and sold! ${playerName} joins team ${selectedTeamName} for a fantastic ${amountInCrores.toFixed(2)} crores. Well done ${selectedOwnerName}!`,
+                  `And it's a deal! ${playerName} is now part of ${selectedTeamName} for ${amountInCrores.toFixed(2)} crore rupees. Congratulations on this amazing acquisition!`,
+                  `Hammer down! ${playerName} sold to ${selectedTeamName} at ${amountInCrores.toFixed(2)} crores. What a fantastic buy ${selectedOwnerName}!`
+              ];
+              announcement = announcements[Math.floor(Math.random() * announcements.length)];
+          }
+          
+          showSpeechBubble(announcement);
+          showToast(`🎉 ${playerName} SOLD to ${selectedTeamName} for ₹${amountInCrores.toFixed(2)} Cr!`);
+          
+          updateTeamPurse(auctionId, selectedTeamId, selectedPlayer, amountInPaisa);
+          speakAnnouncement(announcement);
+          
+          setTimeout(() => {
+              clearForm();
+          }, 1000);
+      }
+
+      function showSpeechBubble(text) {
+          const existingBubble = document.querySelector('.speech-bubble');
+          if (existingBubble) {
+              existingBubble.remove();
+          }
+
+          const speechBubble = document.createElement('div');
+          speechBubble.className = 'speech-bubble';
+          speechBubble.textContent = text;
+          
+          const auctioneer = document.querySelector('.auctioneer');
+          auctioneer.appendChild(speechBubble);
+          
+          setTimeout(() => {
+              if (speechBubble.parentNode) {
+                  speechBubble.remove();
+              }
+          }, 4500);
+      }
+
+      function updateTeamPurse(auctionId, teamId, playerId, amount) {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          
+          fetch('/auction_bids', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-Token': csrfToken
+              },
+              body: JSON.stringify({
+                  auction_bid: {
+                      auction_id: auctionId,
+                      team_id: teamId,
+                      player_id: playerId,
+                      amount: amount,
+                      sold: true
+                  }
+              })
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              if (data.success) {
+                  updateTeamPurseUI(teamId, data.remaining_purse, data.total_purse, data.no_of_players);
+              } else {
+                  console.error('Error updating purse:', data.error);
+                  alert('Error updating purse: ' + data.error);
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert('Error updating purse. Please try again.');
+          });
+      }
+
+      function updateTeamPurseUI(teamId, remainingPurse, totalPurse, noOfPlayers) {
+          const teamCards = document.querySelectorAll('.owner-card');
+          
+          teamCards.forEach(card => {
+              const ownerSeat = card.closest('.owner-seat');
+              if (ownerSeat) {
+                  const cardTeamId = ownerSeat.dataset.teamId;
+                  
+                  if (cardTeamId == teamId) {
+                      const purseElements = card.querySelectorAll('.purse-amount');
+                      if (purseElements.length >= 2) {
+                          const totalInCrores = (totalPurse / 10000000).toFixed(2);
+                          purseElements[0].innerHTML = `Total:- ₹${totalInCrores} Cr`;
+                          
+                          const remainingInCrores = (remainingPurse / 10000000).toFixed(2);
+                          purseElements[1].innerHTML = `Remaining:- ₹${remainingInCrores} Cr`;
+
+                          purseElements[2].innerHTML = `No. Players:- ${noOfPlayers}`
+                          
+                          card.style.animation = 'pulse 1s ease-in-out';
+                          setTimeout(() => {
+                              card.style.animation = '';
+                          }, 1000);
+                      }
+                  }
+              }
+          });
+      }
+
+      function speakAnnouncement(text) {
+          synth.cancel();
+
+          const utterance = new SpeechSynthesisUtterance(text);
+          
+          const voiceSelect = document.getElementById('voiceSelect');
+          const selectedVoiceIndex = voiceSelect.value;
+          const language = document.getElementById('languageSelect').value;
+          
+          // For Gujarati, try to use a male voice for Devayat Khavad style
+          if (language === 'gu') {
+              const gujaratiMaleVoice = voices.find(voice => 
+                  (voice.lang.includes('gu') || voice.lang.includes('hi')) &&
+                  (voice.name.toLowerCase().includes('male') || 
+                   !voice.name.toLowerCase().includes('female'))
+              );
+              
+              if (gujaratiMaleVoice) {
+                  utterance.voice = gujaratiMaleVoice;
+              } else if (voices[selectedVoiceIndex]) {
+                  utterance.voice = voices[selectedVoiceIndex];
+              }
+              
+              // Energetic delivery like Devayat Khavad
+              utterance.rate = 1.1; // Slightly faster for energy
+              utterance.pitch = 1.1; // Slightly higher pitch for enthusiasm
+          } else {
+              if (voices[selectedVoiceIndex]) {
+                  utterance.voice = voices[selectedVoiceIndex];
+              }
+              utterance.rate = parseFloat(document.getElementById('rateSelect').value);
+              utterance.pitch = 1;
+          }
+
+          utterance.volume = 1;
+
+          const auctioneerImage = document.getElementById('auctioneerImage');
+          const soundWaves = document.getElementById('soundWaves');
+          const soldButton = document.getElementById('soldButton');
+
+          utterance.onstart = function() {
+              auctioneerImage.classList.add('speaking');
+              soundWaves.classList.add('active');
+              soldButton.disabled = true;
+              soldButton.textContent = '🔊 SPEAKING...';
+          };
+
+          utterance.onend = function() {
+              auctioneerImage.classList.remove('speaking');
+              soundWaves.classList.remove('active');
+              soldButton.disabled = false;
+              soldButton.textContent = '🔨 SOLD! ANNOUNCE';
+          };
+
+          utterance.onerror = function(event) {
+              console.error('Speech error:', event);
+              auctioneerImage.classList.remove('speaking');
+              soundWaves.classList.remove('active');
+              soldButton.disabled = false;
+              soldButton.textContent = '🔨 SOLD! ANNOUNCE';
+          };
+
+          synth.speak(utterance);
+      }
+let isHighBid = false;
+        let celebrationInterval = null;
+
+        // Modify the updateFinalAmount function
+        function updateFinalAmount() {
+            const value = parseFloat(document.getElementById('amountValue').value) || 0;
+            const unit = document.getElementById('amountUnit').value;
+            
+            let finalAmount = value;
+            if (unit === 'lakh') {
+                finalAmount = value * 100000;
+            } else if (unit === 'crore') {
+                finalAmount = value * 10000000;
+            }
+            
+            const crores = (finalAmount / 10000000).toFixed(2);
+            document.getElementById('currentBidAmount').textContent = `₹${crores} Cr`;
+            
+            // Check if bid is above 15 crores
+            if (crores >= 15 && !isHighBid) {
+                startCelebration();
+            } else if (crores < 15 && isHighBid) {
+                stopCelebration();
+            }
+        }
+
+        function startCelebration() {
+            isHighBid = true;
+            
+            const auctioneerImage = document.getElementById('auctioneerImage');
+            const currentBidDisplay = document.querySelector('.current-bid-display');
+            const auctioneer = document.querySelector('.auctioneer');
+            
+            // Add dancing class
+            auctioneerImage.classList.add('dancing', 'high-bid');
+            currentBidDisplay.classList.add('high-bid');
+            
+            // Add party text
+            if (!document.querySelector('.party-text')) {
+                const partyText = document.createElement('div');
+                partyText.className = 'party-text';
+                partyText.textContent = '🎉 PARTY TIME! 🎉';
+                auctioneer.appendChild(partyText);
+            }
+            
+            // Create celebration overlay
+            let celebrationOverlay = document.getElementById('celebrationOverlay');
+            if (!celebrationOverlay) {
+                celebrationOverlay = document.createElement('div');
+                celebrationOverlay.id = 'celebrationOverlay';
+                celebrationOverlay.className = 'celebration-overlay';
+                document.body.appendChild(celebrationOverlay);
+            }
+            
+            // Start confetti
+            celebrationInterval = setInterval(() => {
+                createConfetti(celebrationOverlay);
+            }, 200);
+            
+            // Devayat Khavad style celebration - Always in Gujarati
+            const celebrationMsg = 'Chakla koi divas baaz na bane';
+            speakDevayatStyle(celebrationMsg);
+        }
+
+        function stopCelebration() {
+            isHighBid = false;
+            
+            const auctioneerImage = document.getElementById('auctioneerImage');
+            const currentBidDisplay = document.querySelector('.current-bid-display');
+            const partyText = document.querySelector('.party-text');
+            const celebrationOverlay = document.getElementById('celebrationOverlay');
+            
+            // Remove dancing classes
+            auctioneerImage.classList.remove('dancing', 'high-bid');
+            currentBidDisplay.classList.remove('high-bid');
+            
+            // Remove party text
+            if (partyText) {
+                partyText.remove();
+            }
+            
+            // Stop confetti
+            if (celebrationInterval) {
+                clearInterval(celebrationInterval);
+                celebrationInterval = null;
+            }
+            
+            // Remove celebration overlay
+            if (celebrationOverlay) {
+                celebrationOverlay.remove();
+            }
+        }
+
+        function createConfetti(container) {
+            const colors = ['#ffd700', '#ff6b9d', '#10b981', '#667eea', '#f59e0b', '#ef4444'];
+            
+            for (let i = 0; i < 5; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                container.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3500);
+            }
+        }
+
+        function speakDevayatStyle(text) {
+            const synth = window.speechSynthesis;
+            synth.cancel(); // Cancel any ongoing speech
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = synth.getVoices();
+            
+            // Try to find a deep male Gujarati/Hindi voice for Devayat Khavad style
+            const devayatVoice = voices.find(voice => 
+                (voice.lang.includes('gu') || voice.lang.includes('hi')) &&
+                (voice.name.toLowerCase().includes('male') || 
+                 !voice.name.toLowerCase().includes('female'))
+            );
+            
+            if (devayatVoice) {
+                utterance.voice = devayatVoice;
+            } else {
+                // Fallback to any Gujarati/Hindi voice
+                const gujaratiVoice = voices.find(voice => 
+                    voice.lang.includes('gu') || voice.lang.includes('hi')
+                );
+                if (gujaratiVoice) {
+                    utterance.voice = gujaratiVoice;
+                }
+            }
+            
+            // Devayat Khavad style delivery - energetic, confident, powerful
+            utterance.rate = 1.0; // Normal to slightly fast for impact
+            utterance.pitch = 0.85; // Lower pitch for masculine, powerful voice
+            utterance.volume = 1; // Full volume
+            
+            const auctioneerImage = document.getElementById('auctioneerImage');
+            const soundWaves = document.getElementById('soundWaves');
+            
+            utterance.onstart = function() {
+                auctioneerImage.classList.add('speaking');
+                soundWaves.classList.add('active');
+            };
+            
+            utterance.onend = function() {
+                auctioneerImage.classList.remove('speaking');
+                soundWaves.classList.remove('active');
+            };
+            
+            synth.speak(utterance);
+        }
+
+        // Also trigger celebration on SOLD! if amount is high
+        function announceAuction() {
+            const auctionId = document.getElementById('auctionSelect').value;
+            const playerName = document.getElementById('playerSearch').value.trim();
+            const amountValue = parseFloat(document.getElementById('amountValue').value) || 0;
+            const amountUnit = document.getElementById('amountUnit').value;
+            const language = document.getElementById('languageSelect').value;
+
+            if (!auctionId || !selectedTeamId || !playerName || !selectedPlayer || amountValue === 0) {
+                alert('Please select Auction, Team, Player, and enter the Amount!');
+                return;
+            }
+
+            let amountInCrores = amountValue;
+            let amountInPaisa = amountValue * 10000000;
+            
+            if (amountUnit === 'lakh') {
+                amountInCrores = amountValue / 100;
+                amountInPaisa = amountValue * 100000;
+            }
+
+            let announcement;
+            if (language === 'gu') {
+                if (amountInCrores >= 15) {
+                    // Devayat Khavad style high bid announcements - powerful and iconic
+                    const gujaratiHighBidAnnouncements = [
+                        `ચકલા કોઈની બાજ ના બને સાહેબ! ${playerName} વેચાયા ${amountInCrores.toFixed(2)} કરોડમાં! ${selectedOwnerName}, આ તો ઇતિહાસ છે યાર!`,
+                        `અરે વાહ! ધમાલ! ચકલા કોઈની બાજ ના બને! ${amountInCrores.toFixed(2)} કરોડ! ${playerName} હવે ${selectedTeamName}ના! મજા આવી ગઈ ${selectedOwnerName}!`,
+                        `ઓહો હો હો! ચકલા કોઈની બાજ ના બને સાહેબ! ${amountInCrores.toFixed(2)} કરોડ! ${playerName}! યાર ${selectedOwnerName}, કમાલ કરી દીધી!`
+                    ];
+                    announcement = gujaratiHighBidAnnouncements[Math.floor(Math.random() * gujaratiHighBidAnnouncements.length)];
+                } else {
+                    const gujaratiAnnouncements = [
+                        `વાહ! ${playerName} વેચાયા ${amountInCrores.toFixed(2)} કરોડમાં! યાર ${selectedOwnerName}, જીવન એ જીવવાનું નામ છે, હારવાનું નહિ!`,
+                        `ધમાલ! ${selectedTeamName}ને મળ્યા ${playerName}! યાર ${selectedOwnerName}, સપનાં જોવાં છે તો મોટાં જોવાં!`
+                    ];
+                    announcement = gujaratiAnnouncements[Math.floor(Math.random() * gujaratiAnnouncements.length)];
+                }
+            } else {
+                if (amountInCrores >= 15) {
+                    const highBidAnnouncements = [
+                        `Incredible! ${playerName} is sold to ${selectedTeamName} for a massive ${amountInCrores.toFixed(2)} crore rupees! ${selectedOwnerName}, what a fantastic investment!`,
+                        `Wow! History in the making! ${playerName} goes to ${selectedTeamName} for ${amountInCrores.toFixed(2)} crores! This is spectacular ${selectedOwnerName}!`,
+                        `Unbelievable! ${amountInCrores.toFixed(2)} crore rupees! ${playerName} is now with ${selectedTeamName}! Congratulations on this amazing acquisition ${selectedOwnerName}!`
+                    ];
+                    announcement = highBidAnnouncements[Math.floor(Math.random() * highBidAnnouncements.length)];
+                } else {
+                    const announcements = [
+                        `Sold! ${playerName} is sold to ${selectedTeamName} for ${amountInCrores.toFixed(2)} crore rupees. Congratulations ${selectedOwnerName}!`,
+                        `Going once, going twice, and sold! ${playerName} joins ${selectedTeamName} for ${amountInCrores.toFixed(2)} crores.`
+                    ];
+                    announcement = announcements[Math.floor(Math.random() * announcements.length)];
+                }
+            }
+            
+            showSpeechBubble(announcement);
+            showToast(`🎉 ${playerName} SOLD to ${selectedTeamName} for ₹${amountInCrores.toFixed(2)} Cr!`);
+            
+            updateTeamPurse(auctionId, selectedTeamId, selectedPlayer, amountInPaisa);
+            speakAnnouncement(announcement);
+            
+            setTimeout(() => {
+                clearForm();
+                stopCelebration(); // Stop celebration when form clears
+            }, 1000);
+        }
+
+        // Update clearForm to stop celebration
+        function clearForm() {
+            document.getElementById('auctionSelect').value = '';
+            document.getElementById('teamSelect').value = '';
+            document.getElementById('teamSelect').disabled = true;
+            document.getElementById('teamSelect').innerHTML = '<option value="">Choose Team...</option>';
+            document.getElementById('playerSearch').value = '';
+            document.getElementById('amountValue').value = '';
+            document.getElementById('currentBidAmount').textContent = '₹0';
+            selectedPlayer = null;
+            selectedTeamId = null;
+            selectedTeamName = '';
+            selectedOwnerName = '';
+            playerDropdown.style.display = 'none';
+            
+            // Stop celebration
+            stopCelebration();
+        }
+
+  </script>
+</body>
+</html>

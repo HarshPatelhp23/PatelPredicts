@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register Team do
-  permit_params :team_name, :user_id, :auction_id
+  permit_params :team_name, :user_id, :auction_id, :total_purse, :remaining_purse, :penalty_points
 
   index do
     selectable_column
     id_column
     column :team_name
+    column :penalty_points
     column :user do |team|
       team.user.username
     end
@@ -32,6 +33,9 @@ ActiveAdmin.register Team do
   form do |f|
     f.inputs 'Player Details' do
       f.input :team_name
+      f.input :penalty_points
+      f.input :total_purse
+      f.input :remaining_purse
       f.input :user, as: :select, collection: User.all.map { |u| [u.username, u.id] }, include_blank: 'Select user'
       f.input :auction, as: :select, collection: Auction.all.map { |a| [a.name, a.id] }, include_blank: 'Select Auction'
     end

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3a8a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Sugam Premier League - <%= yield(:title) || 'Cricket Fantasy' %></title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <%= stylesheet_link_tag "spl_auth" %>
+  <%= javascript_importmap_tags %>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <%= yield :head %>
+</head>
+<body data-controller="animation toast">
+  <div class="auth-wrapper">
+    <div class="cricket-animation-bg">
+      <div class="ball" data-animation-target="cricketBall"></div>
+      <div class="bat" data-animation-target="bat"></div>
+      <div class="stumps">
+        <div class="stump" data-animation-target="stumps"></div>
+        <div class="stump" data-animation-target="stumps"></div>
+        <div class="stump" data-animation-target="stumps"></div>
+      </div>
+      <div class="particles">
+        <div class="particle" data-animation-target="particle"></div>
+        <div class="particle" data-animation-target="particle"></div>
+        <div class="particle" data-animation-target="particle"></div>
+      </div>
+    </div>
+    
+    <div class="auth-container">
+      <div class="auth-card glass-morphism">
+        <%= yield %>
+      </div>
+    </div>
+    
+    <div data-toast-target="container" class="toast-container"></div>
+  </div>
+</body>
+</html>

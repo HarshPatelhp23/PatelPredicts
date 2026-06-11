@@ -9,6 +9,7 @@ class Player < ApplicationRecord
   # has_and_belongs_to_many :teams
   has_many :players_teams, dependent: :destroy
   has_many :teams, through: :players_teams
+  has_one :player_statistic, dependent: :destroy
   # belongs_to :team
   enum :role, %i[wicket_keeper batsman all_rounder bowler]
   # validates :base_price, presence: true
@@ -59,8 +60,10 @@ class Player < ApplicationRecord
 
     week_matches.each do |match|
       t1,t2 = match.match_name.split(' vs ')
-      u_t1 = match_country_code[t1].upcase
-      u_t2 = match_country_code[t2].upcase
+      u_t1 = match_country_code[t1]&.upcase
+      u_t2 = match_country_code[t2]&.upcase
+      return if u_t1.blank? || u_t2.blank?
+
       match_count += 1 if (team_name.include?(u_t1) || team_name.include?(u_t2))
     end
     match_count

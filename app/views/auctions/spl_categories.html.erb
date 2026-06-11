@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en" data-no-loader>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPL Player Categories</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    :root {
+      --premium-color: #ff6b35;
+      --valuable-color: #4ecdc4;
+      --solid-color: #45b7d1;
+      --supporting-color: #96ceb4;
+      --dark-bg: #0f1419;
+      --card-bg: #1a1f2e;
+      --text-light: #ffffff;
+      --text-muted: #8b9cb1;
+      --transition-slow: 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --transition-fast: 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html[data-no-loader] #cricketLoader,
+    body[data-no-loader] #cricketLoader {
+      display: none !important;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--dark-bg) 0%, #1a2a3a 100%);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--text-light);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Table View for Mobile */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.75rem;
+    border-radius: 10px;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.6rem 0.3rem;
+  }
+  
+  .d-none-mobile {
+    display: none;
+  }
+  
+  /* Enhanced player info for mobile */
+  .player-avatar-sm {
+    width: 35px;
+    height: 35px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+  }
+  
+  /* Better rating display for mobile */
+  .rating-display-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  
+  .rating-badge-mobile {
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.7rem;
+    background: linear-gradient(135deg, var(--category-color), var(--primary-dark));
+    color: white;
+    min-width: 40px;
+    text-align: center;
+  }
+  
+  .rating-progress-mobile {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.2rem;
+  }
+  
+  .rating-progress-fill {
+    height: 100%;
+    background: #ff6b35; /* Orange color */
+    border-radius: 2px;
+    transition: width 0.8s ease-in-out;
+  }
+  
+  /* Alternative white version */
+  .rating-progress-fill.white {
+    background: #ffffff;
+  }
+  
+  /* Category color version */
+  .rating-progress-fill.category {
+    background: var(--category-color, #ff6b35);
+  }
+}
+
+  
+  /* Compact stats for mobile */
+  .compact-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  
+  .stat-item-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.2rem 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 0.7rem;
+  }
+  
+  .stat-value-mobile {
+    font-weight: 700;
+    color: var(--category-color);
+  }
+  
+  .stat-label-mobile {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+  }
+  
+  /* Seasons badge for mobile */
+  .seasons-badge-mobile {
+    padding: 0.3rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+}
+
+/* Extra small mobile optimization */
+@media (max-width: 576px) {
+  .table-responsive {
+    font-size: 0.7rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem 0.2rem;
+  }
+  
+  .player-avatar-sm {
+    width: 30px;
+    height: 30px;
+    font-size: 0.7rem;
+  }
+  
+  .rating-badge-mobile {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 35px;
+  }
+}
+
+/* Hide regular table elements on mobile */
+@media (max-width: 768px) {
+  .table thead th:not(:first-child):not(:nth-child(2)):not(:last-child) {
+    display: none;
+  }
+  
+  .table td:not(:first-child):not(:nth-child(2)):not(:last-child) {
+    display: none;
+  }
+}
+
+    /* Add this to your CSS */
+    .tier-system {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tier-badge {
+      padding: 0.4rem 0.8rem;
+      border-radius: 15px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--category-color), var(--primary-dark));
+      color: white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .tier-level {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--category-color);
+    }
+
+    @media (max-width: 768px) {
+      .player-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      
+      .player-avatar {
+        margin-right: 0;
+        width: 80px;
+        height: 80px;
+      }
+      
+      .tier-system {
+        margin-top: 0.5rem;
+      }
+      
+      .tier-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
+      
+      .tier-level {
+        font-size: 1.3rem;
+      }
+    }
+
+    .floating-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(69, 183, 209, 0.05) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    .page-header {
+      background: linear-gradient(135deg, rgba(26, 58, 143, 0.9) 0%, rgba(42, 79, 168, 0.8) 100%);
+      backdrop-filter: blur(20px);
+      padding: 2rem 0;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-title {
+      font-weight: 800;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .header-subtitle {
+      font-weight: 300;
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .category-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(26, 31, 46, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem 0;
+    }
+
+    .category-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      .category-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+      
+      .category-tab {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+        text-align: center;
+        justify-content: center;
+      }
+      
+      .category-tab i {
+        margin-right: 0.3rem;
+      }
+      
+      .header-title {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .category-tabs {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+      
+      .category-tab {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+      }
+      
+      .category-tab i {
+        font-size: 0.8rem;
+        margin-right: 0.2rem;
+      }
+      
+      .header-title {
+        font-size: 1.8rem;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .category-tabs {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+      }
+      
+      .category-tab {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.75rem;
+      }
+      
+      .category-tab i {
+        font-size: 0.7rem;
+        margin-right: 0.1rem;
+      }
+    }
+
+    .category-tab {
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .category-tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left var(--transition-slow);
+    }
+
+    .category-tab:hover::before {
+      left: 100%;
+    }
+
+    .category-tab.active {
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .category-tab.premium { background: var(--premium-color); }
+    .category-tab.valuable { background: var(--valuable-color); }
+    .category-tab.solid { background: var(--solid-color); }
+    .category-tab.supporting { background: var(--supporting-color); }
+
+    .category-section {
+      display: none;
+      padding: 2rem 0;
+    }
+
+    .category-section.active {
+      display: block;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+      padding: 1rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .player-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .header-title {
+        font-size: 2rem;
+      }
+    }
+
+    .player-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: all var(--transition-slow);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .player-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--category-color), transparent);
+    }
+
+    .player-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .player-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--category-color), #2a4fa8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: white;
+      margin-right: 1rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .player-info {
+      flex: 1;
+    }
+
+    .player-name {
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .player-rating {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .rating-stars {
+      color: gold;
+      font-size: 0.9rem;
+    }
+
+    .rating-value {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.8rem;
+      border-radius: 12px;
+      text-align: center;
+      transition: all var(--transition-fast);
+    }
+
+    .stat-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--category-color);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .performance-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .performance-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--category-color), #ffd700);
+      border-radius: 3px;
+      transition: width 1.5s ease-in-out;
+    }
+
+    .category-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: var(--category-color);
+      color: white;
+    }
+
+    .back-button {
+      background: linear-gradient(135deg, var(--premium-color), var(--valuable-color));
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      border: none;
+      transition: all var(--transition-fast);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    .search-container {
+      position: relative;
+      margin: 2rem 0;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      padding: 1rem 1.5rem 1rem 3rem;
+      color: white;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+      transition: all var(--transition-fast);
+    }
+
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--premium-color);
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      z-index: 2;
+    }
+
+    /* Table View Styles */
+    .table-view {
+      display: none;
+    }
+
+    .view-toggle-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0 2rem 0;
+    }
+
+    .view-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      padding: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .view-toggle-btn {
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 25px;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--premium-color);
+      color: white;
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .view-toggle-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    /* Table Styles */
+    .players-table {
+      background: var(--card-bg);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table-header {
+      background: linear-gradient(135deg, var(--primary-color), #2a4fa8);
+      color: white;
+      padding: 1.2rem 1.5rem;
+    }
+
+    .table-title {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .table-responsive {
+      border-radius: 0 0 15px 15px;
+    }
+
+    .table {
+      margin: 0;
+      color: var(--text-light);
+    }
+
+    .table th {
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      font-weight: 600;
+      padding: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .table td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+
+    .table tbody tr {
+      transition: all var(--transition-fast);
+    }
+
+    .table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(5px);
+    }
+
+    .player-avatar-sm {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--category-color), #2a4fa8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .rating-badge {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .rating-badge.premium { background: var(--premium-color); }
+    .rating-badge.valuable { background: var(--valuable-color); }
+    .rating-badge.solid { background: var(--solid-color); }
+    .rating-badge.supporting { background: var(--supporting-color); }
+
+    .stat-highlight {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .text-premium { color: var(--premium-color); }
+    .text-valuable { color: var(--valuable-color); }
+    .text-solid { color: var(--solid-color); }
+    .text-supporting { color: var(--supporting-color); }
+
+    .progress-sm {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-sm {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-sm {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8rem;
+      border-radius: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .table-responsive {
+        font-size: 0.8rem;
+      }
+      
+      .table th,
+      .table td {
+        padding: 0.7rem 0.5rem;
+      }
+      
+      .d-none-mobile {
+        display: none;
+      }
+      
+      .view-toggle {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .view-toggle-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    /* Animation for view switching */
+    .view-container {
+      transition: opacity 0.3s ease;
+    }
+
+    .view-container.hidden {
+      display: none;
+      opacity: 0;
+    }
+
+    .view-container.visible {
+      display: block;
+      opacity: 1;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body data-no-loader>
+  <div class="floating-bg"></div>
+
+  <div class="page-header text-center">
+    <div class="container">
+      <h1 class="header-title" data-aos="fade-down">SPL PLAYER CATEGORIES</h1>
+      <p class="header-subtitle" data-aos="fade-down" data-aos-delay="200">Discover players by performance tiers</p>
+      <%= link_to 'Back to Insights', spl_insights_path, class: 'back-button mt-3', data: { aos: "zoom-in", aos_delay: "400" } %>
+    </div>
+  </div>
+
+  <div class="category-nav">
+    <div class="container">
+      <div class="category-tabs">
+        <a href="#premium" class="category-tab premium active text-white" data-category="premium" data-aos="fade-right">
+          <i class="fas fa-crown me-2"></i>Premium Players
+        </a>
+        <a href="#valuable" class="category-tab valuable text-white" data-category="valuable" data-aos="fade-right" data-aos-delay="100">
+          <i class="fas fa-gem me-2 text-white"></i>Valuable Assets
+        </a>
+        <a href="#solid" class="category-tab solid text-white" data-category="solid" data-aos="fade-right" data-aos-delay="200">
+          <i class="fas fa-shield-alt me-2 text-white"></i>Solid Performers
+        </a>
+        <a href="#supporting" class="category-tab supporting" data-category="supporting" data-aos="fade-right" data-aos-delay="300">
+          <i class="fas fa-users me-2 text-white"></i>Supporting Players
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- View Toggle -->
+    <div class="view-toggle-container" data-aos="fade-up">
+      <div class="view-toggle">
+        <button class="view-toggle-btn <%= 'active' if @current_view == 'card' %>" data-view="card">
+          <i class="fas fa-th-large"></i>
+          <span class="d-none d-sm-inline">Card View</span>
+        </button>
+        <button class="view-toggle-btn <%= 'active' if @current_view == 'table' %>" data-view="table">
+          <i class="fas fa-table"></i>
+          <span class="d-none d-sm-inline">Table View</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="search-container" data-aos="fade-up">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="playerSearch" class="form-control search-input" placeholder="Search players across categories...">
+    </div>
+
+    <!-- Card View -->
+    <div class="view-container <%= @current_view == 'card' ? 'visible' : 'hidden' %>" id="cardView">
+      <% @categories.each do |category| %>
+        <% category_id = category[:id] %>
+        <% players = @categorized_players[category_id.to_sym] || [] %>
+        <% player_count = players.count %>
+        
+        <div id="<%= category_id %>-cards" class="category-section <%= 'active' if category_id == 'premium' %>">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="category-title">
+              <i class="fas fa-<%= category[:icon] %> me-2"></i><%= category[:name] %>
+              <span class="badge bg-dark ms-2"><%= player_count %> Players</span>
+            </h2>
+          </div>
+
+          <% if player_count > 0 %>
+            <div class="player-grid">
+              <% players.each_with_index do |player, index| %>
+                <div class="player-card" 
+                     data-player-name="<%= player[:name]&.downcase || '' %>"
+                     data-category="<%= category_id %>"
+                     style="--category-color: <%= category[:color] %>">
+                  
+                  <div class="category-badge"><%= category[:name].split.first %></div>
+                  
+                  <div class="player-header">
+                    <div class="player-avatar">
+                      <%= player[:name]&.split&.map(&:first)&.join&.upcase || 'PL' %>
+                    </div>
+                    <div class="player-info">
+                      <h3 class="player-name"><%= player[:name] || 'Unknown Player' %></h3>
+                      <div class="tier-system">
+                        <span class="text-success"><%= get_tier_name(player[:overall_rating] || 0) %></span>
+                        <span class="text-success"><%= player[:overall_rating] || 0 %></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="performance-bar">
+                    <div class="performance-fill" style="width: <%= (player[:overall_rating] || 0) * 10 %>%"></div>
+                  </div>
+
+                  <% career_stats = calculate_career_stats(player) %>
+                  <div class="stats-grid">
+                    <div class="stat-item">
+                      <div class="stat-value"><%= career_stats[:avg_runs] %></div>
+                      <div class="stat-label">Avg Runs</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value"><%= career_stats[:avg_sr] %></div>
+                      <div class="stat-label">Strike Rate</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value"><%= career_stats[:avg_wickets] %></div>
+                      <div class="stat-label">Avg Wickets</div>
+                    </div>
+                    <div class="stat-item">
+                      <div class="stat-value"><%= career_stats[:avg_econ] %></div>
+                      <div class="stat-label">Economy</div>
+                    </div>
+                  </div>
+
+                  <div class="text-center">
+                    <small class="text-muted">
+                      <i class="fas fa-history me-1"></i>
+                      <%= calculate_seasons_played(player) %> Seasons Played
+                    </small>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="empty-state">
+              <i class="fas fa-users"></i>
+              <h4>No <%= category[:name] %> Found</h4>
+              <p>There are currently no players in this category.</p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Table View -->
+    <div class="view-container <%= @current_view == 'table' ? 'visible' : 'hidden' %>" id="tableView">
+      <% @categories.each do |category| %>
+        <% category_id = category[:id] %>
+        <% players = @categorized_players[category_id.to_sym] || [] %>
+        <% player_count = players.count %>
+        
+        <div id="<%= category_id %>-table" class="category-section <%= 'active' if category_id == 'premium' %>">
+          <div class="players-table">
+            <div class="table-header">
+              <h3 class="table-title">
+                <i class="fas fa-<%= category[:icon] %>"></i>
+                <%= category[:name] %>
+                <span class="badge bg-light text-dark ms-2"><%= player_count %> Players</span>
+              </h3>
+            </div>
+            
+            <% if player_count > 0 %>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Rating</th>
+                      <th class="d-none d-md-table-cell">Avg Runs</th>
+                      <th class="d-none d-md-table-cell">Strike Rate</th>
+                      <th class="d-none d-md-table-cell">Avg Wickets</th>
+                      <th class="d-none d-md-table-cell">Economy</th>
+                      <th>Seasons</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% players.each do |player| %>
+                      <% career_stats = calculate_career_stats(player) %>
+                      <tr data-player-name="<%= player[:name]&.downcase || '' %>" data-category="<%= category_id %>">
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="player-avatar-sm me-2" style="background: linear-gradient(135deg, <%= category[:color] %>, #2a4fa8);">
+                              <%= player[:name]&.split&.map(&:first)&.join&.upcase || 'PL' %>
+                            </div>
+                            <div class="flex-grow-1">
+                              <div class="fw-bold text-white" style="font-size: 0.9rem;"><%= player[:name] || 'Unknown Player' %></div>
+                              <small class="text-muted d-block d-md-none">
+                                <%= career_stats[:avg_runs] %>R • <%= career_stats[:avg_sr] %>SR • <%= career_stats[:avg_wickets] %>W
+                              </small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <!-- Mobile Rating Display -->
+                          <div class="rating-display-mobile">
+                            <span class="rating-badge-mobile text-white" style="--category-color: <%= category[:color] %>">
+                              <%= player[:overall_rating] || 0 %>
+                            </span>
+                            <div class="rating-progress-mobile">
+                              <div class="rating-progress-fill text-white" style="width: <%= (player[:overall_rating] || 0) * 10 %>%; background: #ff6b35;"></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                          <span class="<%= career_stats[:avg_runs] > 20 ? 'stat-highlight text-success' : '' %>">
+                            <%= career_stats[:avg_runs] %>
+                          </span>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                          <span class="<%= career_stats[:avg_sr] > 140 ? 'stat-highlight text-warning' : '' %>">
+                            <%= career_stats[:avg_sr] %>
+                          </span>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                          <span class="<%= career_stats[:avg_wickets] > 3 ? 'stat-highlight text-info' : '' %>">
+                            <%= career_stats[:avg_wickets] %>
+                          </span>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                          <span class="<%= career_stats[:avg_econ] > 0 && career_stats[:avg_econ] < 10 ? 'stat-highlight text-success' : '' %>">
+                            <%= career_stats[:avg_econ] %>
+                          </span>
+                        </td>
+                        <td>
+                          <span class="seasons-badge-mobile text-white">
+                            <i class="fas fa-history me-1"></i>
+                            <%= calculate_seasons_played(player) %>
+                          </span>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% else %>
+              <div class="empty-state py-5">
+                <i class="fas fa-users"></i>
+                <h4>No <%= category[:name] %> Found</h4>
+                <p>There are currently no players in this category.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS
+      AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+      });
+
+      // View Toggle Functionality
+      const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+      const cardView = document.getElementById('cardView');
+      const tableView = document.getElementById('tableView');
+      
+      viewToggleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const viewType = this.getAttribute('data-view');
+          
+          // Update active button
+          viewToggleBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Switch views with animation
+          if (viewType === 'card') {
+            cardView.classList.remove('hidden');
+            cardView.classList.add('visible');
+            tableView.classList.remove('visible');
+            tableView.classList.add('hidden');
+          } else {
+            tableView.classList.remove('hidden');
+            tableView.classList.add('visible');
+            cardView.classList.remove('visible');
+            cardView.classList.add('hidden');
+          }
+          
+          // Save preference to session (you might want to make this an AJAX call)
+          fetch('/update_view_preference', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ view_type: viewType })
+          });
+        });
+      });
+
+      // Category tab functionality
+      document.querySelectorAll('.category-tab').forEach(tab => {
+        tab.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const categoryId = this.getAttribute('data-category');
+          
+          // Update active tab
+          document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Show selected category in both views
+          document.querySelectorAll('.category-section').forEach(section => {
+            section.classList.remove('active');
+          });
+          
+          // Show in card view
+          const cardSection = document.getElementById(`${categoryId}-cards`);
+          if (cardSection) cardSection.classList.add('active');
+          
+          // Show in table view
+          const tableSection = document.getElementById(`${categoryId}-table`);
+          if (tableSection) tableSection.classList.add('active');
+          
+          // Update URL hash
+          window.location.hash = categoryId;
+        });
+      });
+
+      // Enhanced search functionality for both views
+      document.getElementById('playerSearch').addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        
+        // Search in card view
+        const cardPlayers = document.querySelectorAll('#cardView .player-card');
+        cardPlayers.forEach(card => {
+          const playerName = card.getAttribute('data-player-name');
+          const category = card.getAttribute('data-category');
+          
+          if (playerName.includes(query)) {
+            card.style.display = 'block';
+            document.getElementById(`${category}-cards`).style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+        
+        // Search in table view
+        const tableRows = document.querySelectorAll('#tableView tr[data-player-name]');
+        tableRows.forEach(row => {
+          const playerName = row.getAttribute('data-player-name');
+          const category = row.getAttribute('data-category');
+          
+          if (playerName.includes(query)) {
+            row.style.display = '';
+            document.getElementById(`${category}-table`).style.display = 'block';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+
+      // Handle URL hash on load
+      if (window.location.hash) {
+        const categoryId = window.location.hash.substring(1);
+        const tab = document.querySelector(`.category-tab[data-category="${categoryId}"]`);
+        if (tab) {
+          tab.click();
+        }
+      }
+
+      // Add intersection observer for scroll animations
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+
+      // Observe all player cards for scroll animations
+      document.querySelectorAll('.player-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+      });
+    });
+
+    // Add floating animation to background
+    function animateBackground() {
+      const bg = document.querySelector('.floating-bg');
+      let time = 0;
+      
+      function update() {
+        time += 0.002;
+        const x = Math.sin(time) * 10;
+        const y = Math.cos(time * 0.7) * 10;
+        bg.style.transform = `translate(${x}px, ${y}py)`;
+        requestAnimationFrame(update);
+      }
+      update();
+    }
+
+    animateBackground();
+  </script>
+</body>
+</html>

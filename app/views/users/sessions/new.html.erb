@@ -1005,7 +1005,7 @@
           <h1>Patel-Predicts</h1>
         </div>
         
-        <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <%= form_for(resource, as: resource_name, url: session_path(resource_name), data: { turbo: false }) do |f| %>
           <div class="form-group">
             <%= f.label :email, "Email" %>
             <i class="fas fa-envelope input-icon"></i>

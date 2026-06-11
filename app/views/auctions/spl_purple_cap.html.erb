@@ -1,88 +1,326 @@
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard - SPL</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-      body {
-          background-color: #f4f4f4;
-          font-family: Arial, sans-serif;
-      }
+<%# app/views/spl/purple_cap.html.erb — Responsive desktop + mobile %>
+<% provide(:title, "Purple Cap") %>
 
-      .leaderboard {
-          background: white;
-          border-radius: 10px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-      }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
 
-      .table {
-          margin: 0;
-          border-collapse: collapse;
-      }
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+  --surface: #1e293b; --surface2: #243044;
+  --purple: #a855f7; --purple2: #c084fc;
+  --purple-dim: rgba(168,85,247,0.15); --purple-dark: #7c3aed;
+  --green: #10b981; --red: #ef4444; --blue: #3b82f6;
+  --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+  --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+  --radius: 16px; --radius-sm: 10px;
+  --nav-h: 68px; --top-h: 58px;
+  --fd: 'Rajdhani', sans-serif; --fb: 'Nunito', sans-serif;
+}
 
-      .table th {
-          background-color: #007bff;
-          color: white;
-          text-align: center;
-      }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); font-family: var(--fb); color: var(--text); overflow-x: hidden; }
 
-      .table td, .table th {
-          text-align: center;
-          vertical-align: middle;
-      }
+.pc-shell { max-width: 1280px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; background: var(--bg); }
 
-      .player-name {
-          font-weight: bold;
-      }
+.pc-topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; height: var(--top-h);
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px);
+}
+.pc-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); cursor: pointer; flex-shrink: 0;
+  text-decoration: none; transition: all 0.15s;
+}
+.pc-back-btn:active { background: var(--bg3); }
+.pc-topbar-center { flex: 1; }
+.pc-brand { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--purple2); letter-spacing: 0.5px; }
+.pc-season-sub { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.pc-cap-badge {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; box-shadow: 0 0 16px rgba(168,85,247,0.4);
+  animation: pcglow 2s ease-in-out infinite alternate;
+}
+@keyframes pcglow { from { box-shadow: 0 0 8px rgba(168,85,247,0.3); } to { box-shadow: 0 0 24px rgba(168,85,247,0.7); } }
 
-      .profile-pic {
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          border: 2px solid #ddd;
-      }
-  </style>
-</head>
-<body>
-  <div class="container my-5">
-    <div class="text-center mt-3">
-      <%= link_to 'Back', root_path, class:'btn btn-primary back-button theme-btn-back' %>
+.pc-scroll {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 16px 20px 32px;
+  scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+}
+.pc-scroll::-webkit-scrollbar { width: 4px; }
+.pc-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* Desktop layout */
+@media (min-width: 960px) {
+  .pc-scroll { padding: 24px 32px 40px; }
+  .pc-desktop-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+  .pc-right-col { position: sticky; top: calc(var(--top-h) + 16px); }
+}
+@media (max-width: 959px) { .pc-desktop-grid { display: block; } .pc-right-col { margin-bottom: 20px; } }
+
+/* Hero */
+.pc-hero {
+  background: linear-gradient(135deg, #2e1065 0%, #4c1d95 40%, #5b21b6 100%);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  position: relative; overflow: hidden; border: 1px solid rgba(168,85,247,0.25);
+}
+@media (min-width: 960px) { .pc-hero { padding: 28px 32px; margin-bottom: 0; } .pc-hero-title { font-size: 34px !important; } }
+.pc-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, rgba(168,85,247,0.04) 0, rgba(168,85,247,0.04) 1px, transparent 1px, transparent 20px);
+  pointer-events: none;
+}
+.pc-hero-glow { position: absolute; right: -30px; top: -30px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.35), transparent 70%); pointer-events: none; }
+.pc-hero-content { position: relative; z-index: 1; }
+.pc-hero-label { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.pc-hero-title { font-family: var(--fd); font-size: 26px; font-weight: 700; color: #fff; line-height: 1.1; display: flex; align-items: center; gap: 10px; }
+.pc-hero-emoji { font-size: 30px; }
+.pc-hero-sub { font-size: 12px; color: var(--purple2); margin-top: 6px; font-weight: 600; letter-spacing: 0.5px; }
+
+/* Season pills */
+.pc-season-row { margin-bottom: 14px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.pc-season-row::-webkit-scrollbar { display: none; }
+.season-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 24px; font-size: 12px; font-weight: 600;
+  color: var(--text2); white-space: nowrap; cursor: pointer;
+  text-decoration: none; transition: all 0.15s; flex-shrink: 0;
+}
+.season-pill.active { background: var(--purple-dim); border-color: rgba(168,85,247,0.45); color: var(--purple2); }
+.season-pill:active { transform: scale(0.97); }
+@media (min-width: 960px) { .season-pill { font-size: 13px; padding: 8px 18px; } }
+
+.section-label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; margin-top: 4px; }
+
+/* Stats grid */
+.pc-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.pc-stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px;
+  position: relative; overflow: hidden; transition: all 0.15s;
+}
+.pc-stat-card:hover { border-color: rgba(168,85,247,0.3); transform: translateY(-1px); }
+.pc-stat-lbl { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.pc-stat-val { font-family: var(--fd); font-size: 20px; font-weight: 700; color: var(--purple2); line-height: 1; margin-bottom: 2px; }
+.pc-stat-sub { font-size: 10px; color: var(--text3); }
+.pc-stat-icon { font-size: 22px; position: absolute; top: 12px; right: 12px; opacity: 0.35; }
+
+/* Podium */
+.pc-podium-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 12px 0; margin-bottom: 16px; }
+.pc-podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; }
+.pod-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pod-av { border-radius: 50%; border: 2.5px solid; display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-weight: 700; color: #fff; position: relative; }
+.pod-cap-emoji { position: absolute; top: -10px; font-size: 16px; }
+.pod-name { font-size: 11px; font-weight: 600; color: var(--text); max-width: 80px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pod-pts { font-size: 10px; color: var(--text3); }
+.pod-block { display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-size: 20px; font-weight: 700; border-radius: 6px 6px 0 0; color: rgba(255,255,255,0.3); }
+
+/* Leaderboard */
+.pc-lb-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+.pc-lb-header {
+  display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.18) 0%, rgba(109,40,217,0.1) 100%);
+  border-bottom: 1px solid rgba(168,85,247,0.2);
+}
+.pc-lb-header-icon { font-size: 20px; }
+.pc-lb-header-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--text); flex: 1; }
+
+.pc-col-headers {
+  display: grid; grid-template-columns: 36px 1fr 70px 50px 50px;
+  gap: 4px; padding: 8px 14px;
+  background: rgba(0,0,0,0.25); border-bottom: 1px solid var(--border);
+}
+.pc-col-hdr { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+.pc-col-hdr:nth-child(2) { text-align: left; }
+
+.pc-player-row {
+  display: grid; grid-template-columns: 36px 1fr 70px 50px 50px;
+  gap: 4px; align-items: center; padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s; position: relative;
+}
+.pc-player-row:last-child { border-bottom: none; }
+.pc-player-row:hover { background: var(--surface2); }
+.pc-player-row.rank-1 { background: rgba(168,85,247,0.07); border-left: 3px solid var(--purple); }
+.pc-player-row.rank-2 { background: rgba(203,213,225,0.04); border-left: 3px solid #94a3b8; }
+.pc-player-row.rank-3 { background: rgba(109,40,217,0.05); border-left: 3px solid #7c3aed; }
+
+.pc-rank-bubble { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.pc-rank-bubble.r1 { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: #fff; box-shadow: 0 2px 8px rgba(168,85,247,0.5); }
+.pc-rank-bubble.r2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
+.pc-rank-bubble.r3 { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #fff; }
+.pc-rank-bubble.rn { background: transparent; border: 1px solid var(--border2); color: var(--text3); font-size: 12px; }
+
+.pc-player-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.pc-av { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--fd); font-size: 13px; font-weight: 700; flex-shrink: 0; position: relative; border: 1.5px solid rgba(168,85,247,0.3); }
+.pc-av-cap { position: absolute; top: -6px; right: -6px; font-size: 12px; line-height: 1; }
+.pc-p-name { font-family: var(--fd); font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-p-sub { font-size: 9px; color: var(--text3); margin-top: 1px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+.pc-stat-cell { text-align: center; }
+.pc-stat-main { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--purple2); }
+.pc-stat-secondary { font-size: 9px; color: var(--text3); margin-top: 1px; }
+.pc-progress-wrap { position: relative; height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.pc-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple2)); border-radius: 2px; transition: width 0.8s ease; }
+</style>
+
+<div class="pc-shell">
+
+  <div class="pc-topbar">
+    <%= link_to spl_dashboard_path, class: "pc-back-btn" do %>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    <% end %>
+    <div class="pc-topbar-center">
+      <div class="pc-brand">Purple Cap 🎯</div>
+      <div class="pc-season-sub">Top Wicket Takers · SPL</div>
     </div>
-    <h1 class="text-center mb-4"><%= image_tag('purple_cap.jpeg', alt: 'Orange Cap', style: 'max-height: 70px;') %> Leaderboard</h1>
-    <div class="leaderboard">
-      <table class="table table-striped table-hover">
-          <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Wickets</th>
-                <th>E/C</th>
-                <th>Overs</th>
-                <th>Runs</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @records.each_with_index do |record, i| %>
-            	<tr>
-                <% if i == 0 %>
-                	<td><span class="player-name"><%= i+1 %> <%= image_tag('purple_cap.jpeg', alt: 'Purple Cap', style: 'max-height: 20px;') %></span></td>
-              	<% else %>
-              		<td><span class="player-name"><%= i+1 %></span></td>
-              	<% end %>
-                <td>
-                  <span class="player-name"><%= record[:player_name] %></span>
-                </td>
-                <td><%= record[:wickets] %></td>
-                <td><%= record[:econ] %></td>
-                <td><%= record[:overs] %></td>
-                <td><%= record[:runs_given] %></td>
-            	</tr>
-             <% end %>
-          </tbody>
-      </table>
-     </div>
+    <div class="pc-cap-badge">🎯</div>
   </div>
-</body>
-</html>
+
+  <div class="pc-scroll">
+
+    <div class="pc-season-row" style="margin-bottom:16px">
+      <%= link_to spl_purple_cap_path(season: 'all'), class: "season-pill #{@selected_season == 'all' ? 'active' : ''}" do %>All Seasons<% end %>
+      <% @seasons.each do |season| %>
+        <%= link_to spl_purple_cap_path(season: season), class: "season-pill #{@selected_season == season ? 'active' : ''}" do %> <%= season.upcase %><% end %>
+      <% end %>
+    </div>
+
+    <div class="pc-desktop-grid">
+
+      <%# LEFT: Hero + Full Leaderboard %>
+      <div class="pc-left-col">
+        <div class="pc-hero" style="margin-bottom:20px">
+          <div class="pc-hero-glow"></div>
+          <div class="pc-hero-content">
+            <div class="pc-hero-label">Sugam Premier League</div>
+            <div class="pc-hero-title"><span class="pc-hero-emoji">🎯</span> Purple Cap</div>
+            <div class="pc-hero-sub"><%= @title %></div>
+          </div>
+        </div>
+
+        <div class="section-label" style="margin-top:0">Full Rankings</div>
+        <div class="pc-lb-card">
+          <div class="pc-lb-header">
+            <div class="pc-lb-header-icon">📊</div>
+            <div class="pc-lb-header-title">Purple Cap Leaderboard</div>
+            <div style="font-size:10px;color:var(--purple2);font-weight:700;letter-spacing:1px">WICKETS</div>
+          </div>
+
+          <div class="pc-col-headers">
+            <div class="pc-col-hdr">#</div>
+            <div class="pc-col-hdr">Player</div>
+            <div class="pc-col-hdr">Wkts/Ovrs</div>
+            <div class="pc-col-hdr">Econ</div>
+            <div class="pc-col-hdr">Maiden</div>
+          </div>
+
+          <% av_colors = ['#a855f7','#94a3b8','#7c3aed','#3b82f6','#10b981','#f97316','#ec4899','#06b6d4'] %>
+          <% @records.each_with_index do |r, i| %>
+            <%
+              rank_class = i == 0 ? 'rank-1' : i == 1 ? 'rank-2' : i == 2 ? 'rank-3' : ''
+              bubble_class = i == 0 ? 'r1' : i == 1 ? 'r2' : i == 2 ? 'r3' : 'rn'
+              percent = i == 0 ? 100 : (@records[i][:wickets].to_f / @records[0][:wickets].to_f * 100).round
+              av_bg = av_colors[i % av_colors.length]
+              initials = r[:player_name].split(' ').map{|w|w[0]}.join.slice(0,2).upcase
+            %>
+            <div class="pc-player-row <%= rank_class %>">
+              <div><div class="pc-rank-bubble <%= bubble_class %>"><%= i + 1 %></div></div>
+              <div class="pc-player-info">
+                <div class="pc-av" style="background:rgba(168,85,247,0.15);color:<%= av_bg %>">
+                  <%= initials %>
+                  <% if i == 0 %><span class="pc-av-cap">🎯</span><% end %>
+                </div>
+                <div style="min-width:0">
+                  <div class="pc-p-name"><%= r[:player_name].split(' ')&.first %></div>
+                  <div class="pc-p-sub"><%= @selected_season == 'all' ? 'All' : "SPL #{@selected_season.last.upcase}" %></div>
+                  <div class="pc-progress-wrap"><div class="pc-progress-fill" style="width:<%= percent %>%"></div></div>
+                </div>
+              </div>
+              <div class="pc-stat-cell">
+                <div class="pc-stat-main"><%= r[:wickets] %>/<%= r[:overs] %></div>
+                <div class="pc-stat-secondary">Econ <%= r[:econ] %></div>
+              </div>
+              <div class="pc-stat-cell">
+                <div class="pc-stat-main" style="color:var(--text2);font-size:13px"><%= r[:econ] %></div>
+              </div>
+              <div class="pc-stat-cell">
+                <div class="pc-stat-main" style="font-size:13px"><%= r[:maidens] %></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# RIGHT: Stats + Podium %>
+      <div class="pc-right-col">
+        <div class="section-label">Key Stats</div>
+        <div class="pc-stats-grid">
+          <% top = @records.first %>
+          <div class="pc-stat-card">
+            <div class="pc-stat-icon">🏆</div>
+            <div class="pc-stat-lbl">Top Wicket Taker</div>
+            <div class="pc-stat-val"><%= top[:player_name].split(' ').first %></div>
+            <div class="pc-stat-sub"><%= top[:wickets] %> Wickets</div>
+          </div>
+          <% best_economy = @records.select { |r| r[:overs].to_f >= 4 }.min_by { |r| r[:econ].to_f } %>
+          <div class="pc-stat-card">
+            <div class="pc-stat-icon">📈</div>
+            <div class="pc-stat-lbl">Best Economy</div>
+            <div class="pc-stat-val"><%= best_economy[:player_name].split(' ').first %></div>
+            <div class="pc-stat-sub"><%= best_economy[:econ] %> Econ</div>
+          </div>
+          <% most_overs_bowl = @records.max_by { |r| r[:overs].to_f } %>
+          <div class="pc-stat-card">
+            <div class="pc-stat-icon">⭐</div>
+            <div class="pc-stat-lbl">Most Overs</div>
+            <div class="pc-stat-val"><%= most_overs_bowl[:player_name].split(' ').first %></div>
+            <div class="pc-stat-sub"><%= most_overs_bowl[:overs] %> Overs</div>
+          </div>
+          <%
+            max_maidens = @records.map { |r| r[:maidens].to_i }.max
+            most_maidens = @records.select { |r| r[:maidens].to_i == max_maidens }.min_by { |r| r[:econ].to_f }
+          %>
+          <div class="pc-stat-card">
+            <div class="pc-stat-icon">🛡️</div>
+            <div class="pc-stat-lbl">Most Maidens</div>
+            <div class="pc-stat-val"><%= most_maidens[:player_name].split(' ').first %></div>
+            <div class="pc-stat-sub"><%= most_maidens[:maidens] %> Maidens</div>
+          </div>
+        </div>
+
+        <% if @records.size >= 3 %>
+          <div class="section-label" style="margin-top:8px">Top 3 Bowlers</div>
+          <%
+            av_colors2 = ['#a855f7','#94a3b8','#7c3aed','#3b82f6','#10b981','#f97316']
+            podium_order = [{idx:1,sz:52,h:56,bc:'#94a3b8'},{idx:0,sz:64,h:76,bc:'#a855f7'},{idx:2,sz:46,h:40,bc:'#7c3aed'}]
+          %>
+          <div class="pc-podium-wrap">
+            <div class="pc-podium">
+              <% podium_order.each do |po| %>
+                <% u = @records[po[:idx]]; next unless u %>
+                <div class="pod-item">
+                  <div class="pod-av" style="width:<%= po[:sz] %>px;height:<%= po[:sz] %>px;font-size:<%= (po[:sz]/3.8).floor %>px;background:<%= av_colors2[po[:idx]] %>;border-color:<%= po[:bc] %>">
+                    <% if po[:idx] == 0 %><div class="pod-cap-emoji">🎯</div><% end %>
+                    <%= u[:player_name].split(' ').map{|w|w[0]}.join.slice(0,2).upcase %>
+                  </div>
+                  <div class="pod-name"><%= u[:player_name].split(' ').first %></div>
+                  <div class="pod-pts"><%= u[:wickets] %> wkts</div>
+                  <div class="pod-block" style="width:<%= po[:sz]+14 %>px;height:<%= po[:h] %>px;background:<%= po[:bc] %>"><%= po[:idx]+1 %></div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+  </div>
+</div>

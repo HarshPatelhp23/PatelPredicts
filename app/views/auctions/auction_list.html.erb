@@ -1,133 +1,657 @@
-<div class="text-center mt-3">
-  <%= link_to 'Back To AuctionRoom', auction_table_path, class:'btn btn-success back-button theme-btn-back' %>
-</div>
-<div class="container mt-4">
-  <!-- Tab Navigation -->
-  <ul class="nav nav-tabs justify-content-center" id="auctionTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="sold-tab" data-bs-toggle="tab" data-bs-target="#sold" type="button" role="tab" aria-controls="sold" aria-selected="true">Sold Players</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="false">Upcoming Players</button>
-    </li>
-  </ul>
-
-  <div class="tab-content mt-3" id="auctionTabsContent">
-    <!-- Sold Players Tab -->
-    <div class="tab-pane fade show active" id="sold" role="tabpanel" aria-labelledby="sold-tab">
-      <div class="table-responsive">
-        <table class="table table-striped table-bordered text-center">
-          <thead class="table-primary sticky-top">
-            <tr>
-              <th>Player Name</th>
-              <th>Sold Price</th>
-              <th>Sold To Team</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @sold_players.each do |player| %>
-              <tr>
-                <td><%= player.name %></td>
-                <% if @captains.include?(player.name) %>
-                  <td>
-                    <%= image_tag 'captain.jpeg', class: "object-fit", alt: 'Batting', style: "width: 30px; height: 30px;" %>
-                  </td>
-                <% else %>
-                <td>₹<%= CurrencyFormatter.format(player&.auction_room&.current_integer_amount) %></td>
-                <% end %>
-                <td><%= player.auction_room&.user&.username %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Auction Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --accent: #e74c3c;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --light: #ecf0f1;
+      --dark: #2c3e50;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    
+    .auction-dashboard {
+      padding: 20px 0;
+    }
+    
+    .back-button {
+      position: relative;
+      overflow: hidden;
+      background-color: var(--success);
+      border: none;
+      padding: 12px 25px;
+      border-radius: 50px;
+      font-weight: 600;
+      transform: translateY(0);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+    }
+    
+    .back-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 15px rgba(46, 204, 113, 0.4);
+    }
+    
+    .back-button:active {
+      transform: translateY(1px);
+    }
+    
+    .card {
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      border: none;
+      margin-bottom: 30px;
+    }
+    
+    .card-header {
+      background-color: #fff;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 20px;
+    }
+    
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 15px rgba(102, 126, 234, 0.25);
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+    
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stats-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .stats-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    
+    .stats-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .nav-tabs {
+      border: none;
+      background-color: white;
+      border-radius: 50px;
+      padding: 5px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      display: inline-flex;
+      margin-bottom: 30px;
+    }
+    
+    .nav-item {
+      margin: 0 5px;
+    }
+    
+    .nav-link {
+      color: var(--dark);
+      border: none;
+      border-radius: 50px !important;
+      padding: 12px 25px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: var(--secondary);
+    }
+    
+    .nav-link.active {
+      background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+      color: white;
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+    
+    .table {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      margin-bottom: 0;
+    }
+    
+    .table th {
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      padding: 15px;
+    }
+    
+    .table td {
+      padding: 15px;
+      vertical-align: middle;
+    }
+    
+    .table-sold thead {
+      background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+      color: white;
+    }
+    
+    .table-upcoming thead {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      color: white;
+    }
+    
+    .player-row {
+      transition: all 0.2s ease;
+    }
+    
+    .player-row:hover {
+      background-color: rgba(52, 152, 219, 0.05);
+      transform: scale(1.01);
+    }
+    
+    .player-name {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .captain-badge {
+      background-color: #f1c40f;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: inline-block;
+      box-shadow: 0 2px 5px rgba(241, 196, 15, 0.3);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(241, 196, 15, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(241, 196, 15, 0);
+      }
+    }
+    
+    .price-badge {
+      background-color: rgba(231, 76, 60, 0.1);
+      color: #e74c3c;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    
+    .team-badge {
+      background-color: rgba(46, 204, 113, 0.1);
+      color: #2ecc71;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    
+    .skill-bar {
+      height: 10px;
+      border-radius: 5px;
+      margin-top: 5px;
+      background-color: #f1f1f1;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .batting-bar {
+      height: 100%;
+      background: linear-gradient(to right, #2ecc71, #27ae60);
+      border-radius: 5px;
+      position: relative;
+    }
+    
+    .bowling-bar {
+      height: 100%;
+      background: linear-gradient(to right, #3498db, #2980b9);
+      border-radius: 5px;
+      position: relative;
+    }
+    
+    .skill-percentage {
+      position: absolute;
+      right: 5px;
+      top: -20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .skill-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    
+    .skill-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+    
+    .base-price {
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      margin-top: 5px;
+    }
+    
+    .empty-state {
+      padding: 50px 20px;
+      text-align: center;
+    }
+    
+    .empty-state-icon {
+      font-size: 5rem;
+      color: #bdc3c7;
+      margin-bottom: 20px;
+    }
+    
+    .search-box {
+      position: relative;
+      max-width: 300px;
+      margin: 0 auto 20px;
+    }
+    
+    .search-input {
+      border-radius: 50px;
+      padding: 10px 20px 10px 45px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+      border-color: #3498db;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7f8c8d;
+    }
+    
+    @media (max-width: 768px) {
+      .nav-tabs {
+        width: 100%;
+      }
+      
+      .nav-link {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+      
+      .stats-card {
+        margin-bottom: 15px;
+        padding: 10px;
+      }
+      
+      .stats-icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+      }
+      
+      .stats-title {
+        font-size: 0.8rem;
+      }
+      
+      .stats-value {
+        font-size: 1.2rem;
+      }
+      
+      .table th, .table td {
+        padding: 10px;
+      }
+      
+      .player-avatar {
+        width: 40px;
+        height: 40px;
+      }
+    }
+    
+    .shimmer {
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    @keyframes shimmer {
+      0% {
+        background-position: -100% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container auction-dashboard">
+    <div class="text-center mb-4">
+      <a href="<%= auction_table_path %>" class="btn back-button">
+        <i class="fas fa-arrow-left me-2"></i> Back to Auction Room
+      </a>
+    </div>
+    
+    <!-- Stats Row -->
+    <div class="row mb-4 mt-4">
+      <div class="col-6 col-md-3">
+        <div class="stats-card">
+          <i class="fas fa-users stats-icon"></i>
+          <div class="stats-title">Total Players</div>
+          <div class="stats-value" id="totalPlayers">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+          <i class="fas fa-gavel stats-icon"></i>
+          <div class="stats-title">Sold Players</div>
+          <div class="stats-value" id="soldPlayers">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 mt-4">
+        <div class="stats-card" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);">
+          <i class="fas fa-clock stats-icon"></i>
+          <div class="stats-title">Upcoming</div>
+          <div class="stats-value" id="upcomingPlayers">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 mt-4">
+        <div class="stats-card" style="background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%);">
+          <i class="fas fa-crown stats-icon"></i>
+          <div class="stats-title">Teams</div>
+          <div class="stats-value" id="totalTeams">0</div>
+        </div>
       </div>
     </div>
+    
+    <!-- Tab Navigation -->
+    <div class="text-center">
+      <ul class="nav nav-tabs mt-5" id="auctionTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="sold-tab" data-bs-toggle="tab" data-bs-target="#sold" type="button" role="tab" aria-controls="sold" aria-selected="true">
+            <i class="fas fa-check-circle me-2"></i>Sold Players
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="false">
+            <i class="fas fa-hourglass-half me-2"></i>Upcoming Players
+          </button>
+        </li>
+      </ul>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" class="search-input form-control" placeholder="Search player...">
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="auctionTabsContent">
+      <!-- Sold Players Tab -->
+      <div class="tab-pane fade show active" id="sold" role="tabpanel" aria-labelledby="sold-tab">
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sold mb-0">
+                <thead class="sticky-top">
+                  <tr>
+                    <th style="width: 40%;">Player</th>
+                    <th style="width: 30%;">Sold Price</th>
+                    <th style="width: 30%;">Bought By</th>
+                  </tr>
+                </thead>
+                <tbody id="soldPlayersList">
+                  <% @sold_players.each do |player| %>
+                    <tr class="player-row">
+                      <td>
+                        <div class="player-name">
+                          <%= player.name %>
+                          <% if @captains.include?(player.name) %>
+                            <span class="captain-badge">Captain</span>
+                          <% end %>
+                        </div>
+                      </td>
+                      <td>
+                        <% if @captains.include?(player.name) %>
+                          <span class="price-badge">
+                            <i class="fas fa-trophy me-1"></i> Captain
+                          </span>
+                        <% else %>
+                          <span class="price-badge">
+                            <i class="fas fa-rupee-sign me-1"></i> <%= CurrencyFormatter.format(player&.auction_room&.current_integer_amount) %>
+                          </span>
+                        <% end %>
+                      </td>
+                      <td>
+                        <span class="team-badge">
+                          <i class="fas fa-users me-1"></i> <%= player.auction_room&.user&.username %>
+                        </span>
+                      </td>
+                    </tr>
+                  <% end %>
+                  <% if @sold_players.empty? %>
+                    <tr>
+                      <td colspan="3" class="text-center py-4">
+                        <div class="empty-state">
+                          <i class="fas fa-inbox empty-state-icon"></i>
+                          <h4>No Players Sold Yet</h4>
+                          <p class="text-muted">Players will appear here once they are sold in the auction.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Upcoming Players Tab -->
+      <div class="tab-pane fade" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+        <div class="card">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-upcoming mb-0">
+                <thead class="sticky-top">
+                  <tr>
+                    <th style="width: 40%;">Player</th>
+                    <th style="width: 30%;">Batting</th>
+                    <th style="width: 30%;">Bowling</th>
+                  </tr>
+                </thead>
+                <tbody id="upcomingPlayersList">
+                  <% @upcoming_players.each do |player| %>
+                    <tr class="player-row">
+                      <td>
+                        <div class="player-name">
+                          <%= player.name %>
+                          <% if @captains.include?(player.name) %>
+                            <span class="captain-badge">Captain</span>
+                          <% end %>
+                        </div>
+                        <% unless @captains.include?(player.name) %>
+                          <div class="base-price">Base Price: ₹<%= CurrencyFormatter.format(player.base_price) %></div>
+                        <% end %>
+                      </td>
+                      <td>
+                        <div class="skill-label">
+                          <!-- Cricket Bat SVG -->
+                          <svg class="skill-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" alt="Batting">
+                            <!-- Bat handle -->
+                            <rect x="10" y="2" width="4" height="8" rx="2" fill="#8B4513" stroke="#5D2906" stroke-width="0.5"/>
+                            <!-- Grip bands -->
+                            <line x1="10" y1="4" x2="14" y2="4" stroke="#654321" stroke-width="0.5"/>
+                            <line x1="10" y1="6" x2="14" y2="6" stroke="#654321" stroke-width="0.5"/>
+                            <line x1="10" y1="8" x2="14" y2="8" stroke="#654321" stroke-width="0.5"/>
+                            <!-- Bat blade -->
+                            <path d="M9 10 L15 10 L15 21 Q12 22 12 22 Q12 22 9 21 Z" fill="#D2691E" stroke="#5D2906" stroke-width="0.8"/>
+                            <!-- Wood grain lines -->
+                            <line x1="11" y1="12" x2="11" y2="20" stroke="#A0522D" stroke-width="0.3" opacity="0.5"/>
+                            <line x1="13" y1="12" x2="13" y2="20" stroke="#A0522D" stroke-width="0.3" opacity="0.5"/>
+                            <!-- Sweet spot -->
+                            <ellipse cx="12" cy="16" rx="2" ry="3" fill="#CD853F" opacity="0.3"/>
+                          </svg>
+                          Batting
+                        </div>
+                        <div class="skill-bar">
+                          <div class="batting-bar" style="width: <%= player.batting %>%"></div>
+                        </div>
+                        <div class="skill-percentage"><%= player.batting %>%</div>
+                      </td>
 
-    <!-- Upcoming Players Tab -->
-    <div class="tab-pane fade" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
-      <div class="table-responsive">
-        <table class="table table-bordered text-center">
-          <thead class="table-warning sticky-top">
-            <tr>
-              <th>Player Name</th>
-              <th>
-                <%= image_tag 'bat.png', class: "object-fit", alt: 'Batting', style: "width: 30px; height: 30px;" %>
-              </th>
-              <th>
-                <%= image_tag 'bowler.png', class: "object-fit", alt: 'Bowling', style: "width: 30px; height: 30px;" %>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <% @upcoming_players.each do |player| %>
-              <tr>
-                <td>
-                  <% if @captains.include?(player.name) %>
-                  <p>
-                    <p class="fw-bold"><%= player.name %><%= image_tag 'captain.jpeg', class: "object-fit", alt: 'Batting', style: "width: 60px; height: 60px;" %></p>
-                  </p>
-                <% else %>
-                  <p class="fw-bold"><%= player.name %></p><p><%= CurrencyFormatter.format(player.base_price) %><p>
-                <% end %>
-                </td>
-                <td>
-                  <div class="progress" style="height: 15px; width: 55px;">
-                    <div
-                      class="progress-bar bg-success justify-content-center"
-                      role="progressbar"
-                      style="width: <%= player.batting %>%"
-                      aria-valuenow="<%= player.batting %>"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    >
-                      <%= player.batting %>%
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="progress" style="height: 15px; width: 55px;">
-                    <div
-                      class="progress-bar bg-primary"
-                      role="progressbar"
-                      style="width: <%= player.bowling %>%"
-                      aria-valuenow="<%= player.bowling %>"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    >
-                      <%= player.bowling %>%
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+                      <td>
+                        <div class="skill-label">
+                          <!-- Cricket Ball SVG - Animated Style -->
+                          <svg class="skill-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" alt="Bowling">
+                            <!-- Outer shadow -->
+                            <circle cx="12.5" cy="12.5" r="8.5" fill="#000000" opacity="0.15"/>
+                            <!-- Main ball -->
+                            <circle cx="12" cy="12" r="8.5" fill="#E63946"/>
+                            <!-- Darker shade for depth -->
+                            <circle cx="12" cy="12" r="8.5" fill="url(#ballGradient)"/>
+                            <!-- Gradient definition -->
+                            <defs>
+                              <radialGradient id="ballGradient">
+                                <stop offset="0%" style="stop-color:#FF4D5A;stop-opacity:1" />
+                                <stop offset="70%" style="stop-color:#E63946;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#C9242F;stop-opacity:1" />
+                              </radialGradient>
+                            </defs>
+                            <!-- Prominent seam - curved line -->
+                            <path d="M12 4 C8 7, 8 17, 12 20" stroke="#FFFFFF" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.95"/>
+                            <path d="M12 4 C16 7, 16 17, 12 20" stroke="#FFFFFF" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.95"/>
+                            <!-- Bold stitch marks -->
+                            <g stroke="#FFFFFF" stroke-width="1" stroke-linecap="round">
+                              <line x1="9.5" y1="7" x2="10.5" y2="7.5"/>
+                              <line x1="8.5" y1="10" x2="9.5" y2="10.5"/>
+                              <line x1="8" y1="13" x2="9" y2="13"/>
+                              <line x1="8.5" y1="16" x2="9.5" y2="15.5"/>
+                              <line x1="9.5" y1="19" x2="10.5" y2="18.5"/>
+                              
+                              <line x1="14.5" y1="7" x2="13.5" y2="7.5"/>
+                              <line x1="15.5" y1="10" x2="14.5" y2="10.5"/>
+                              <line x1="16" y1="13" x2="15" y2="13"/>
+                              <line x1="15.5" y1="16" x2="14.5" y2="15.5"/>
+                              <line x1="14.5" y1="19" x2="13.5" y2="18.5"/>
+                            </g>
+                            <!-- Highlight shine -->
+                            <ellipse cx="9" cy="7.5" rx="2.5" ry="3" fill="#FFFFFF" opacity="0.35"/>
+                            <circle cx="8.5" cy="7" r="1.2" fill="#FFFFFF" opacity="0.6"/>
+                          </svg>
+                          Bowling
+                        </div>
+                        <div class="skill-bar">
+                          <div class="bowling-bar" style="width: <%= player.bowling %>%"></div>
+                        </div>
+                        <div class="skill-percentage"><%= player.bowling %>%</div>
+                      </td>
+                    </tr>
+                  <% end %>
+                  <% if @upcoming_players.empty? %>
+                    <tr>
+                      <td colspan="3" class="text-center py-4">
+                        <div class="empty-state">
+                          <i class="fas fa-hourglass-end empty-state-icon"></i>
+                          <h4>No Upcoming Players</h4>
+                          <p class="text-muted">All players have been auctioned.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<style>
-  .table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .table th,
-  .table td {
-    white-space: nowrap;
-    padding: 0.5rem;
-    vertical-align: middle;
-  }
-
-  .sticky-top {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-  }
-
-  .progress-bar {
-    font-size: 12px;
-    line-height: 15px;
-  }
-</style>
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Search functionality
+    document.querySelector('.search-input').addEventListener('keyup', function() {
+      const searchText = this.value.toLowerCase();
+      const activeTab = document.querySelector('.tab-pane.active');
+      const playerRows = activeTab.querySelectorAll('.player-row');
+      
+      playerRows.forEach(row => {
+        const playerName = row.querySelector('.player-name').textContent.toLowerCase();
+        if (playerName.includes(searchText)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+    
+    // Update stats counters
+    document.addEventListener('DOMContentLoaded', function() {
+      // Count the players (excluding empty state rows)
+      const soldCount = <%= @sold_players.length %>;
+      const upcomingCount = <%= @upcoming_players.length %>;
+      const totalCount = soldCount + upcomingCount;
+      
+      // Get unique teams (this is a rough estimate since we don't have precise team data)
+      const teams = new Set();
+      <% @sold_players.each do |player| %>
+        <% if player.auction_room&.user&.username.present? %>
+          teams.add("<%= player.auction_room.user.username %>");
+        <% end %>
+      <% end %>
+      
+      // Update the counters
+      document.getElementById('soldPlayers').textContent = soldCount;
+      document.getElementById('upcomingPlayers').textContent = upcomingCount;
+      document.getElementById('totalPlayers').textContent = totalCount;
+      document.getElementById('totalTeams').textContent = teams.size;
+    });
+  </script>
+</body>
+</html>

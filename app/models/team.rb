@@ -6,6 +6,7 @@ class Team < ApplicationRecord
   validates :team_name, presence: true, uniqueness: true
   # has_many :players, dependent: :destroy
   # has_and_belongs_to_many :players
+  has_one_attached :profile_image
   has_many :players_teams
   has_many :players, through: :players_teams
   has_many :matches, dependent: :destroy
@@ -32,5 +33,18 @@ class Team < ApplicationRecord
 
   def update_team_name
     update(team_name: user.username)
+  end
+
+  # USE ME IN NEXT SEASON
+  # def total_bench_points
+  #   players_teams.sum(:bench_points)
+  # end
+
+  def total_bench_points
+    points = 0
+    players.each do |player|
+      points+= player.matches.sum(:bench_points)
+    end
+    points
   end
 end

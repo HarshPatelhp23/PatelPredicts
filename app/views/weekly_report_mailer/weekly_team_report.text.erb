@@ -1,0 +1,40 @@
+Fantasy Cricket League - Weekly Report
+========================================
+
+Week: <%= @week_start.strftime('%d %b') %> to <%= @week_end.strftime('%d %b, %Y') %>
+
+Hi <%= @user.username %>!
+
+Your weekly Fantasy Cricket report is ready!
+
+THIS WEEK'S REPORT INCLUDES:
+----------------------------
+• Team Rosters PDF: View all owners' Playing 11 and Bench players
+• Match Schedule PDF: Complete week's match schedule with your players' participation
+
+<% if @team %>
+YOUR STATS:
+-----------
+Team: <%= @team.team_name %>
+Total Points: <%= @user.grand_total %>
+Remaining Purse: ₹<%= @user.remaining_purse %>
+<% end %>
+
+ATTACHED FILES:
+--------------
+📎 Team_Rosters_<%= @week_start.strftime('%d-%b-%Y') %>.pdf
+📎 Weekly_Schedule_<%= @week_start.strftime('%d-%b-%Y') %>.pdf
+
+QUICK TIPS:
+-----------
+• Review your Playing 11 vs Bench composition
+• Check which of your players are playing in upcoming matches
+• Plan your team changes for maximum points
+• Monitor your competitors' teams and strategies
+
+Good luck for the upcoming matches! May your players score big!
+
+---
+Fantasy Cricket League
+This is an automated weekly report. Check your app for real-time updates.
+Questions? Contact your us on:- noreplyypatelpredicts@gmail.com.

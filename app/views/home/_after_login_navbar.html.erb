@@ -1,60 +1,520 @@
 <% if current_user.auctions.present? %>
-  <nav class="navbar navbar-expand-lg navbar-dark theme-dark-color after-login-navbar fixed-top">
-    <div class="container-fluid">
+  <!-- Mobile Navbar with Offcanvas Menu -->
+  <nav class="navbar navbar-expand-lg navbar-dark theme-dark-color after-login-navbar fixed-top d-lg-none">
+    <div class="container-fluid" style="<%= 'margin-right: 23px;' if request.path.start_with?('/after_login') %>">
       <a class="navbar-brand text-white" href="#">
         <%= image_tag('pp_logo.png', alt: 'PatelPredicts Logo', class: 'logo img-fluid') %>
-        <%= link_to'PatelPredicts', after_login_path(params[:auction_id]), class: 'text-white', style: 'text-decoration: none; font-weight: bold; font-size: 20px;' %>
+        <%= link_to 'PatelPredicts', after_login_path(params[:auction_id]), class: 'text-white', style: 'text-decoration: none; font-weight: bold; font-size: 20px;' %>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+      
+      <!-- Menu Toggle Button -->
+      <button class="navbar-toggler" 
+        type="button" 
+        data-bs-toggle="offcanvas" 
+        data-bs-target="#mobileSidebar" 
+        aria-controls="mobileSidebar">
+        <% if request.path.include?('after_login') %>
+          <span class="navbar-toggler-icon" style="margin-right: 10px;"></span>
+          <span class="badge badge-new" style="position: absolute; top: -5px; right: -5px; font-size: 0.6rem; margin-right: 10px;">Menu</span>
+        <% else %>
+          <span class="navbar-toggler-icon"></span>
+          <span class="badge badge-new" style="position: absolute; top: -5px; right: -5px; font-size: 0.6rem;">Menu</span>
+        <% end %>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
+    </div>
+  </nav>
+
+  <!-- Mobile Sidebar Offcanvas -->
+  <div class="offcanvas offcanvas-start theme-dark-color text-white d-lg-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel" data-turbo="false">
+    <div class="offcanvas-header">
+      <div class="d-flex align-items-center">
+        <%= image_tag('pp_logo.png', alt: 'PatelPredicts Logo', class: 'sidebar-logo img-fluid me-2', style: 'width: 40px; height: 40px;') %>
+        <h5 class="offcanvas-title" id="mobileSidebarLabel">
+          <%= link_to 'PatelPredicts', after_login_path(params[:auction_id]), class: 'text-white', style: 'text-decoration: none;' %>
+        </h5>
+      </div>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    
+    <div class="offcanvas-body">
+      <div class="mobile-menu-content">
+        <ul class="nav flex-column">
           <% auction = params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last %>
+          
+          <% if current_user.id == 1 %>
+            <li class="nav-item mb-2">
+              <%= link_to spin_wheel_path, class: "nav-link text-white d-flex align-items-center p-3 rounded" do %>
+                <i class="fas fa-users me-3" style="width: 24px;"></i>
+                <span>Spin The Wheel</span>
+              <% end %>
+            </li>
+            
+            <li class="nav-item mb-2">
+              <%= link_to team_auction_table_path, class: "nav-link text-white d-flex align-items-center p-3 rounded" do %>
+                <i class="fas fa-rupee-sign me-3" style="width: 24px;"></i>
+                <span>Auction Table</span>
+              <% end %>
+            </li>
+            
+          <% end %>
+          <li class="nav-item mb-2">
+            <%= link_to squads_path(auction), class: "nav-link text-white d-flex align-items-center p-3 rounded" do %>
+              <i class="fas fa-users me-3" style="width: 24px;"></i>
+              <span>IPL Squads</span>
+            <% end %>
+          </li>
+
+          <!-- <li class="nav-item">
+            <#%= link_to available_trades_path, class: 'nav-link text-white align-items-center p-3 rounded' do %>
+              <i class="fas fa-list-ul me-3"></i>
+              <span>Available Trades</span>
+            <#% end %>
+          </li> -->
+          
+          <li class="nav-item mb-2">
+            <%= link_to chatbot_path, class: "nav-link text-white d-flex align-items-center p-3 rounded" do %>
+              <i class="fas fa-robot me-3" style="width: 24px;"></i>
+              <span>AI Assistant</span>
+              <span class="badge badge-new ms-2">New</span>
+            <% end %>
+          </li>
+
+          <li class="nav-item mb-2">
+            <%= link_to team_performance_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-chart-line me-3" style="width: 24px;"></i>
+              <span>Search Player</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2" data-turbo="false">
+            <%= link_to points_table_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-table me-3" style="width: 24px;"></i>
+              <span>Points Table</span>
+            <% end %>
+          </li>
+
+          <li class="nav-item mb-2" data-turbo="false">
+            <%= link_to bench_points_table_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-table me-3" style="width: 24px;"></i>
+              <span>Bench- Points Table</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2">
+            <% user_team = current_user.teams.where(auction: auction).first || current_user.teams.last %>
+            <%= link_to team_new_team_path(user_team.slug, auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-edit me-3" style="width: 24px;"></i>
+              <span>Team Submission</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2">
+            <%= link_to current_week_schedule_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-calendar-alt me-3" style="width: 24px;"></i>
+              <span>Schedule</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2">
+            <%= link_to other_players_team_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-list-ul me-3" style="width: 24px;"></i>
+              <span>All Teams</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2">
+            <%= link_to team_analysis_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-chart-bar me-3" style="width: 24px;"></i>
+              <span>Team Analysis</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2">
+            <%= link_to power_perfomers_path(auction_id: auction.id), class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-star me-3" style="width: 24px;"></i>
+              <span>Power Performers</span>
+            <% end %>
+          </li>
+          
+          <li class="nav-item mb-2">
+            <%= link_to points_system_path, class: 'nav-link text-white d-flex align-items-center p-3 rounded' do %>
+              <i class="fas fa-calculator me-3" style="width: 24px;"></i>
+              <span>Point System</span>
+            <% end %>
+          </li>
+        </ul>
+        
+        <!-- User Info Section -->
+        <div class="mt-4 pt-3 border-top border-secondary">
+          <div class="d-flex align-items-center p-2">
+            <div class="avatar-container me-3">
+              <% if current_user.profile_picture.attached? %>
+                <%= image_tag current_user.profile_picture, class: "profile-pic", id: "profileImage" %>
+              <% else %>
+                <%= current_user.username.first.upcase %>
+                <!--   <img src="https://ui-avatars.com/api/?name=<%= current_user.username %>&background=1B5E20&color=fff&size=200&font-size=0.5" 
+                       alt="Profile Picture" class="profile-pic" id="profileImage"> -->
+              <% end %>
+            </div>
+            <div>
+              <small class="text-muted">Welcome,</small>
+              <div class="text-white"><%= current_user.username %></div>
+            </div>
+          </div>
+          
+          <div class="mt-2">
+            <%= link_to "Edit Profile", edit_profile_path(current_user.id), method: :get, data: {turbo: false, no_loader: true}, class: "btn btn-outline-light btn-sm w-100 mb-2" %>
+            <%= link_to "Logout", destroy_user_session_url, method: :delete, data: { turbo:false, turbo_method: :delete}, class: "btn btn-danger btn-sm w-100" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Sidebar (unchanged) -->
+  <div class="d-none d-lg-flex" data-turbo="false">
+    <div class="sidebar theme-dark-color fixed-left">
+      <div class="sidebar-header">
+        <a href="#" class="d-flex align-items-center text-white text-decoration-none">
+          <%= image_tag('pp_logo.png', alt: 'PatelPredicts Logo', class: 'sidebar-logo img-fluid') %>
+          <span class="sidebar-brand ms-2" style="font-weight: bold; font-size: 18px;">
+            <%= link_to 'Patel-Predicts', after_login_path(params[:auction_id]), class: 'text-white', style: 'margin-left: 40px; margin-top: 40px; font-size: 1.2rem;' %>
+          </span>
+        </a>
+      </div>
+      
+      <div class="sidebar-content">
+        <ul class="nav flex-column">
+          <% auction = params[:auction_id].present? ? Auction.find(params[:auction_id]) : current_user.auctions.last %>
+          <li class="nav-item" data-turbo="false">
+            <%= link_to spin_wheel_path, class: "nav-link text-white" do %>
+              <i class="fas fa-users me-2"></i>
+              <span>Spin The Wheel</span>
+            <% end %>
+          </li>
+          <li class="nav-item" data-turbo="false">
+            <%= link_to team_auction_table_path, class: "nav-link text-white" do %>
+              <i class="fas fa-rupee-sign me-2"></i>
+              <span>Auction Table</span>
+            <% end %>
+          </li>
+          <li class="nav-item" data-turbo="false">
+            <%= link_to squads_path(auction), class: "nav-link text-white" do %>
+              <i class="fas fa-users me-2"></i>
+              <span>Squads</span>
+            <% end %>
+          </li>
+          <li class="nav-item" data-turbo="false">
+            <%= link_to chatbot_path, class: "nav-link text-white" do %>
+              <i class="fas fa-robot me-2"></i>
+              <span>AI Assistant</span>
+              <span class="badge badge-new ms-2">New</span>
+            <% end %>
+          </li>
           <li class="nav-item">
-            <%= link_to 'Points Table', points_table_path(auction_id: auction.id), class: 'nav-link text-white' %>
+            <%= link_to team_performance_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-chart-line me-2"></i>
+              <span>Search Player</span>
+            <% end %>
+          </li>
+          <li class="nav-item" data-turbo="false">
+            <%= link_to points_table_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-table me-2"></i>
+              <span>Points Table</span>
+            <% end %>
+          </li>
+          <li class="nav-item" data-turbo="false">
+            <%= link_to bench_points_table_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-table me-2"></i>
+              <span>Bench- Points Table</span>
+            <% end %>
           </li>
           <li class="nav-item">
             <% user_team = current_user.teams.where(auction: auction).first || current_user.teams.last %>
-            <%= link_to 'Team Submission', team_new_team_path(user_team.slug, auction_id: auction.id), class: 'nav-link text-white' %>
+            <%= link_to team_new_team_path(user_team.slug, auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-edit me-2"></i>
+              <span>Team Submission</span>
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "Schedule", current_week_schedule_path(auction_id: auction.id), class: 'nav-link text-white' %>
+            <%= link_to current_week_schedule_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-calendar-alt me-2"></i>
+              <span>Schedule</span>
+            <% end %>
+          </li>
+          <!-- <li class="nav-item">
+            <#%= link_to available_trades_path, class: 'nav-link text-white' do %>
+              <i class="fas fa-list-ul me-2"></i>
+              <span>Available Trades</span>
+            <#% end %>
+          </li> -->
+          <li class="nav-item">
+            <%= link_to other_players_team_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-list-ul me-2"></i>
+              <span>All Teams</span>
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "All teams", other_players_team_path(auction_id: auction.id), class: 'nav-link text-white' %>
+            <%= link_to team_analysis_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-chart-bar me-2"></i>
+              <span>Team Analysis</span>
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "Team Analysis", team_analysis_path(auction_id: auction.id), class: 'nav-link text-white' %>
+            <%= link_to power_perfomers_path(auction_id: auction.id), class: 'nav-link text-white' do %>
+              <i class="fas fa-star me-2"></i>
+              <span>Power Performers</span>
+            <% end %>
           </li>
           <li class="nav-item">
-            <%= link_to "Player Performance", team_performance_path(auction_id: auction.id), class: 'nav-link text-white' %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Patel-Predict Power Performers", power_perfomers_path(auction_id: auction.id), class: 'nav-link text-white' %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Point System", points_system_path, class: 'nav-link text-white' %>
-          </li>
-          <li class="nav-item dropdown" data-no-loader="true">
-            <div class="d-flex align-items-center">
-              <div class="avatar-container">
-                <span class="avatar-text"><%= current_user.username[0] %></span>
-              </div>
-              <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Welcome, <%= current_user.username %>
-              </a>
-              <div class="dropdown-menu theme-dark-color text-white" aria-labelledby="userDropdown">
-                <%= link_to "Edit Profile", edit_profile_path(current_user.id), method: :get, data: {turbo: false, no_loader: true}, class: "dropdown-item"%>
-                <div class="dropdown-divider"></div>
-                <%= link_to "Logout", destroy_user_session_url, method: :delete, data: { turbo_method: :delete}, class: "dropdown-item"%>
-              </div>
-            </div>
+            <%= link_to points_system_path, class: 'nav-link text-white' do %>
+              <i class="fas fa-calculator me-2"></i>
+              <span>Point System</span>
+            <% end %>
           </li>
         </ul>
       </div>
+      
+      <div class="sidebar-footer mt-auto">
+        <div class="dropdown" data-no-loader="true">
+          <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="sidebarUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="avatar-container me-2">
+              <% if current_user.profile_picture.attached? %>
+                <%= image_tag current_user.profile_picture, class: "profile-pic", id: "profileImage" %>
+              <% else %>
+                <%= current_user.username.first.upcase %>
+                <!--   <img src="https://ui-avatars.com/api/?name=<%= current_user.username %>&background=1B5E20&color=fff&size=200&font-size=0.5" 
+                       alt="Profile Picture" class="profile-pic" id="profileImage"> -->
+              <% end %>
+            </div>
+            <div>
+              <small>Welcome,</small>
+              <div><%= current_user.username %></div>
+            </div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="sidebarUserDropdown" data-no-loader>
+            <li><%= link_to "Edit Profile", edit_profile_path(current_user.id), method: :get, data: {turbo: false, no_loader: true},  class: "dropdown-item"%></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><%= link_to "Logout", destroy_user_session_url, method: :delete, data: { turbo:false, turbo_method: :delete}, class: "dropdown-item"%></li>
+          </ul>
+        </div>
+      </div>
     </div>
-  </nav>
-<!-- <#% else %>
-  <#%= render 'home/navbar' %> -->
+    
+    <!-- Main content area with padding for sidebar -->
+    <main class="main-content">
+      <!-- Your main content goes here -->
+    </main>
+  </div>
 <% end %>
+
+<style>
+  /* Sidebar Styles */
+  .sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    background-color: #343a40; /* Bootstrap dark theme */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid #495057;
+  }
+  
+  .sidebar-logo {
+    width: 40px;
+    height: 40px;
+    margin-left: 80px;
+  }
+  
+  .sidebar-content {
+    padding: 1rem;
+    flex: 1;
+  }
+  
+  .sidebar-content .nav-link {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+  }
+  
+  .sidebar-content .nav-link:hover {
+    background-color: #495057;
+  }
+  
+  .sidebar-content .nav-link.active {
+    background-color: #0d6efd;
+  }
+  
+  .sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid #495057;
+  }
+  
+  .avatar-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .avatar-text {
+    font-size: 1.2rem;
+  }
+  
+  /* Main content adjustment for sidebar */
+  .main-content {
+    margin-left: 250px !important;
+    width: calc(100% - 250px);
+  }
+  
+  /* Mobile Styles */
+  @media (max-width: 992px) {
+    body {
+      padding-top: 56px; /* Height of mobile navbar */
+    }
+    
+    .main-content {
+      margin-left: 0;
+      width: 100%;
+    }
+    
+    /* Offcanvas Styles */
+    .offcanvas.theme-dark-color {
+      background-color: #343a40;
+    }
+    
+    .mobile-menu-content .nav-link {
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.25rem;
+      border-radius: 0.375rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .mobile-menu-content .nav-link:hover {
+      background-color: #495057;
+    }
+    
+    .mobile-menu-content .nav-link.active {
+      background-color: #0d6efd;
+    }
+    
+    .btn-close-white {
+      filter: invert(1) grayscale(100%) brightness(200%);
+    }
+    
+    /* Mobile navbar button with badge */
+    .navbar-toggler {
+      position: relative;
+    }
+    
+    .badge-new {
+      background-color: #dc3545;
+      color: white;
+      font-size: 0.6rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.375rem;
+    }
+  }
+  
+  /* Badge styles */
+  .badge-new {
+    background-color: #dc3545;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.375rem;
+  }
+  
+  /* Mobile specific improvements */
+  @media (max-width: 768px) {
+    .mobile-menu-content .nav-link {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+    }
+    
+    .mobile-menu-content .nav-link i {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  // Add active class to current page link and close offcanvas when clicked
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    
+    // Desktop sidebar links
+    const desktopLinks = document.querySelectorAll('.sidebar-content .nav-link');
+    desktopLinks.forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+    
+    // Mobile sidebar links
+    const mobileLinks = document.querySelectorAll('.mobile-menu-content .nav-link');
+    mobileLinks.forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+      
+      // Add click handler to close offcanvas and navigate
+      link.addEventListener('click', function(e) {
+        // Close offcanvas if it's open
+        const offcanvas = document.getElementById('mobileSidebar');
+        if (offcanvas && offcanvas.classList.contains('show')) {
+          const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+          if (bsOffcanvas) {
+            bsOffcanvas.hide();
+          }
+        }
+        
+        // If it's a Turbo link, let Turbo handle it
+        // Otherwise, the normal link behavior will work
+      });
+    });
+    
+    // Handle Edit Profile and Logout buttons separately
+    const editProfileBtn = document.querySelector('.btn-outline-light');
+    const logoutBtn = document.querySelector('.btn-danger');
+    
+    if (editProfileBtn) {
+      editProfileBtn.addEventListener('click', function() {
+        const offcanvas = document.getElementById('mobileSidebar');
+        if (offcanvas && offcanvas.classList.contains('show')) {
+          const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+          if (bsOffcanvas) {
+            bsOffcanvas.hide();
+          }
+        }
+      });
+    }
+    
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function() {
+        const offcanvas = document.getElementById('mobileSidebar');
+        if (offcanvas && offcanvas.classList.contains('show')) {
+          const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+          if (bsOffcanvas) {
+            bsOffcanvas.hide();
+          }
+        }
+      });
+    }
+  });
+</script>
