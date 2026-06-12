@@ -387,11 +387,9 @@ function injectLoaderCSS() {
     }
   `;
   document.head.appendChild(style);
-  console.log('Loader CSS injected');
 }
 
 function initializeLoader() {
-  console.log('Initializing loader...');
   injectLoaderCSS();
   const loader = document.getElementById('cricketLoader');
   if (!loader) {
@@ -474,7 +472,6 @@ function initializeLoader() {
   function forceHideLoader() {
      document.body.classList.remove('turbo-loading');
     if (isLoaderActive) {
-      console.log('Force hiding loader (back button or popstate event)');
       // Set to 100% before hiding
       percentElement.textContent = '100%';
       progressBar.style.width = '100%';
@@ -489,7 +486,6 @@ function initializeLoader() {
 
   // Handle back button and history changes
   window.addEventListener('popstate', () => {
-    console.log('Popstate event detected, hiding loader');
     forceHideLoader();
   });
 
@@ -500,7 +496,6 @@ function initializeLoader() {
       // Add a small delay to allow other events to complete
       setTimeout(() => {
         if (isLoaderActive) {
-          console.log('Loader still active after visibility change, forcing hide');
           forceHideLoader();
         }
       }, 300);
@@ -541,7 +536,6 @@ function initializeLoader() {
     if (isLoaderActive) {
       const elapsedTime = Date.now() - loaderStartTime;
       if (elapsedTime > 15000) { // 15 seconds max display time
-        console.log('Loader has been active for too long, force hiding');
         forceHideLoader();
       }
     }
@@ -549,18 +543,15 @@ function initializeLoader() {
 
   // Standard Turbo Drive navigation events
   document.addEventListener('turbo:visit', () => {
-    console.log('Turbo visit started, showing loader');
     showLoader();
   });
   
   document.addEventListener('turbo:load', () => {
-    console.log('Turbo load completed, hiding loader');
     hideLoader();
   });
 
   // Handle turbo:before-cache to make sure loader is hidden before caching
   document.addEventListener('turbo:before-cache', () => {
-    console.log('Turbo before cache, ensuring loader is hidden');
     forceHideLoader();
   });
   
@@ -585,10 +576,8 @@ function initializeLoader() {
         }
 
         if (!hasNoLoader) {
-          console.log('Link clicked, showing loader');
           showLoader();
         } else {
-          console.log('Link clicked, loader skipped (data-no-loader found)');
         }
         break;
       }
@@ -600,7 +589,6 @@ function initializeLoader() {
   document.addEventListener('submit', (event) => {
     if (event.target.tagName.toLowerCase() === 'form' && 
         !event.target.hasAttribute('data-no-loader')) {
-      console.log('Form submitted, showing loader');
       showLoader();
     }
   });
