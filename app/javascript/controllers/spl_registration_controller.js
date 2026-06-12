@@ -23,6 +23,7 @@ export default class extends Controller {
   }
 
   connect() {
+    console.log("Stimuls connected!!!!!!!!!")
     this.currentStep = 1
     this._countdownTimer = null
   }
