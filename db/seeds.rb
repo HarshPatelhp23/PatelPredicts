@@ -1,3 +1,7 @@
 # frozen_string_literal: true
 
-AdminUser.create!(email: Rails.application.credentials.dig(:admin_user, :email), password: Rails.application.credentials.dig(:admin_user, :password), password_confirmation: Rails.application.credentials.dig(:admin_user, :password))
+AdminUser.create!(
+	email: ENV['ADMIN_EMAIL'] || Rails.application.credentials.dig(:admin_user, :email), 
+	password: ENV['ADMIN_PASSWORD'] || Rails.application.credentials.dig(:admin_user, :password), 
+	password_confirmation: ENV['ADMIN_PASSWORD'] || Rails.application.credentials.dig(:admin_user, :password)
+)
