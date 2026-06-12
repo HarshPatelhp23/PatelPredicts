@@ -8,5 +8,3 @@
 //= link_tree ../../javascript .js
 //= link_tree ../../../vendor/javascript .js
 //= link compute_match_team_points.js
-//= link loader.js
-//= link pp_home.png
