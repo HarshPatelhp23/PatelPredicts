@@ -1420,7 +1420,7 @@ body {
         justify-content: space-between;
         
         .stat-card {
-          min-width: calc(25% - 12px);
+          min-width: calc(25% - 12px); 
         }
       }
     }

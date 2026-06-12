@@ -1,98 +1,30 @@
+<%# app/views/layouts/spl_auth.html.erb                                          %>
+<%# Thin shell — loads assets, then yields. The pp-screen background lives in    %>
+<%# spl_auth_unified.css so every page using this layout gets the hero image.    %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <meta name="theme-color" content="#1e3a8a">
-  <title>SPL Fantasy - <%= yield(:title) %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#060e0c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Patel-Predicts – <%= yield(:title) || 'SPL Fantasy' %></title>
+
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%= stylesheet_link_tag 'application', media: 'all' %>
-  <%= stylesheet_link_tag 'spl_auth', media: 'all' %>
+  <%= stylesheet_link_tag 'spl_auth' %>
   <%= javascript_importmap_tags %>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <%= yield :head %>
 </head>
-<body>
-  <!-- Simple navbar for SPL app -->
-  <div class="spl-navbar">
-    <div class="spl-navbar-content">
-      <div class="spl-logo">
-        <span class="logo-icon">🏏</span>
-        <span class="logo-text">SPL Fantasy</span>
-      </div>
-      <div class="spl-user-menu">
-        <span class="user-name"><%= current_spl_user&.name %></span>
-        <%= link_to destroy_spl_user_session_path, method: :delete, class: "logout-btn" do %>
-          <i class="fas fa-sign-out-alt"></i>
-        <% end %>
-      </div>
-    </div>
-  </div>
-  
-  <main class="spl-main-content">
-    <%= yield %>
-  </main>
+<body data-controller="toast">
+  <%= yield %>
+  <div data-toast-target="container" class="toast-container"></div>
 </body>
 </html>
-
-<style>
-  .spl-navbar {
-    background: white;
-    padding: 12px 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  
-  .spl-navbar-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  
-  .spl-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 18px;
-  }
-  
-  .logo-icon {
-    font-size: 24px;
-  }
-  
-  .logo-text {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  
-  .spl-user-menu {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .user-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #1e293b;
-  }
-  
-  .logout-btn {
-    color: #ef4444;
-    text-decoration: none;
-    padding: 8px;
-  }
-  
-  .spl-main-content {
-    min-height: calc(100vh - 60px);
-    background: #f8fafc;
-  }
-</style>

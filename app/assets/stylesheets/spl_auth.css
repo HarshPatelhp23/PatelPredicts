@@ -8,11 +8,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --spl-green:       #1b5e20;
-  --spl-green-mid:   #2e7d32;
-  --spl-green-light: #43a047;
-  --spl-gold:        #f9a825;
-  --spl-gold-light:  #fdd835;
+  --spl-green:       #00d4b8;
+  --spl-green-mid:   #00d4b8;
+  --spl-green-light: #00d4b8;
+  --spl-gold:        #00d4b8;
+  --spl-gold-light:  #00d4b8;
   --spl-red:         #c62828;
   --spl-card-bg:     rgba(10, 24, 10, 0.82);
   --spl-card-border: rgba(67, 160, 71, 0.30);
@@ -60,8 +60,8 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(500px, 130vw);
-  height: min(500px, 130vw);
+  width: min(500px, #{130vw});
+  height: min(500px, #{130vw});
   opacity: 0.7;
   animation: fieldRotate 80s linear infinite;
 }
@@ -614,7 +614,7 @@ html, body {
     border-radius: var(--radius);
     border: 1px solid var(--spl-card-border);
     margin-bottom: 2rem;
-    max-height: calc(100dvh - 4rem);
+    max-height: calc(100dvh - #{4rem});
   }
   .auth-card::before { display: none; }
 }
