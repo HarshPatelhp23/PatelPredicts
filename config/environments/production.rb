@@ -90,18 +90,18 @@ Rails.application.configure do
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
 
-  config.action_mailer.default_url_options = { host: 'patelpredicts.onrender.com', protocol: 'https' }
-  config.action_mailer.delivery_method = :smtp
-
-  ActionMailer::Base.smtp_settings = {
-    address: 'smtp.sendgrid.net',
-    domain: 'patelpredicts.onrender.com',
-    port: 587,
-    user_name: Rails.application.credentials.dig(:sendgrid, :user_name),
-    password: Rails.application.credentials.dig(:sendgrid, :password),
-    authentication: :plain,
-    enable_starttls_auto: true
+  config.action_mailer.smtp_settings = {
+    address:              ENV['SMTP_ADDRESS'] || Rails.application.credentials.dig(:smtp, :address),
+    port:                 ENV['SMTP_PORT'] || Rails.application.credentials.dig(:smtp, :port),
+    domain:               ENV['SMTP_DOMAIN'] || Rails.application.credentials.dig(:smtp, :domain),
+    user_name:            ENV['SMTP_USER_NAME'] || Rails.application.credentials.dig(:smtp, :user_name),
+    password:             ENV['SMTP_PASSWORD'] || Rails.application.credentials.dig(:smtp, :password),
+    authentication:       ENV['SMTP_AUTHENTICATION'] || Rails.application.credentials.dig(:smtp, :authentication),
+    enable_starttls_auto: ENV['SMTP_ENABLE_STARTTLS_AUTO'] || Rails.application.credentials.dig(:smtp, :enable_starttls_auto)
   }
+
+  config.action_mailer.default_url_options = { host: 'patelpredicts-4mw4.onrender.com' }
+  config.action_mailer.asset_host = 'https://patelpredicts-4mw4.onrender.com'
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
