@@ -60,8 +60,8 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(500px, var(--vw-130));
-  height: min(500px, var(--vw-130));
+/*  width: min(500px, var(--vw-130));
+  height: min(500px, var(--vw-130));*/
   max-height: calc(100dvh - var(--rem-4));
   opacity: 0.7;
   animation: fieldRotate 80s linear infinite;
