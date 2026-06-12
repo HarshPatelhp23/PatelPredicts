@@ -12,9 +12,17 @@ class Svl::PointsTableController < ApplicationController
     @league_matches = @all_matches.league
 
     # Knockout bracket matches
-    @knockout_matches = @all_matches.where(match_type: [:qualifier, :eliminator, :final])
+    @knockout_matches = @all_matches.where(match_type: [:semi_final, :eliminator, :final])
                                     .order(match_type: :asc, played_on: :asc)
 
+    @league_rank_1 = @teams.first  # already sorted by points desc
+
+    # Separate by stage for the view
+    @semi_matches   = @knockout_matches.where(match_type: :semi_final)
+    @final_matches  = @knockout_matches.where(match_type: :final)
+
+    # Teams eliminated (4th+)
+    @eliminated_teams = @teams[3..]
     if params[:team_id].present?
       @filter_team = @teams.find { |t| t.id == params[:team_id].to_i }
       @matches = @league_matches.where(

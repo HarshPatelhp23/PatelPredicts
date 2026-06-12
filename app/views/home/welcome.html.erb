@@ -2,221 +2,239 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>PatelPredicts - Fantasy Cricket</title>
-  <!-- <#%= stylesheet_link_tag 'custom', media: 'all' %> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Patel-Predicts - Fantasy Cricket</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body, html {
-      margin: 0;
-      padding: 0;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
       height: 100%;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
     }
-    
+
+    /* Full-screen background using a pseudo element so it never gaps */
     .hero-section {
-      background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(<%= asset_path('wp-6.jpg') %>);
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: cover;
-      min-height: 100vh;
+      position: fixed;
+      inset: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
-    
-    .hero-text {
-      max-width: 500px;
+
+    /* Background layer — sits behind everything, truly fullscreen */
+    .hero-section::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        url('<%= image_url("pp_home.png") %>');
+      background-repeat: no-repeat;
+      background-size: 200% 100%;      /* 2 panels side by side, each fills 100% height */
+      background-position: 0% 0%;      /* left panel for desktop */
+      z-index: -1;
+    }
+
+    /* Mobile: show right panel */
+    @media (max-width: 768px) {
+      .hero-section::before {
+        background-size: 200% 100%;
+        background-position: 100% 0%;
+      }
+    }
+
+    /* Scrollable inner content */
+    .hero-inner {
       width: 100%;
-      margin: 0 auto;
-      padding: 30px 20px;
+      max-width: 500px;
+      padding: 60px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* min-height ensures content is centred even on tall screens */
+      min-height: 100%;
+      justify-content: center;
     }
-    
-    .hero-text h1 {
-      font-size: 2rem;
-      margin-bottom: 15px;
+
+    @media (max-width: 768px) {
+      .hero-inner {
+        max-width: 100%;
+        padding: 72px 20px 48px;
+        justify-content: flex-start;
+      }
+    }
+
+    /* App badge */
+    .app-badge {
+      width: 84px; height: 84px;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #7c4ef5, #6741ea);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 16px 48px rgba(103,65,234,0.55);
+      flex-shrink: 0;
+    }
+    .app-badge span { font-size: 40px; line-height: 1; }
+
+    .app-name {
+      font-size: 34px; font-weight: 800;
       color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
       text-align: center;
-      font-weight: 700;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.6);
     }
-    
-    .hero-text h5 {
-      font-size: 1rem;
-      margin-bottom: 25px;
-      color: #e0e0e0;
+
+    .app-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.48);
+      margin-bottom: 44px;
       text-align: center;
-      font-weight: 400;
-      line-height: 1.5;
     }
-    
-    .user-type-card {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 25px;
-      margin-bottom: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    .section-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      width: 100%; margin-bottom: 14px;
     }
-    
-    .user-type-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+
+    /* Tiles */
+    .module-tile {
+      width: 100%;
+      border-radius: 20px;
+      padding: 20px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
-    
-    .card-icon {
-      font-size: 3rem;
-      text-align: center;
-      margin-bottom: 15px;
+    .module-tile:hover  { transform: translateY(-2px); filter: brightness(1.12); }
+    .module-tile:active { transform: scale(0.97); filter: brightness(0.95); }
+
+    .module-tile::after {
+      content: '';
+      position: absolute; top: -50px; right: -30px;
+      width: 130px; height: 130px; border-radius: 50%;
+      pointer-events: none;
     }
-    
-    .card-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      text-align: center;
-      color: #333;
+
+    .tile-intl {
+      background: linear-gradient(135deg, rgba(103,65,234,0.6) 0%, rgba(80,40,200,0.25) 100%);
     }
-    
-    .card-description {
-      font-size: 0.9rem;
-      color: #666;
-      text-align: center;
-      margin-bottom: 20px;
+    .tile-intl::after { background: rgba(103,65,234,0.3); }
+
+    .tile-spl {
+      background: linear-gradient(135deg, rgba(17,153,142,0.6) 0%, rgba(10,110,100,0.25) 100%);
+    }
+    .tile-spl::after { background: rgba(17,153,142,0.3); }
+
+    .tile-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; flex-shrink: 0;
+    }
+    .tile-icon-intl { background: rgba(103,65,234,0.55); }
+    .tile-icon-spl  { background: rgba(17,153,142,0.55); }
+
+    .tile-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+
+    .tile-name {
+      font-size: 17px; font-weight: 700;
+      color: #fff; margin-bottom: 4px;
+    }
+
+    .tile-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.48);
       line-height: 1.4;
     }
-    
-    .btn-mobile {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-align: center;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      cursor: pointer;
+
+    .tile-arrow {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; z-index: 1;
+      color: #fff; font-size: 20px; line-height: 1;
     }
-    
-    .btn-primary-mobile {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+
+    .tile-badge {
+      position: absolute; top: 11px; right: 13px;
+      background: #6741ea; color: #fff;
+      font-size: 9px; font-weight: 800; letter-spacing: 0.8px;
+      padding: 3px 9px; border-radius: 20px;
+      text-transform: uppercase; z-index: 2;
     }
-    
-    .btn-primary-mobile:active {
-      transform: scale(0.98);
+
+    .terms-note {
+      margin-top: 28px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.22);
+      text-align: center; line-height: 1.7;
     }
-    
-    .btn-success-mobile {
-      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-      color: white;
+    .terms-note a {
+      color: rgba(255,255,255,0.45);
+      text-decoration: underline;
     }
-    
-    .btn-outline-mobile {
-      background: transparent;
-      border: 2px solid #667eea;
-      color: #667eea;
-    }
-    
-    .divider {
-      text-align: center;
-      margin: 25px 0;
-      position: relative;
-    }
-    
-    .divider::before,
-    .divider::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 45%;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.3);
-    }
-    
-    .divider::before {
-      left: 0;
-    }
-    
-    .divider::after {
-      right: 0;
-    }
-    
-    .divider span {
-      background: transparent;
-      padding: 0 10px;
-      color: white;
-      font-size: 0.9rem;
-    }
-    
-    @media (max-width: 480px) {
-      .hero-text h1 {
-        font-size: 1.75rem;
-      }
-      
-      .user-type-card {
-        padding: 20px;
-      }
-      
-      .card-title {
-        font-size: 1.25rem;
-      }
+
+    /* Desktop tweaks */
+    @media (min-width: 769px) {
+      .app-name   { font-size: 40px; }
+      .tile-icon  { width: 62px; height: 62px; font-size: 30px; }
+      .tile-name  { font-size: 18px; }
+      .tile-arrow { width: 42px; height: 42px; }
+      .module-tile { padding: 22px 22px; }
     }
   </style>
 </head>
 <body>
   <section class="hero-section">
-    <div class="hero-text">
-      <h1>🏏 PatelPredicts</h1>
-      <h5>Your Ultimate Fantasy Cricket Platform</h5>
-      
-      <!-- International Cricket Users -->
-      <div class="user-type-card">
-        <div class="card-icon">🌍</div>
-        <div class="card-title">International Cricket</div>
-        <div class="card-description">
-          Play fantasy cricket for international tournaments and matches worldwide
+    <div class="hero-inner">
+
+      <div class="app-badge"><span>🏏</span></div>
+      <h1 class="app-name">Patel-Predicts</h1>
+      <p class="app-sub">Choose your league to continue</p>
+
+      <p class="section-label">Select module</p>
+
+      <%= link_to (user_signed_in? ? dashboard_path : new_user_session_path), class: 'module-tile tile-intl' do %>
+        <div class="tile-icon tile-icon-intl">🌍</div>
+        <div class="tile-body">
+          <div class="tile-name">International Cricket</div>
+          <div class="tile-desc">Global tournaments &amp; matches worldwide</div>
         </div>
-        <% if user_signed_in? %>
-          <%= link_to 'Go to Dashboard', dashboard_path, class: 'btn-mobile btn-primary-mobile' %>
-        <% else %>
-          <%= link_to 'Sign In / Register', new_user_session_path, class: 'btn-mobile btn-primary-mobile' %>
-        <% end %>
-      </div>
-      
-      <div class="divider">
-        <span>OR</span>
-      </div>
-      
-      <!-- SPL Users -->
-      <div class="user-type-card">
-        <div class="card-icon">🏆</div>
-        <div class="card-title">Sugam Premier League (SPL)</div>
-        <div class="card-description">
-          Join our society's exclusive SPL tournament. Create your team and compete with neighbors!
+        <div class="tile-arrow">›</div>
+      <% end %>
+
+      <%= link_to (spl_user_signed_in? ? spl_dashboard_path : new_spl_user_session_path), class: 'module-tile tile-spl' do %>
+        <div class="tile-icon tile-icon-spl">🏆</div>
+        <div class="tile-body">
+          <div class="tile-name">Sugam Premier League</div>
+          <div class="tile-desc">Society-exclusive SPL tournament</div>
         </div>
-        <% if spl_user_signed_in? %>
-          <%= link_to 'SPL Dashboard', spl_dashboard_path, class: 'btn-mobile btn-success-mobile' %>
-        <% else %>
-          <%= link_to 'SPL Sign In / Register', new_spl_user_session_path, class: 'btn-mobile btn-success-mobile' %>
-        <% end %>
-      </div>
-      
-      <div class="divider">
-        <span>⚡</span>
-      </div>
-      
-      <div style="text-align: center; margin-top: 20px;">
-        <small style="color: rgba(255,255,255,0.7);">Download our app for better experience</small>
-      </div>
+        <div class="tile-arrow">›</div>
+        <div class="tile-badge">SPL, SVL</div>
+      <% end %>
+
+      <p class="terms-note">
+        By continuing you agree to our
+        <a href="#">Terms of Service</a> &amp; <a href="#">Privacy Policy</a>
+      </p>
+
     </div>
   </section>
 </body>
