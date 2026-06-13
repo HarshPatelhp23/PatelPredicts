@@ -7,7 +7,7 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
 
   # CRITICAL CHANGE: Enable on-the-fly compilation
-  config.assets.compile = true  # Changed from false to true
+  config.assets.compile = false  # Changed from false to true
 
   # Enable static file serving
   config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
