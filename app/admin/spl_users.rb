@@ -1,5 +1,5 @@
 ActiveAdmin.register Spl::User do
-	permit_params :name, :email, :points
+	permit_params :name, :email, :points, :is_admin
 
 	index do
     selectable_column
@@ -7,6 +7,7 @@ ActiveAdmin.register Spl::User do
     column :name
     column :email
     column :points
+    column :is_admin
     actions
   end
 end
