@@ -105,24 +105,21 @@ Rails.application.configure do
   # config.action_mailer.asset_host = 'https://patelpredicts-4mw4.onrender.com'
 
 
-  # Sendgrid CONFIGURATION FOR SENDING MAILS
+  # Brevo CONFIGURATION FOR SENDING MAILS
 
-  config.action_mailer.delivery_method = :sendgrid_actionmailer
-  config.action_mailer.sendgrid_actionmailer_settings = {
-    api_key: ENV['SENDGRID_API_KEY'],
-    raise_delivery_errors: true,
-    open_timeout: 30,      # Increase from default 5 seconds
-    read_timeout: 30,      # Increase from default 5 seconds
-    retry_limit: 3  
-  }
-
-  # Set default URL options (important for email links)
+  config.action_mailer.delivery_method = :brevo
+  
+  # Set default URL options for production
   config.action_mailer.default_url_options = { 
-    host: 'patelpredicts-4mw4.onrender.com' 
+    host: 'patelpredicts-4mw4.onrender.com',
+    protocol: 'https'
+  }
+  config.action_mailer.brevo_settings = {
+    api_key: ENV['BREVO_API_KEY'] || Rails.application.credentials.dig(:brevo, :api_key)
   }
   config.action_mailer.asset_host = 'https://patelpredicts-4mw4.onrender.com'
-
-  # Don't forget these important settings
+  
+  # Email settings
   config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
 

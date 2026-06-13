@@ -69,3 +69,4 @@ end
 
 # Register the delivery method
 ActionMailer::Base.add_delivery_method :brevo, BrevoDeliveryMethod
+ActionMailer::Base.add_delivery_method :brevo, BrevoDeliveryMethod
