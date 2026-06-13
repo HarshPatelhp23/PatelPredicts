@@ -114,9 +114,9 @@ Rails.application.configure do
     host: 'patelpredicts-4mw4.onrender.com',
     protocol: 'https'
   }
-  config.action_mailer.brevo_settings = {
-    api_key: ENV['BREVO_API_KEY'] || Rails.application.credentials.dig(:brevo, :api_key)
-  }
+  # config.action_mailer.brevo_settings = {
+  #   api_key: ENV['BREVO_API_KEY'] || Rails.application.credentials.dig(:brevo, :api_key)
+  # }
   config.action_mailer.asset_host = 'https://patelpredicts-4mw4.onrender.com'
   
   # Email settings
