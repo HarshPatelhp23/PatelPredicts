@@ -3,7 +3,7 @@
 // ./bin/rails generate stimulus controllerName
 
 // app/javascript/controllers/index.js
-import { application } from "controllers/application"
+import { application } from "./application"
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 
 // This automatically loads all controllers from the import map
