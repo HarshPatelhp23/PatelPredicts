@@ -42,9 +42,9 @@
 
   <body>
     <%= render 'layouts/flash_messages' %>
-    <% unless request.path == '/' %>
-      <%= render 'shared/loader' %>
-    <% end %>
+    <!-- <#% unless request.path == '/' %>
+      <#%= render 'shared/loader' %>
+    <#% end %> -->
     <div class="container-fluid">
       <% if current_user.present? %>
         <!-- Fixed-top navbar -->

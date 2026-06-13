@@ -1195,7 +1195,7 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
 </div><!-- /pt-main -->
 
 <!-- ════ KNOCKOUT BRACKET ════ -->
-<% if @league_matches.count > 3 %>
+<% if @semi_matches.present? || @final_matches.present?  %>
 <div class="pt-knockout-wrap" style="border-top: 2px solid rgba(167,139,250,0.15); background: linear-gradient(180deg, rgba(167,139,250,0.03) 0%, transparent 60%); padding-bottom: 8px;">
 
   <!-- Stage flow bar -->

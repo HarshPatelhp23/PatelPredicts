@@ -17,6 +17,13 @@ module ApplicationHelper
     'Sagar Thakkar' => 'Smashers'
   }.freeze
 
+  SVL_TEAM_MAPPING = {
+    'Yash Agrawal' => 'Shakuni_Sena',
+    'Haardam Doshi' => 'Strikers',
+    'Rushabh Shah' => 'Snipers',
+    'Rushil Khatri' => 'Stallions'
+  }.freeze
+
   IMAGE_EXTENSIONS = %w[.png .jpg .jpeg .gif .webp].freeze
 
 
@@ -117,7 +124,8 @@ module ApplicationHelper
   end
 
   def spl_team_logo(username)
-    team_name = SPL_TEAM_MAPPING[username].downcase
+    # team_name = SPL_TEAM_MAPPING[username].downcase
+    team_name = "v_sugam_#{SVL_TEAM_MAPPING[username].downcase}"
     return unless team_name
 
     extensions = %w[png jpg jpeg webp svg]

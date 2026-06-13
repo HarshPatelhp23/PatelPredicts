@@ -17,7 +17,7 @@ ActiveAdmin.register User do
     column :remaining_purse
     column :slug
     actions defaults: true do |user|
-      link_to 'Assign Team', assign_team_admin_user_path(user), method: :get
+      # link_to 'Assign Team', assign_team_admin_user_path(user), method: :get
     end
   end
 
@@ -25,6 +25,8 @@ ActiveAdmin.register User do
     f.inputs 'User Details' do
       f.input :username
       f.input :email
+      f.input :password
+      f.input :password_confirmation
       f.input :grand_total
       f.input :auctions, as: :select, collection: Auction.all.map { |auc| [auc.name, auc.id] }
       f.input :final_total_points
@@ -39,46 +41,46 @@ ActiveAdmin.register User do
     f.actions
   end
 
-  member_action :assign_team, method: %i[get post] do
-    @user = User.friendly.find(params[:id])
-    if request.post?
-      clean_string = params['user']['data'].gsub("\r\n", '').gsub!(/\s+/, ' ') if params['user']['data'].present?
-      data = instance_eval(clean_string) if clean_string.present?
-      if data.instance_of?(Array)
-        begin
-          ActiveRecord::Base.transaction do
-            data.each do |player_data|
-              Rails.logger.info "Processing Player: #{player_data[:player_name]} with Sold Price: #{player_data[:sold_price]}"
+  # member_action :assign_team, method: %i[get post] do
+  #   @user = User.friendly.find(params[:id])
+  #   if request.post?
+  #     clean_string = params['user']['data'].gsub("\r\n", '').gsub!(/\s+/, ' ') if params['user']['data'].present?
+  #     data = instance_eval(clean_string) if clean_string.present?
+  #     if data.instance_of?(Array)
+  #       begin
+  #         ActiveRecord::Base.transaction do
+  #           data.each do |player_data|
+  #             Rails.logger.info "Processing Player: #{player_data[:player_name]} with Sold Price: #{player_data[:sold_price]}"
 
-              p = Player.find_by(name: player_data[:player_name])
-              if p.blank?
-                raise StandardError, "Player:- #{player_data[:player_name]} is not Found"
-              end
+  #             p = Player.find_by(name: player_data[:player_name])
+  #             if p.blank?
+  #               raise StandardError, "Player:- #{player_data[:player_name]} is not Found"
+  #             end
 
-              sold_price = player_data[:sold_price].include?('L') ? (player_data[:sold_price].split.first.to_f / 100) : player_data[:sold_price]
+  #             sold_price = player_data[:sold_price].include?('L') ? (player_data[:sold_price].split.first.to_f / 100) : player_data[:sold_price]
               
-              Rails.logger.info "Assigning Team to Player: #{player_data[:player_name]}"
+  #             Rails.logger.info "Assigning Team to Player: #{player_data[:player_name]}"
               
-              p.teams << @user.teams.where(team_name: params[:user][:teams])
+  #             p.teams << @user.teams.where(team_name: params[:user][:teams])
               
-              if p.players_teams.last.nil?
-                raise StandardError, "PlayerTeam record missing for Player: #{player_data[:player_name]}"
-              end
+  #             if p.players_teams.last.nil?
+  #               raise StandardError, "PlayerTeam record missing for Player: #{player_data[:player_name]}"
+  #             end
 
-              p.players_teams.last.update_columns(sold_price: sold_price)
-              p.save
-            end
-          end
-          redirect_to admin_teams_path, notice: 'Team has been assigned successfully'
-        rescue => e
-          Rails.logger.error "Transaction Rolled Back: #{e.message}"
-          redirect_to admin_teams_path, alert: "Error: #{e.message}"
-        end
-      else
-        redirect_to assign_team_admin_user_path, notice: 'Invalid data'
-      end
-    end
-  end
+  #             p.players_teams.last.update_columns(sold_price: sold_price)
+  #             p.save
+  #           end
+  #         end
+  #         redirect_to admin_teams_path, notice: 'Team has been assigned successfully'
+  #       rescue => e
+  #         Rails.logger.error "Transaction Rolled Back: #{e.message}"
+  #         redirect_to admin_teams_path, alert: "Error: #{e.message}"
+  #       end
+  #     else
+  #       redirect_to assign_team_admin_user_path, notice: 'Invalid data'
+  #     end
+  #   end
+  # end
 
   controller do
     def show

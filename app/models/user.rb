@@ -2,7 +2,7 @@
 
 class User < ApplicationRecord
   extend FriendlyId
-  friendly_id :username, use: :slugged
+  friendly_id :username, use: [:slugged, :finders]
   validates :username, presence: true, uniqueness: true
   validates :password, confirmation: true
   validates :password_confirmation, presence: true, if: :password_required?
@@ -30,6 +30,10 @@ class User < ApplicationRecord
 
   def to_param
     slug
+  end
+
+  def should_generate_new_friendly_id?
+    username_changed? || super
   end
 
   def self.ransackable_attributes(_auth_object = nil)
