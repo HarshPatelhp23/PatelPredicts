@@ -188,7 +188,7 @@ class AuctionsController < ApplicationController
     # @users = User.limit(4) # Fetch first 4 users
     # @user_1, @user_2, @user_3, @user_4 = @users
     @auction_rooms = AuctionRoom.all
-    flash.now[:notice] = 'Welcome to SPL-11 AuctionRoom'
+    flash.now[:notice] = 'Welcome to SVL-1 AuctionRoom'
   end
 
   def validate_code
