@@ -19,7 +19,7 @@
     
     <!-- IMPORTANT: This line MUST be uncommented and properly configured -->
     <%= javascript_importmap_tags %>
-    <%= javascript_include_tag 'application', defer: true %>
+    <!-- <#%= javascript_include_tag 'application', defer: true %> -->
     <!-- Other JavaScript includes -->
     <!-- <#%= javascript_include_tag "https://www.google.com/jsapi" %> -->
     <!-- <#%= javascript_include_tag 'https://cdn.jsdelivr.net/npm/chart.js@3', 'chartkick' %> -->
@@ -53,4 +53,6 @@
   } else {
     console.error("Importmap not loaded");
   }
+
+  import 'application'
 </script>
