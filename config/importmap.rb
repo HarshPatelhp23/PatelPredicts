@@ -1,1 +1,1 @@
-# Importmap disabled - using esbuild bundle instead
+# Importmap disabled - using esbuild
