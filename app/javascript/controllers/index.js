@@ -1,3 +1,4 @@
+import { Application } from "@hotwired/stimulus"
 import { application } from "./application"
 
 import AuctionInsightsController from "./auction_insights_controller"
