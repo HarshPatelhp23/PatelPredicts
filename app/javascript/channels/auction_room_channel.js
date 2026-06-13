@@ -207,7 +207,7 @@ const auctionRoomChannel = {
           if (winNum) winNum.textContent = Math.round(pctFloat);
 
           // Swap colour class to match new position
-          card.classList.remove(...RANK_CLASSES);
+          card.classList.remove(...RANK_CLASSES.filter(c => c));
           if (RANK_CLASSES[i]) card.classList.add(RANK_CLASSES[i]);
 
           // Animate in staggered
