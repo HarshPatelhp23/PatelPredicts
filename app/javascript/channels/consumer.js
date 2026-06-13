@@ -1,2 +1,5 @@
 import { createConsumer } from "@rails/actioncable"
-export default createConsumer()
+import ActionCable from "@rails/actioncable"
+const consumer = ActionCable.createConsumer()
+window._actionCableConsumer = window._actionCableConsumer || createConsumer()
+export default window._actionCableConsumer
