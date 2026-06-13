@@ -101,3 +101,5 @@ gem "concurrent-ruby", "= 1.3.4"
 gem "twilio-ruby"
 gem 'prawn'
 gem 'prawn-table'
+gem 'sendgrid-ruby'
+gem 'sendgrid-actionmailer'
