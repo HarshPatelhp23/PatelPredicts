@@ -1,13 +1,19 @@
-# frozen_string_literal: true
+# config/importmap.rb
+# Pin your main application
+pin "application", preload: true
 
-# Pin npm packages by running ./bin/importmap
+# Pin Rails defaults
+pin "@hotwired/turbo-rails", to: "turbo.min.js"
+pin "@hotwired/stimulus", to: "stimulus.min.js"
+pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 
-pin 'application', preload: true
-pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
-pin '@hotwired/stimulus', to: 'stimulus.min.js', preload: true
-pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js', preload: true
-pin_all_from 'app/javascript/controllers', under: 'controllers'
-pin '@rails/actioncable', to: 'actioncable.esm.js'
-pin_all_from 'app/javascript/channels', under: 'channels'
-pin 'chartkick', to: 'chartkick.js'
-pin 'Chart.bundle', to: 'Chart.bundle.js'
+# Pin ActionCable
+pin "@rails/actioncable", to: "actioncable.esm.js"
+
+pin_all_from "app/javascript/channels", under: "channels"
+
+# Pin all controllers
+pin_all_from "app/javascript/controllers", under: "controllers"
+
+# If you have any other directories, pin them too
+# pin_all_from "app/javascript/custom", under: "custom"
