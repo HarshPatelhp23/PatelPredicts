@@ -90,18 +90,38 @@ Rails.application.configure do
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
 
-  config.action_mailer.smtp_settings = {
-    address:              ENV['SMTP_ADDRESS'] || Rails.application.credentials.dig(:smtp, :address),
-    port:                 ENV['SMTP_PORT'] || Rails.application.credentials.dig(:smtp, :port),
-    domain:               ENV['SMTP_DOMAIN'] || Rails.application.credentials.dig(:smtp, :domain),
-    user_name:            ENV['SMTP_USER_NAME'] || Rails.application.credentials.dig(:smtp, :user_name),
-    password:             ENV['SMTP_PASSWORD'] || Rails.application.credentials.dig(:smtp, :password),
-    authentication:       ENV['SMTP_AUTHENTICATION'] || Rails.application.credentials.dig(:smtp, :authentication),
-    enable_starttls_auto: ENV['SMTP_ENABLE_STARTTLS_AUTO'] || Rails.application.credentials.dig(:smtp, :enable_starttls_auto)
+  # GMAIL CONFIGURATION FOR SENDING MAILS
+  # config.action_mailer.smtp_settings = {
+  #   address:              ENV['SMTP_ADDRESS'] || Rails.application.credentials.dig(:smtp, :address),
+  #   port:                 ENV['SMTP_PORT'] || Rails.application.credentials.dig(:smtp, :port),
+  #   domain:               ENV['SMTP_DOMAIN'] || Rails.application.credentials.dig(:smtp, :domain),
+  #   user_name:            ENV['SMTP_USER_NAME'] || Rails.application.credentials.dig(:smtp, :user_name),
+  #   password:             ENV['SMTP_PASSWORD'] || Rails.application.credentials.dig(:smtp, :password),
+  #   authentication:       ENV['SMTP_AUTHENTICATION'] || Rails.application.credentials.dig(:smtp, :authentication),
+  #   enable_starttls_auto: ENV['SMTP_ENABLE_STARTTLS_AUTO'] || Rails.application.credentials.dig(:smtp, :enable_starttls_auto)
+  # }
+
+  # config.action_mailer.default_url_options = { host: 'patelpredicts-4mw4.onrender.com' }
+  # config.action_mailer.asset_host = 'https://patelpredicts-4mw4.onrender.com'
+
+
+  # Sendgrid CONFIGURATION FOR SENDING MAILS
+
+  config.action_mailer.delivery_method = :sendgrid_actionmailer
+  config.action_mailer.sendgrid_actionmailer_settings = {
+    api_key: ENV['SENDGRID_API_KEY'],
+    raise_delivery_errors: true
   }
 
-  config.action_mailer.default_url_options = { host: 'patelpredicts-4mw4.onrender.com' }
+  # Set default URL options (important for email links)
+  config.action_mailer.default_url_options = { 
+    host: 'patelpredicts-4mw4.onrender.com' 
+  }
   config.action_mailer.asset_host = 'https://patelpredicts-4mw4.onrender.com'
+
+  # Don't forget these important settings
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false

@@ -1,3 +1,85 @@
-<p> Hey there <%= @username %>, Welcome to PatelPredicts </p>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify your PatelPredicts account</title>
+</head>
+<body style="margin:0; padding:0; background:#f4f4f4; font-family: Arial, sans-serif;">
 
-<p> Your verification code is : <%= @otp %>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#1a1a2e; padding:24px 32px;">
+              <span style="font-size:18px; font-weight:bold; color:#ffffff;">🏆 PatelPredicts</span><br>
+              <span style="font-size:12px; color:#aaaaaa;">Fantasy Cricket & Volleyball</span>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px;">
+              <p style="font-size:20px; font-weight:bold; color:#1a1a2e; margin:0 0 8px;">
+                Welcome back, <%= @username %>!
+              </p>
+              <p style="font-size:14px; color:#555; line-height:1.6; margin:0 0 24px;">
+                Use the verification code below to complete your sign-in.
+                This code is valid for <strong>10 minutes</strong> and can only be used once.
+              </p>
+
+              <!-- OTP Box -->
+              <div style="background:#f8f8f8; border:1px solid #e0e0e0; border-radius:10px; padding:20px; text-align:center; margin-bottom:24px;">
+                <p style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px; margin:0 0 8px;">Your verification code</p>
+                <p style="font-size:36px; font-weight:bold; letter-spacing:10px; color:#1a1a2e; margin:0; font-family:monospace;">
+                  <%= @otp %>
+                </p>
+              </div>
+
+              <!-- Warning -->
+              <div style="background:#fff8e1; border-left:3px solid #f5a623; padding:12px 16px; margin-bottom:24px;">
+                <p style="font-size:12px; color:#7a5800; margin:0; line-height:1.5;">
+                  ⚠️ If you didn't request this, please ignore this email. Never share your OTP with anyone.
+                </p>
+              </div>
+
+              <!-- Feature Pills -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="border:1px solid #e0e0e0; border-radius:8px; padding:12px; width:30%;">
+                    🏏<br><span style="font-size:11px; color:#888;">IPL Auctions</span>
+                  </td>
+                  <td width="3%"></td>
+                  <td align="center" style="border:1px solid #e0e0e0; border-radius:8px; padding:12px; width:30%;">
+                    🏐<br><span style="font-size:11px; color:#888;">Volleyball League</span>
+                  </td>
+                  <td width="3%"></td>
+                  <td align="center" style="border:1px solid #e0e0e0; border-radius:8px; padding:12px; width:30%;">
+                    ⭐<br><span style="font-size:11px; color:#888;">Fantasy Points</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f4f4f4; border-top:1px solid #e0e0e0; padding:16px 32px; text-align:center;">
+              <p style="font-size:11px; color:#999; margin:0;">
+                © 2026 PatelPredicts &nbsp;·&nbsp; 
+                <a href="#" style="color:#999;">Privacy Policy</a> &nbsp;·&nbsp; 
+                <a href="#" style="color:#999;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
