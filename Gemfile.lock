@@ -93,6 +93,10 @@ GEM
     bindex (0.8.1)
     bootsnap (1.24.6)
       msgpack (~> 1.2)
+    brevo (4.0.0)
+      addressable (~> 2.3, >= 2.3.0)
+      json (~> 2.1, >= 2.1.0)
+      typhoeus (~> 1.0, >= 1.0.1)
     browser (5.3.1)
     builder (3.3.0)
     byebug (12.0.0)
@@ -132,6 +136,9 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
+    ethon (0.18.0)
+      ffi (>= 1.15.0)
+      logger
     faraday (2.14.2)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -456,6 +463,8 @@ GEM
       faraday (>= 2.0, < 3.0)
       jwt (>= 1.5, < 4.0)
       nokogiri (>= 1.6, < 2.0)
+    typhoeus (1.6.0)
+      ethon (>= 0.18.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unaccent (0.4.0)
@@ -501,6 +510,7 @@ DEPENDENCIES
   activeadmin (~> 3.0)
   amatch
   bootsnap
+  brevo
   byebug
   capybara
   chartkick
