@@ -1,6 +1,6 @@
 import "@hotwired/turbo-rails"
-import "./controllers"
-import "./channels"
+// import "./controllers"
+// import "./channels"
 
 
 // app/assets/javascripts/application.js
