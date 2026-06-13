@@ -110,7 +110,10 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :sendgrid_actionmailer
   config.action_mailer.sendgrid_actionmailer_settings = {
     api_key: ENV['SENDGRID_API_KEY'],
-    raise_delivery_errors: true
+    raise_delivery_errors: true,
+    open_timeout: 30,      # Increase from default 5 seconds
+    read_timeout: 30,      # Increase from default 5 seconds
+    retry_limit: 3  
   }
 
   # Set default URL options (important for email links)
