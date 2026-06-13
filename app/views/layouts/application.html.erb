@@ -19,10 +19,10 @@
     
     <!-- IMPORTANT: This line MUST be uncommented and properly configured -->
     <%= javascript_importmap_tags %>
-    
+    <%= javascript_include_tag 'application', defer: true %>
     <!-- Other JavaScript includes -->
-    <%= javascript_include_tag "https://www.google.com/jsapi" %>
-    <%= javascript_include_tag 'https://cdn.jsdelivr.net/npm/chart.js@3', 'chartkick' %>
+    <!-- <#%= javascript_include_tag "https://www.google.com/jsapi" %> -->
+    <!-- <#%= javascript_include_tag 'https://cdn.jsdelivr.net/npm/chart.js@3', 'chartkick' %> -->
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="turbo-visit-control" content="reload">

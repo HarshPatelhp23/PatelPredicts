@@ -16,6 +16,9 @@ module LiveAuction
     config.time_zone = 'Kolkata'
     config.active_job.queue_adapter = :sidekiq
     config.autoload_paths += %W(#{config.root}/lib)
+    Rails.application.config.assets.paths << Rails.root.join('app', 'assets', 'javascripts')
+    Rails.application.config.assets.precompile += %w( application.js channels/* )
+
 
     # Configuration for the application, engines, and railties goes here.
     #
