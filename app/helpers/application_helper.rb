@@ -124,6 +124,16 @@ module ApplicationHelper
     username == 'Yash Agrawal' ? 'Shakuni Sena' : SVL_TEAM_MAPPING[username]
   end
 
+  def format_svl_team_name(team_name)
+    mapping = {
+      'Sugam Shakuni Sena' => 'Shakuni Sena',
+      'Sugam Strikers' => 'Strikers',
+      'Sugam Snipers' => 'Snipers',
+      'Sugam Stallions' => 'Stallions'
+    }
+    mapping[team_name]
+  end
+
   def spl_team_logo(username)
     # team_name = SPL_TEAM_MAPPING[username].downcase
     team_name = "v_sugam_#{SVL_TEAM_MAPPING[username].downcase}"
