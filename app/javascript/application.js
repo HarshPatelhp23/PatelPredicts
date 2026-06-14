@@ -1,4 +1,4 @@
 import "@hotwired/turbo-rails"
-import "@hotwired/stimulus"
-import "./channels/index"
+import { Application } from "@hotwired/stimulus"
 import "./controllers"
+import "./channels/index"
