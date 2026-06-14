@@ -205,7 +205,7 @@
                      player.auction_player.base_price,
                      player.auction_player.total_skill,
                      player.current_integer_amount
-                   ).presence || 'worst_buy' %>
+                   ).presence || 'steal_deal' %>
                 <% insight = player.is_a_captain? ? 'captain' : buy_suggestion_image %>
                 <% bat_pct = player.auction_player.batting %>
                 <% bowl_pct = player.auction_player.bowling %>

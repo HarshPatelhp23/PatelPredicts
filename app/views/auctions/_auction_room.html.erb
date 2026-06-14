@@ -6,7 +6,7 @@
      auction_room.auction_player.base_price,
      auction_room.auction_player.total_skill,
      auction_room.current_integer_amount
-   ).presence || 'worst_buy' %>
+   ).presence || 'steal_deal' %>
 <% insight = auction_room.is_a_captain? ? 'captain' : buy_suggestion_image %>
 <% bat_pct  = auction_room.auction_player.batting %>
 <% bowl_pct = auction_room.auction_player.bowling %>
