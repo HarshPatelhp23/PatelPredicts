@@ -114,12 +114,19 @@ class AuctionRoom < ApplicationRecord
   end
 
   def map_team_with_captain
+    # {
+    #   'Haardam Doshi'  => 'Strikers',
+    #   'Yash Agrawal'   => 'Stunners',
+    #   'Parth Gandhi'   => 'Scorchers',
+    #   'Harsh'          => 'Spartans',
+    #   'Sagar Thakkar'  => 'Smashers'
+    # }
+
     {
       'Haardam Doshi'  => 'Strikers',
-      'Yash Agrawal'   => 'Stunners',
-      'Parth Gandhi'   => 'Scorchers',
-      'Harsh'          => 'Spartans',
-      'Sagar Thakkar'  => 'Smashers'
+      'Yash Agrawal'   => 'Shanki Sena',
+      'Rushil Khatri'   => 'Stallions',
+      'Rushabh Shah'          => 'Snipers'
     }
   end
 end
