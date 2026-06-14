@@ -279,7 +279,7 @@ const auctionRoomChannel = {
             <img src="/assets/${insight}.jpeg" class="at-insight-img" alt="${insight}">
           </div>
           <div class="at-player-av-wrap">
-            <img src="/assets/default_player_image.jpeg" class="at-player-av" alt="${data.player_name}">
+            <img src="/assets/images/default_player_image.jpeg" class="at-player-av" alt="${data.player_name}">
             ${isCaptain ? '<div class="at-captain-badge">👑</div>' : ""}
           </div>
           <div class="at-player-info">
