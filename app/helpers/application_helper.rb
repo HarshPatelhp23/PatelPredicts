@@ -120,7 +120,8 @@ module ApplicationHelper
   end
 
   def spl_team_name(username)
-    SPL_TEAM_MAPPING[username]
+    # SPL_TEAM_MAPPING[username]
+    SVL_TEAM_MAPPING[username]
   end
 
   def spl_team_logo(username)

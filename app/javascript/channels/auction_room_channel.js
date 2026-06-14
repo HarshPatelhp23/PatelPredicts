@@ -263,7 +263,7 @@ const auctionRoomChannel = {
 
       buildPlayerCard(data) {
         const isCaptain = !!data.is_captain;
-        const insight   = isCaptain ? "captain" : (data.purchase_insight || "worst_buy");
+        const insight   = isCaptain ? "captain" : (data.purchase_insight || "steal_deal");
         const bat       = data.batting  ?? 0;
         const bowl      = data.bowling  ?? 0;
         const price     = isCaptain
