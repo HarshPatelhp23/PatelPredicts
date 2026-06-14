@@ -262,13 +262,18 @@ const auctionRoomChannel = {
       },
 
       buildPlayerCard(data) {
-        const isCaptain  = !!data.is_captain;
-        const insight    = isCaptain ? "captain" : (data.purchase_insight || "worst_buy");
-        const bat        = data.batting  ?? 0;
-        const bowl       = data.bowling  ?? 0;
-        const price      = isCaptain
+        const isCaptain = !!data.is_captain;
+        const insight   = isCaptain ? "captain" : (data.purchase_insight || "worst_buy");
+        const bat       = data.batting  ?? 0;
+        const bowl      = data.bowling  ?? 0;
+        const price     = isCaptain
           ? `<span class="at-captain-pill">Captain</span>`
           : (data.price_display || "");
+
+        // Use fingerprinted asset paths from Rails if available
+        const paths     = window.ASSET_PATHS || {};
+        const playerImg = paths.defaultPlayer || "/assets/default_player_image.jpeg";
+        const insightImg = paths[insight] || `/assets/${insight}.jpeg`;
 
         const card = document.createElement("div");
         card.className      = "at-player-card";
@@ -276,10 +281,10 @@ const auctionRoomChannel = {
 
         card.innerHTML = `
           <div class="at-player-insight">
-            <img src="/assets/${insight}.jpeg" class="at-insight-img" alt="${insight}">
+            <img src="${insightImg}" class="at-insight-img" alt="${insight}">
           </div>
           <div class="at-player-av-wrap">
-            <img src="/assets/images/default_player_image.jpeg" class="at-player-av" alt="${data.player_name}">
+            <img src="${playerImg}" class="at-player-av" alt="${data.player_name}">
             ${isCaptain ? '<div class="at-captain-badge">👑</div>' : ""}
           </div>
           <div class="at-player-info">

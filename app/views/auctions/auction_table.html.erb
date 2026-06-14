@@ -988,37 +988,42 @@ body { background: var(--bg); color: var(--text); font-family: var(--fb); }
 
 <!-- ══ JS ══ -->
 <script>
-function scrollToTeam(userId) {
-  const el = document.getElementById('team-' + userId);
-  if (!el) return;
-  const topbar = document.querySelector('.at-topbar');
-  const offset = topbar ? topbar.offsetHeight + 16 : 76;
-  const top = el.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({ top, behavior: 'smooth' });
+  function scrollToTeam(userId) {
+    const el = document.getElementById('team-' + userId);
+    if (!el) return;
+    const topbar = document.querySelector('.at-topbar');
+    const offset = topbar ? topbar.offsetHeight + 16 : 76;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
 
-  document.querySelectorAll('.at-sidebar-item').forEach(i => i.classList.remove('active'));
-  const nav = document.getElementById('nav-' + userId);
-  if (nav) nav.classList.add('active');
-}
+    document.querySelectorAll('.at-sidebar-item').forEach(i => i.classList.remove('active'));
+    const nav = document.getElementById('nav-' + userId);
+    if (nav) nav.classList.add('active');
+  }
 
-// Stagger card animations
-document.querySelectorAll('.at-team-card').forEach((card, i) => {
-  card.style.animationDelay = (i * 80) + 'ms';
-});
+  // Stagger card animations
+  document.querySelectorAll('.at-team-card').forEach((card, i) => {
+    card.style.animationDelay = (i * 80) + 'ms';
+  });
 
-// IntersectionObserver for sidebar active state on desktop
-if (window.matchMedia('(min-width: 1024px)').matches) {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const uid = entry.target.dataset.userId;
-        document.querySelectorAll('.at-sidebar-item').forEach(i => i.classList.remove('active'));
-        const nav = document.getElementById('nav-' + uid);
-        if (nav) nav.classList.add('active');
-      }
-    });
-  }, { threshold: 0.3 });
+  // IntersectionObserver for sidebar active state on desktop
+  if (window.matchMedia('(min-width: 1024px)').matches) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const uid = entry.target.dataset.userId;
+          document.querySelectorAll('.at-sidebar-item').forEach(i => i.classList.remove('active'));
+          const nav = document.getElementById('nav-' + uid);
+          if (nav) nav.classList.add('active');
+        }
+      });
+    }, { threshold: 0.3 });
 
-  document.querySelectorAll('.at-team-card').forEach(card => observer.observe(card));
-}
+    document.querySelectorAll('.at-team-card').forEach(card => observer.observe(card));
+  }
+  window.ASSET_PATHS = {
+    defaultPlayer: "<%= asset_path('default_player_image.jpeg') %>",
+    captainInsight: "<%= asset_path('captain.jpeg') %>",
+    stealDeal: "<%= asset_path('steal_deal.jpeg') %>"
+  };
 </script>
