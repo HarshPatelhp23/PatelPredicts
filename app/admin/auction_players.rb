@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register AuctionPlayer do
-  permit_params :name, :batting, :bowling, :points, :base_price, :note, :order, :sold, :category
+  permit_params :name, :batting, :bowling, :is_sold, :points, :base_price, :note, :order, :sold, :category
 
 
   index do
@@ -28,6 +28,7 @@ ActiveAdmin.register AuctionPlayer do
       f.input :order
       f.input :sold
       f.input :note
+      f.input :is_sold
     end
     f.actions
   end
