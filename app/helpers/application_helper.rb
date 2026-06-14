@@ -121,7 +121,7 @@ module ApplicationHelper
 
   def spl_team_name(username)
     # SPL_TEAM_MAPPING[username]
-    SVL_TEAM_MAPPING[username]
+    if user.username == 'Yash Agrawal' ? 'Shakuni Sena' : SVL_TEAM_MAPPING[username]
   end
 
   def spl_team_logo(username)
