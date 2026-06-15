@@ -1,0 +1,29 @@
+<%# app/views/match_mailer/match_summary.text.erb %>
+=========================================
+ PATEL-PREDICTS — MATCH BACKUP
+=========================================
+
+Season:     <%= @season&.name %>
+Match Type: <%= @match.match_type.titleize %>
+Match ID:   #<%= @match.id %>
+
+-----------------------------------------
+RESULT
+-----------------------------------------
+Winner:    <%= @winning_team&.name %>
+Runner-up: <%= @losing_team&.name %>
+
+Sets Won:     <%= @match.winning_team_sets %> - <%= @match.losing_team_sets %>
+Total Points: <%= @match.winning_team_points %> - <%= @match.losing_team_points %>
+
+-----------------------------------------
+SET-BY-SET BREAKDOWN
+-----------------------------------------
+<% @sets.each_with_index do |set, i| -%>
+Set <%= i + 1 %>: <%= set.winning_team_score %> - <%= set.losing_team_score %>
+<% end -%>
+
+-----------------------------------------
+This is an automatically generated backup
+email from Patel-Predicts.
+=========================================

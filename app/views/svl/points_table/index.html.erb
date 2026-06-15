@@ -874,6 +874,102 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
   .ko-elim-strip  { margin-left: 60px; margin-right: 60px; }
   .ko-stage-lbl   { padding-left: 60px; padding-right: 60px; }
 }
+
+/* ══════════════════════════
+   SHAKUNI SENA — SPONSORED ROW
+══════════════════════════ */
+.pt-team-row.sponsored {
+  background: linear-gradient(90deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.04) 60%, transparent 100%);
+  border-bottom: 1px solid rgba(245,158,11,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.pt-team-row.sponsored::before {
+  background: linear-gradient(180deg, #f59e0b, #d97706) !important;
+  width: 4px !important;
+}
+/* Animated shimmer sweep */
+.pt-team-row.sponsored::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; bottom: 0;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, rgba(245,158,11,0.06), transparent);
+  animation: sponsorShimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sponsorShimmer {
+  0%   { left: -60%; }
+  60%  { left: 120%; }
+  100% { left: 120%; }
+}
+
+/* Gold team avatar ring */
+.pt-team-row.sponsored .pt-team-av {
+  box-shadow: 0 0 0 2px #f59e0b, 0 4px 16px rgba(245,158,11,0.3);
+  border-radius: 14px;
+}
+
+/* Gold team name */
+.pt-team-row.sponsored .pt-team-name {
+  color: #fbbf24;
+}
+
+/* Gold points badge */
+.pt-team-row.sponsored .pt-pts-badge {
+  background: rgba(245,158,11,0.25);
+  border-color: #f59e0b;
+  color: #fbbf24;
+  box-shadow: 0 0 10px rgba(245,158,11,0.2);
+}
+
+/* Sponsor badge — sits inside the team cell */
+.pt-sponsor-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 7px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 20px;
+  background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35);
+  color: #f59e0b; white-space: nowrap; margin-top: 2px;
+}
+
+/* ══════════════════════════
+   SHAKUNI SENA — DICE ROLL FX
+══════════════════════════ */
+@property --pt-angle{syntax:'<angle>';initial-value:0deg;inherits:false;}
+@keyframes ptSpinAngle{to{--pt-angle:360deg}}
+
+.pt-sp-net{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.pt-sp-net svg{width:100%;height:100%;opacity:.07;}
+
+.pt-sp-glow{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 70% at 28% 50%,rgba(245,158,11,0.11) 0%,transparent 70%);
+  animation:ptGlowPulse 2.2s ease-in-out infinite alternate;}
+@keyframes ptGlowPulse{from{opacity:.5}to{opacity:1}}
+
+.pt-sp-spike{position:absolute;left:50%;top:0;bottom:0;width:1px;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(251,191,36,0.35),transparent);
+  transform:translateX(-50%);animation:ptSpikeFlash 4s ease-in-out infinite;}
+@keyframes ptSpikeFlash{0%,85%,100%{opacity:0}88%{opacity:1}94%{opacity:0}}
+
+.pt-sp-live{position:absolute;top:6px;right:8px;z-index:4;display:flex;align-items:center;gap:4px;pointer-events:none;}
+.pt-sp-live-dot{width:5px;height:5px;border-radius:50%;background:#fbbf24;animation:ptDotPulse 1s ease-in-out infinite;}
+@keyframes ptDotPulse{0%,100%{opacity:1}50%{opacity:.2}}
+.pt-sp-live-txt{font-size:7px;font-weight:800;letter-spacing:1.5px;color:#fbbf24;text-transform:uppercase;}
+
+/* keep avatar + stats above the FX layers */
+.pt-team-row.sponsored .pt-rank,
+.pt-team-row.sponsored .pt-team-cell,
+.pt-team-row.sponsored .pt-cell,
+.pt-team-row.sponsored .pt-pts-cell { position: relative; z-index: 2; }
+
+/* spinning gold ring around the sponsored team's avatar */
+.pt-team-row.sponsored .pt-team-av{ position:relative; }
+.pt-sp-av-ring{position:absolute;inset:-3px;border-radius:17px;
+  background:conic-gradient(from var(--pt-angle),#f59e0b,#fff9c4,#f59e0b,#92400e,#f59e0b);
+  z-index:-1;animation:ptSpinAngle 2s linear infinite;}
+
+/* dice canvas sits above everything in the row */
+.pt-dice-canvas{position:absolute;inset:0;pointer-events:none;z-index:5;}
 </style>
 
 <!-- Back nav -->
@@ -931,12 +1027,13 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
     <% pod_order.each do |idx| %>
       <% t = @teams[idx]; next unless t %>
       <% sz = pod_sizes[idx]; ht = pod_heights[idx]; bc = pod_border[idx]; tc = team_color(idx) %>
-      <% slug = t.name.to_s.downcase.gsub(/\s+/, '_') %>
+      <% slug = t.name.to_s.downcase.gsub(/\s+/, '_') %> 
+      <% is_pod_sponsored = t.name.to_s.downcase.include?('shakuni') %>
       <div class="pt-pod-item">
         <div class="pt-pod-rank-lbl" style="color:<%= idx == 0 ? '#FFD700' : '#64748b' %>">#<%= idx + 1 %></div>
         <div class="pt-pod-img-wrap">
           <% if idx == 0 %><div class="pt-pod-crown">👑</div><% end %>
-          <div class="pt-pod-av" style="width:<%= sz %>px;height:<%= sz %>px;background:<%= tc %>;border-color:<%= bc %>;border-width:3px;border-style:solid">
+          <div class="pt-pod-av" style="width:<%= sz %>px;height:<%= sz %>px;background:<%= tc %>;border-color:<%= bc %>;border-width:3px;border-style:solid;<%= is_pod_sponsored ? 'box-shadow:0 0 0 3px #f59e0b,0 6px 24px rgba(245,158,11,0.4)' : '' %>">
             <% img = svl_team_image(t.name, style: "width:100%;height:100%;object-fit:cover;border-radius:13px", alt: t.name) %>
             <% if img %>
               <%= img %>
@@ -994,8 +1091,7 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
     <% slug = t.name.to_s.downcase.gsub(/\s+/, '_'); tc = team_color(i) %>
     <%= link_to svl_points_table_path(team_id: t.id), class: "pt-filter-chip #{@filter_team&.id == t.id ? 'active' : ''}" do %>
       <div class="pt-filter-chip-av" style="background:<%= tc %>">
-        <%= image_tag "v_#{slug}.png", onerror: "this.style.display='none';this.nextElementSibling.style.display='flex'", style: "width:100%;height:100%;object-fit:cover;border-radius:50%" rescue '' %>
-        <span style="display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff"><%= team_initials(t.name) %></span>
+        <span style="display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff"><%= format_team_initials(t.name) %></span>
       </div>
       <%= t.name.split(' ').last %>
     <% end %>
@@ -1054,17 +1150,43 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
           sd_cls   = sd > 0 ? 'pos' : sd < 0 ? 'neg' : 'zero'
           w_pct    = played > 0 ? (won.to_f / played * 100).round : 0
           slug     = team.name.to_s.downcase.gsub(/\s+/, '_')
+          is_sponsored = team.name.to_s.downcase.include?('shakuni')
+          row_cls += ' sponsored' if is_sponsored
           filter_url = @filter_team&.id == team.id ? svl_points_table_path : svl_points_table_path(team_id: team.id)
         %>
         <%= link_to filter_url, class: "pt-team-row #{row_cls}", style: "--row-accent:#{tc};animation-delay:#{i * 0.055}s" do %>
 
-          <!-- Rank -->
-          <div class="pt-rank <%= rank_cls %>"><%= rank %></div>
+        <% if is_sponsored %>
+          <div class="pt-sp-net">
+            <svg viewBox="0 0 600 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="0" y1="40" x2="600" y2="40" stroke="#f59e0b" stroke-width="1.5"/>
+              <line x1="0" y1="20" x2="600" y2="20" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="0" y1="60" x2="600" y2="60" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="60" y1="0" x2="60" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="120" y1="0" x2="120" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="180" y1="0" x2="180" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="240" y1="0" x2="240" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="300" y1="0" x2="300" y2="80" stroke="#f59e0b" stroke-width="1"/>
+              <line x1="360" y1="0" x2="360" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="420" y1="0" x2="420" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="480" y1="0" x2="480" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+              <line x1="540" y1="0" x2="540" y2="80" stroke="#f59e0b" stroke-width=".6"/>
+            </svg>
+          </div>
+          <canvas class="pt-dice-canvas" id="pt-dice-canvas-<%= team.id %>"></canvas>
+          <div class="pt-sp-glow"></div>
+          <div class="pt-sp-spike"></div>
+          <div class="pt-sp-live"><div class="pt-sp-live-dot"></div><div class="pt-sp-live-txt">Live</div></div>
+        <% end %>
+
+        <!-- Rank -->
+        <div class="pt-rank <%= rank_cls %>"><%= rank %></div>
 
           <!-- Team: image on top, name below (mobile) / side by side (desktop) -->
           <div class="pt-team-cell">
             <%# In the standings table rows — replace the pt-team-av content %>
             <div class="pt-team-av" style="background:<%= tc %>">
+              <% if is_sponsored %><div class="pt-sp-av-ring"></div><% end %>
               <% img = svl_team_image(team.name, style: "width:100%;height:100%;object-fit:cover;border-radius:12px", alt: team.name) %>
               <% if img %>
                 <%= img %>
@@ -1075,6 +1197,9 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
               <% end %>
             </div>
             <div class="pt-team-name"><%= format_svl_team_name(team.name) %></div>
+            <% if is_sponsored %>
+              <div class="pt-sponsor-tag">🏏 PatelPredicts</div>
+            <% end %>
           </div>
 
           <!-- Stats -->
@@ -1485,3 +1610,178 @@ html, body { background: var(--bg); font-family: var(--fb); color: var(--text); 
 </div>
 <% end %>
 
+<script>
+document.querySelectorAll('.pt-dice-canvas').forEach(function (canvas) {
+  const ctx = canvas.getContext('2d');
+  const row = canvas.closest('.pt-team-row');
+  if (!row) return;
+
+  function resize() { canvas.width = row.offsetWidth; canvas.height = row.offsetHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const DOTS = {
+    1:[[.5,.5]],
+    2:[[.28,.28],[.72,.72]],
+    3:[[.28,.28],[.5,.5],[.72,.72]],
+    4:[[.28,.28],[.72,.28],[.28,.72],[.72,.72]],
+    5:[[.28,.28],[.72,.28],[.5,.5],[.28,.72],[.72,.72]],
+    6:[[.28,.22],[.72,.22],[.28,.5],[.72,.5],[.28,.78],[.72,.78]]
+  };
+
+  function drawDie(x, y, size, face, alpha, tilt, glowStrength) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(tilt);
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+    if (glowStrength > 0) {
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 18 * glowStrength;
+    }
+
+    const r = size * 0.18;
+    const h = size;
+    ctx.beginPath();
+    ctx.roundRect(-h/2, -h/2, h, h, r);
+    ctx.fillStyle = '#fde68a';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#b45309';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    if (glowStrength > 0) {
+      ctx.beginPath();
+      ctx.roundRect(-h/2-3, -h/2-3, h+6, h+6, r+3);
+      ctx.strokeStyle = `rgba(251,191,36,${glowStrength * 0.9})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    const dotR = size * 0.095;
+    (DOTS[face]||DOTS[6]).forEach(([dx,dy]) => {
+      ctx.beginPath();
+      ctx.arc((dx-.5)*h*0.78, (dy-.5)*h*0.78, dotR, 0, Math.PI*2);
+      ctx.fillStyle = face===6 ? '#7c2d12' : '#92400e';
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
+  const CYCLE = 4800;
+  const TRAVEL_END  = 0.32;
+  const FLICKER_END = 0.46;
+  const LAND_END    = 0.68;
+  const FADE_END    = 1.0;
+  const FLICKER_SEQ = [1,3,2,5,4,2,3,6];
+
+  let startTime = null;
+  const easeOut = t => 1-(1-t)*(1-t);
+  const easeIn  = t => t*t;
+
+  function loop(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = (ts - startTime) % CYCLE;
+    const p = elapsed / CYCLE;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width * 0.72;
+    const cy = canvas.height * 0.5;
+    const SIZE = 28;
+
+    if (p < TRAVEL_END) {
+      const t = p / TRAVEL_END;
+      const et = easeOut(t);
+      const startX = canvas.width + 40;
+      const x = startX + (cx - startX) * et;
+      const wobbleY = Math.sin(t * Math.PI * 3) * 14 * (1 - t);
+      const y = cy + wobbleY;
+      const tilt = (1-et) * Math.PI * 2.5;
+      const flickerFace = Math.floor(t * 12) % 6 + 1;
+      const alpha = Math.min(1, t * 5);
+      drawDie(x, y, SIZE, flickerFace, alpha, tilt, 0);
+
+    } else if (p < FLICKER_END) {
+      const t = (p - TRAVEL_END) / (FLICKER_END - TRAVEL_END);
+      const fi = Math.floor(t * FLICKER_SEQ.length);
+      const face = FLICKER_SEQ[Math.min(fi, FLICKER_SEQ.length-1)];
+      const shake = (1-t) * 4;
+      const sx = cx + (Math.random()-0.5)*shake;
+      const sy = cy + (Math.random()-0.5)*shake;
+      const tilt = (Math.random()-0.5)*0.25*(1-t);
+      drawDie(sx, sy, SIZE, face, 1, tilt, 0);
+
+    } else if (p < LAND_END) {
+      const t = (p - FLICKER_END) / (LAND_END - FLICKER_END);
+      const glowCurve = t < 0.15 ? t/0.15 : 1-(t-0.15)/0.85;
+      const glow = Math.max(0, glowCurve);
+
+      if (t < 0.35) {
+        const bt = t / 0.35;
+        const ringR = SIZE * 0.6 + bt * SIZE * 1.4;
+        ctx.save();
+        ctx.globalAlpha = (1-bt) * 0.55;
+        ctx.beginPath();
+        ctx.arc(cx, cy, ringR, 0, Math.PI*2);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.5*(1-bt)+0.5;
+        ctx.stroke();
+        if (bt > 0.2) {
+          const bt2 = (bt-0.2)/0.8;
+          const ringR2 = SIZE*0.5 + bt2*SIZE*1.0;
+          ctx.globalAlpha = (1-bt2)*0.3;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringR2, 0, Math.PI*2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      if (t < 0.45) {
+        const st = t/0.45;
+        for (let i=0;i<8;i++) {
+          const angle = (i/8)*Math.PI*2;
+          const dist = st * SIZE * 1.8;
+          const sx2 = cx + Math.cos(angle)*dist;
+          const sy2 = cy + Math.sin(angle)*dist;
+          ctx.save();
+          ctx.globalAlpha = (1-st)*0.8;
+          ctx.beginPath();
+          ctx.arc(sx2, sy2, 2*(1-st)+0.5, 0, Math.PI*2);
+          ctx.fillStyle = '#fde68a';
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      if (t < 0.5) {
+        const tt = t/0.5;
+        ctx.save();
+        ctx.globalAlpha = (1-tt)*0.85;
+        ctx.font = `bold ${Math.round(SIZE*0.9 + tt*SIZE*0.6)}px 'Bebas Neue', sans-serif`;
+        ctx.fillStyle = '#fde68a';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('SIX!', cx, cy - SIZE - 8 - tt*10);
+        ctx.restore();
+      }
+
+      drawDie(cx, cy, SIZE, 6, 1, 0, glow);
+
+    } else {
+      const t = (p - LAND_END) / (FADE_END - LAND_END);
+      const alpha = 1 - easeIn(t);
+      const y = cy - t * 16;
+      drawDie(cx, y, SIZE, 6, alpha, 0, 0);
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+});
+</script>

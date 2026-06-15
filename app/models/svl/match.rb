@@ -12,9 +12,9 @@ class Svl::Match < ApplicationRecord
     eliminator: 2,
     final:     3
   }
-
   after_save    :update_team_stats
-  after_destroy :update_team_stats
+  before_destroy :delete_team_stats
+  after_commit :send_match_summary_mail, on: [:create]
 
   def recalculate_points!
     sets = match_sets.reload
@@ -38,15 +38,22 @@ class Svl::Match < ApplicationRecord
       winning_team&.recalculate_stats!
       losing_team&.recalculate_stats!
     end
-
   end
 
   private
+
+  def send_match_summary_mail
+    MatchMailer.match_summary(self).deliver_now
+  end
 
   def update_team_stats
     return unless league?
 
     winning_team&.recalculate_stats!
     losing_team&.recalculate_stats!
+  end
+
+  def delete_team_stats
+    winning_team.update_columns(no_of_matches_played: 0, no_of_matches_won: 0, no_of_matches_lost: 0, points_diff: 0, set_diff: 0, points:0)
   end
 end

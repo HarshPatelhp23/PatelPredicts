@@ -9,6 +9,7 @@
   const SPL_LEADERBOARD    = <%= raw @leaderboard_json %>;
   const SPL_SAVE_URL       = "<%= @save_url %>";
   const SPL_CSRF           = "<%= @csrf_token %>";
+  const SPL_CURRENT_USER_IS_ADMIN = <%= @current_user_is_admin %>;
 </script>
 
 
@@ -163,7 +164,8 @@
           <div class="feature-chevron">›</div>
         <% end %>
 
-        <%= link_to svl_score_match_path, class: "feature-row", data: { turbo: false, no_loader: true } do %>
+        <!-- SVL Scorer - Admin only with mobile-friendly restriction -->
+        <%= link_to svl_score_match_path, class: "feature-row svl-scorer-link", data: { turbo: false, no_loader: true, admin_only: true } do %>
           <div class="feature-icon" style="background:rgba(255,255,255,0.06);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">🏐</div>
           <div class="feature-info">
             <div class="feature-title">SVL Scorer</div>
@@ -293,7 +295,8 @@
         <div class="more-item-label">Auction Room</div>
       <% end %>
 
-       <%= link_to svl_score_match_path, class: "more-item", data: { turbo: false, no_loader: true } do %>
+      <!-- SVL Scorer - Admin only in More sheet -->
+      <%= link_to svl_score_match_path, class: "more-item svl-scorer-more-link", data: { turbo: false, no_loader: true, admin_only: true } do %>
         <div class="more-item-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa">🏐</div>
         <div class="more-item-label">SVL Scorer</div>
       <% end %>
@@ -318,7 +321,7 @@
         </div>
       <% end %>
 
-      <%= link_to destroy_spl_user_session_path, class: "more-item", method: :delete, data: { no_loader: true, turbo_method: :delete } do %>
+      <%= link_to destroy_spl_user_session_path, class: "more-item", method: :get, data: { no_loader: true, turbo_method: :get } do %>
         <div class="more-item-icon" style="background:rgba(239,68,68,0.12);color:#f87171">🚪</div>
         <div class="more-item-label" style="color:#f87171">Sign Out</div>
       <% end %>
@@ -408,6 +411,19 @@
       <div class="vt-leg-item"><div class="vt-leg-dot" style="background:rgba(168,85,247,0.3);border-color:#a855f7"></div><div class="vt-leg-lbl">Rising Star</div></div>
     </div>
 
+  </div>
+</div>
+
+<!-- Admin restriction modal (SVL Scorer) -->
+<div class="spl-modal-overlay admin-restriction-overlay" id="admin-restriction-modal" onclick="handleOverlayClick(event,'admin-restriction-modal')">
+  <div class="admin-restriction-sheet">
+    <div class="restriction-icon">🔒</div>
+    <div class="restriction-title">Access Restricted</div>
+    <div class="restriction-message">
+      The SVL Scorer is a match-official tool.<br>
+      Only authorized admins can access this feature.
+    </div>
+    <button class="restriction-ok-btn" onclick="closeAdminRestrictionModal()">Got it</button>
   </div>
 </div>
 
@@ -784,6 +800,57 @@ body { background: var(--bg); font-family: var(--fb); color: var(--text); overfl
 .confirm-overlay { z-index:400; }
 .spl-modal-sheet { width:100%; max-width:480px; margin:0 auto; height:92dvh; background:var(--pd); border-radius:24px 24px 0 0; display:flex; flex-direction:column; position:relative; overflow:hidden; transform:translateY(100%); transition:transform .32s cubic-bezier(0.4,0,0.2,1); }
 .spl-modal-overlay.open .spl-modal-sheet { transform:translateY(0); }
+
+/* Admin restriction modal */
+.admin-restriction-overlay { z-index:500; align-items:center; justify-content:center; }
+.admin-restriction-sheet {
+  width: 300px;
+  max-width: 85vw;
+  background: var(--bg2);
+  border-radius: 24px;
+  border: 1px solid rgba(239,68,68,0.3);
+  padding: 28px 20px;
+  text-align: center;
+  transform: translateY(40px) scale(0.96);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease;
+  opacity: 0;
+}
+.admin-restriction-overlay.open { opacity: 1; pointer-events: all; }
+.admin-restriction-overlay.open .admin-restriction-sheet {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.restriction-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+.restriction-title {
+  font-family: var(--fd);
+  font-size: 18px;
+  font-weight: 700;
+  color: #f87171;
+  margin-bottom: 12px;
+}
+.restriction-message {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.restriction-ok-btn {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #fff;
+  font-family: var(--fd);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+.restriction-ok-btn:active { transform: scale(0.97); }
 
 .pitch-bg { position:absolute; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
 .pitch-bg::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(180deg,#1e5c35 0,#1e5c35 48px,#22673c 48px,#22673c 96px); opacity:.65; }
@@ -1571,6 +1638,27 @@ function splToast(msg, type) {
   t._t = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
+/* ─── Admin restriction modal ─── */
+function openAdminRestrictionModal() {
+  document.getElementById('admin-restriction-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAdminRestrictionModal() {
+  document.getElementById('admin-restriction-modal').classList.remove('open');
+  if (!document.querySelector('.spl-modal-overlay.open')) document.body.style.overflow = '';
+}
+
+/* ─── SVL Scorer admin check ─── */
+function handleSvlScorerClick(e) {
+  e.preventDefault();
+  if (SPL_CURRENT_USER_IS_ADMIN) {
+    window.location.href = this.getAttribute('href');
+  } else {
+    openAdminRestrictionModal();
+  }
+  return false;
+}
+
 /* ─── Player data ─── */
 const CAT_STYLES = {
   legend:        { iconBg:'rgba(240,192,64,0.2)',   iconColor:'#f0c040', avBg:'rgba(240,192,64,0.18)',  avColor:'#f0c040', border:'rgba(240,192,64,0.5)'  },
@@ -1796,6 +1884,8 @@ function submitTeam() {
       closeModal('team-modal');
       splToast('✓ Team saved!');
       document.getElementById('dash-player-count').textContent=selected.size;
+      const desktopLabel = document.getElementById('desktop-player-count-label');
+      if (desktopLabel) desktopLabel.textContent = selected.size + '/11 players selected';
     } else {
       const errDiv=document.getElementById('confirm-errors');
       errDiv.innerHTML='';
@@ -1816,6 +1906,12 @@ document.addEventListener('DOMContentLoaded', function() {
       desktopLabel.textContent = dashCount.textContent + '/11 players selected';
     }).observe(dashCount, { childList: true, characterData: true, subtree: true });
   }
+
+  // Admin restriction for SVL Scorer links
+  const svlLinks = document.querySelectorAll('.svl-scorer-link, .svl-scorer-more-link');
+  svlLinks.forEach(link => {
+    link.addEventListener('click', handleSvlScorerClick);
+  });
 });
 
 /* ─── Leaderboard ─── */
@@ -1857,7 +1953,7 @@ function renderLeaderboard() {
 
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') {
-    ['confirm-modal','team-modal'].forEach(id=>{
+    ['confirm-modal','team-modal','admin-restriction-modal'].forEach(id=>{
       if(document.getElementById(id).classList.contains('open')) closeModal(id);
     });
     closeSplMenu();

@@ -106,6 +106,10 @@ module ApplicationHelper
 
   def team_initials(name); name.to_s.split(' ').map { |w| w[0] }.join.upcase.first(2); end
 
+  def format_team_initials(name)
+    name.split('Sugam ').last.first(2)
+  end
+
   def team_color(index); TEAM_COLORS[index % TEAM_COLORS.length]; end
 
   def time_greeting

@@ -1,0 +1,182 @@
+<%# app/views/match_mailer/match_summary.html.erb %>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match Summary</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f5f7; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;">
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f5f7; padding:32px 0;">
+    <tr>
+      <td align="center">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#4f46e5,#7c3aed); padding:28px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td>
+                    <p style="margin:0; color:#e0e7ff; font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase;">
+                      Patel-Predicts &middot; Match Backup
+                    </p>
+                    <h1 style="margin:6px 0 0; color:#ffffff; font-size:22px; font-weight:700;">
+                      <%= @season&.name %>
+                    </h1>
+                  </td>
+                  <td align="right" valign="top">
+                    <span style="display:inline-block; background-color:rgba(255,255,255,0.18); color:#ffffff; font-size:12px; font-weight:600; padding:6px 12px; border-radius:999px; text-transform:uppercase; letter-spacing:0.5px;">
+                      <%= @match.match_type.titleize %>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Scoreboard -->
+          <tr>
+            <td style="padding:32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <!-- Winning team -->
+                  <td align="center" width="42%" style="vertical-align:top;">
+                    <p style="margin:0 0 6px; font-size:11px; font-weight:700; color:#16a34a; letter-spacing:1px; text-transform:uppercase;">
+                      Winner
+                    </p>
+                    <p style="margin:0; font-size:18px; font-weight:700; color:#111827;">
+                      <%= @winning_team&.name %>
+                    </p>
+                  </td>
+
+                  <!-- Score -->
+                  <td align="center" width="16%" style="vertical-align:top;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                      <tr>
+                        <td style="font-size:32px; font-weight:800; color:#111827; padding-top:18px;">
+                          <%= @match.winning_team_sets %>
+                        </td>
+                        <td style="font-size:18px; font-weight:600; color:#9ca3af; padding:18px 6px 0;">
+                          &ndash;
+                        </td>
+                        <td style="font-size:32px; font-weight:800; color:#9ca3af; padding-top:18px;">
+                          <%= @match.losing_team_sets %>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" align="center" style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:1px; padding-top:4px;">
+                          Sets
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+
+                  <!-- Losing team -->
+                  <td align="center" width="42%" style="vertical-align:top;">
+                    <p style="margin:0 0 6px; font-size:11px; font-weight:700; color:#9ca3af; letter-spacing:1px; text-transform:uppercase;">
+                      Runner-up
+                    </p>
+                    <p style="margin:0; font-size:18px; font-weight:700; color:#374151;">
+                      <%= @losing_team&.name %>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Total points pill -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6; border-radius:10px;">
+                      <tr>
+                        <td style="padding:10px 24px; font-size:13px; color:#374151;">
+                          Total Points &nbsp;
+                          <span style="font-weight:700; color:#111827;"><%= @match.winning_team_points %></span>
+                          <span style="color:#9ca3af;"> &ndash; </span>
+                          <span style="font-weight:700; color:#111827;"><%= @match.losing_team_points %></span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 32px;">
+              <div style="border-top:1px solid #e5e7eb;"></div>
+            </td>
+          </tr>
+
+          <!-- Set-wise breakdown -->
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <p style="margin:0 0 14px; font-size:13px; font-weight:700; color:#111827; text-transform:uppercase; letter-spacing:1px;">
+                Set-by-Set Breakdown
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate; border-spacing:0 8px;">
+                <tr>
+                  <td style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; padding:0 4px 4px;">
+                    Set
+                  </td>
+                  <td align="center" style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; padding:0 4px 4px;">
+                    <%= @winning_team&.name %>
+                  </td>
+                  <td align="center" style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px; padding:0 4px 4px;">
+                    <%= @losing_team&.name %>
+                  </td>
+                </tr>
+
+                <% @sets.each_with_index do |set, i| %>
+                  <% winner_took_set = set.winning_team_score > set.losing_team_score %>
+                  <tr style="background-color:#f9fafb;">
+                    <td style="padding:12px 14px; font-size:13px; font-weight:600; color:#374151; border-radius:8px 0 0 8px;">
+                      Set <%= i + 1 %>
+                    </td>
+                    <td align="center" style="padding:12px 14px; font-size:15px; font-weight:700; color:<%= winner_took_set ? '#16a34a' : '#374151' %>;">
+                      <%= set.winning_team_score %>
+                    </td>
+                    <td align="center" style="padding:12px 14px; font-size:15px; font-weight:700; color:<%= !winner_took_set ? '#16a34a' : '#374151' %>; border-radius:0 8px 8px 0;">
+                      <%= set.losing_team_score %>
+                    </td>
+                  </tr>
+                <% end %>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 32px 32px;">
+              <div style="border-top:1px solid #e5e7eb; padding-top:16px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="font-size:12px; color:#9ca3af;">
+                      Match ID #<%= @match.id %>
+                    </td>
+                    <td align="right" style="font-size:12px; color:#9ca3af;">
+                      Auto-generated backup
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:12px 0 0; font-size:12px; color:#d1d5db; text-align:center;">
+                  Sent automatically by Patel-Predicts
+                </p>
+              </div>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

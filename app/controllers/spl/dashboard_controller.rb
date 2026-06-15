@@ -3,6 +3,7 @@ module Spl
     before_action :authenticate_spl_user!
 
     def index
+      @current_user_is_admin = current_spl_user.is_admin
       @spl_user = current_spl_user
 
       # Players grouped by category
