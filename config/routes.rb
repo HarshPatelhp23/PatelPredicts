@@ -73,6 +73,7 @@ Rails.application.routes.draw do
   end
 
   namespace :svl do
+    resources :matches, only: [:index]
     get  'points_table', to: 'points_table#index', as: :points_table
     get  'score_match', to: 'matches#score_match', as: :score_match
     post 'save_match',  to: 'matches#save_match',  as: :save_match
