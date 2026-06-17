@@ -100,3 +100,4 @@ gem "twilio-ruby"
 gem 'prawn'
 gem 'prawn-table'
 gem 'brevo'
+gem 'i18n', '~> 1.14.0'
