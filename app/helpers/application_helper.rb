@@ -110,6 +110,12 @@ module ApplicationHelper
     name.split('Sugam ').last.first(2)
   end
 
+  def team_color_for_name(name)
+    season_teams = @selected_season&.teams&.order(:name) || []
+    idx = season_teams.index { |t| t.name == name } || 0
+    team_color(idx)
+  end
+
   def team_color(index); TEAM_COLORS[index % TEAM_COLORS.length]; end
 
   def time_greeting

@@ -1,0 +1,927 @@
+<%# app/views/svl/matches/index.html.erb %>
+<% provide(:title, "SVL Matches") %>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&family=Bebas+Neue&display=swap');
+
+:root {
+  --bg:      #07090f;
+  --bg2:     #0d1117;
+  --bg3:     #161b24;
+  --surface: #1a2035;
+  --surface2:#1e2640;
+  --border:  rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text:    #e8eaf0;
+  --text2:   #8892a4;
+  --text3:   #4a5568;
+  --gold:    #f59e0b;
+  --gold2:   #fbbf24;
+  --green:   #10b981;
+  --green2:  #34d399;
+  --red:     #ef4444;
+  --purple:  #a78bfa;
+  --blue:    #60a5fa;
+  --fd: 'Rajdhani', sans-serif;
+  --fb: 'Nunito', sans-serif;
+  --fh: 'Bebas Neue', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); font-family: var(--fb); color: var(--text); overflow-x: hidden; }
+
+/* ══════════════════════════
+   BACK BAR
+══════════════════════════ */
+.mx-back-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(7,9,15,0.97);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(16px);
+}
+.mx-back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); text-decoration: none; transition: all .15s; flex-shrink: 0;
+}
+.mx-back-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+.mx-back-crumb { font-family: var(--fd); font-size: 14px; color: var(--text2); font-weight: 600; flex: 1; }
+.mx-back-crumb span { color: var(--text3); margin: 0 5px; }
+.mx-back-title { font-family: var(--fd); font-size: 16px; font-weight: 700; color: var(--text); }
+
+/* ══════════════════════════
+   HERO
+══════════════════════════ */
+.mx-hero {
+  position: relative; overflow: hidden;
+  padding: 24px 16px 20px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.mx-hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 50%, rgba(59,130,246,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 90% 20%, rgba(167,139,250,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 100%, rgba(16,185,129,0.05) 0%, transparent 50%);
+}
+.mx-hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.mx-hero-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.mx-hero-left {}
+.mx-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 10px; font-weight: 700; color: var(--blue);
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;
+}
+.mx-hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); animation: mxpulse 1.4s ease-in-out infinite; }
+@keyframes mxpulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.75)} }
+.mx-hero-title { font-family: var(--fh); font-size: 42px; color: #fff; letter-spacing: 2px; line-height: .95; margin-bottom: 5px; }
+.mx-hero-sub { font-family: var(--fd); font-size: 12px; color: var(--text2); letter-spacing: .5px; font-weight: 600; }
+
+/* Animated volleyball */
+.mx-hero-ball {
+  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, #c8e6c9 20%, #1a7a4a 60%, #0d4a2a 100%);
+  box-shadow: 0 6px 24px rgba(16,185,129,0.2), inset 0 -3px 10px rgba(0,0,0,0.4);
+  animation: ballSpin 4s ease-in-out infinite; position: relative;
+}
+@keyframes ballSpin { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-6px) rotate(12deg)} }
+.mx-hero-ball::before { content:''; position:absolute; inset:5px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.2); }
+.mx-hero-ball::after  { content:''; position:absolute; top:50%; left:10%; right:10%; height:1.5px; background:rgba(255,255,255,0.18); transform:translateY(-50%); }
+
+/* Season stats pills */
+.mx-stats-row {
+  position: relative; z-index: 1;
+  display: flex; gap: 8px; margin-top: 16px; overflow-x: auto; scrollbar-width: none;
+}
+.mx-stats-row::-webkit-scrollbar { display: none; }
+.mx-stat-pill {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 9px 14px; flex-shrink: 0; min-width: 70px;
+  backdrop-filter: blur(6px);
+}
+.mx-stat-val { font-family: var(--fh); font-size: 22px; letter-spacing: 1px; line-height: 1; }
+.mx-stat-lbl { font-size: 8px; color: var(--text3); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
+
+/* ══════════════════════════
+   SEASON TABS
+══════════════════════════ */
+.mx-season-wrap {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 60px; z-index: 40;
+  backdrop-filter: blur(14px);
+}
+.mx-season-tabs {
+  display: flex; overflow-x: auto; gap: 0;
+  scrollbar-width: none; padding: 0 8px;
+}
+.mx-season-tabs::-webkit-scrollbar { display: none; }
+.mx-season-tab {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 16px; flex-shrink: 0; cursor: pointer;
+  text-decoration: none; color: var(--text3);
+  font-family: var(--fd); font-size: 13px; font-weight: 700;
+  letter-spacing: .3px; position: relative;
+  transition: color .15s; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.mx-season-tab:hover { color: var(--text2); }
+.mx-season-tab.active { color: var(--text); border-bottom-color: var(--blue); }
+.mx-season-tab-year { font-size: 9px; color: var(--text3); letter-spacing: 1px; margin-top: 1px; }
+.mx-season-tab.active .mx-season-tab-year { color: var(--blue); }
+
+/* Match type filter row */
+.mx-type-row {
+  display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; scrollbar-width: none;
+  border-top: 1px solid var(--border);
+}
+.mx-type-row::-webkit-scrollbar { display: none; }
+.mx-type-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 20px; flex-shrink: 0;
+  font-family: var(--fd); font-size: 11px; font-weight: 700;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  color: var(--text3); text-decoration: none; cursor: pointer;
+  transition: all .12s; white-space: nowrap; letter-spacing: .3px;
+}
+.mx-type-chip:hover { border-color: var(--border2); color: var(--text2); }
+.mx-type-chip.active { border-color: var(--blue); color: var(--blue); background: rgba(96,165,250,0.1); }
+.mx-type-chip.active.league { border-color: var(--green2); color: var(--green2); background: rgba(52,211,153,0.1); }
+.mx-type-chip.active.semi   { border-color: var(--purple); color: var(--purple); background: rgba(167,139,250,0.1); }
+.mx-type-chip.active.final  { border-color: var(--gold2);  color: var(--gold2);  background: rgba(251,191,36,0.1); }
+.mx-type-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ══════════════════════════
+   MAIN LAYOUT
+══════════════════════════ */
+.mx-layout {
+  display: flex; flex-direction: column;
+}
+
+/* ══════════════════════════
+   TIMELINE + MATCH CARDS
+══════════════════════════ */
+.mx-timeline { padding: 12px 12px 24px; }
+
+/* Date group header */
+.mx-date-group { margin-bottom: 20px; }
+.mx-date-label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 2px 8px; margin-bottom: 4px;
+}
+.mx-date-txt {
+  font-size: 10px; font-weight: 800; color: var(--text3);
+  letter-spacing: 2px; text-transform: uppercase; white-space: nowrap;
+}
+.mx-date-line { flex: 1; height: 1px; background: var(--border); }
+.mx-date-count {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+}
+
+/* TBD group */
+.mx-date-label.tbd .mx-date-txt { color: var(--text3); }
+
+/* Match card */
+.mx-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
+  animation: mxSlideIn .4s ease both;
+  transition: border-color .15s, background .15s;
+}
+.mx-card:hover { border-color: var(--border2); background: var(--surface); }
+@keyframes mxSlideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* Left accent bar */
+.mx-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.mx-card.league::before  { background: var(--green2); }
+.mx-card.semi::before    { background: var(--purple); }
+.mx-card.final::before   { background: var(--gold); }
+.mx-card.eliminator::before { background: var(--red); }
+
+/* Card header */
+.mx-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.mx-card-badge {
+  font-size: 8px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+}
+.badge-league    { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--green2); }
+.badge-semi      { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--purple); }
+.badge-final     { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: var(--gold2); }
+.badge-eliminator{ background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
+
+.mx-card-meta {
+  display: flex; align-items: center; gap: 8px;
+}
+.mx-card-date {
+  font-size: 10px; color: var(--text3); letter-spacing: .5px;
+  font-family: var(--fd); font-weight: 600;
+}
+.mx-card-match-no {
+  font-size: 9px; color: var(--text3);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; padding: 2px 7px; font-family: var(--fd); font-weight: 700; letter-spacing: .5px;
+}
+
+/* Card body — teams + score */
+.mx-card-body {
+  padding: 14px 14px 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Team side */
+.mx-team-side {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0;
+}
+.mx-team-side.loser { opacity: .5; }
+
+.mx-team-av {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 14px; font-weight: 700; color: #fff;
+  overflow: hidden; position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  transition: transform .15s;
+}
+.mx-team-av::after {
+  content: ''; position: absolute; inset: 0; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 55%);
+  pointer-events: none;
+}
+.mx-team-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+.mx-team-av.winner-av {
+  box-shadow: 0 0 0 2px var(--green2), 0 4px 16px rgba(52,211,153,0.25);
+}
+.mx-team-av.final-winner-av {
+  box-shadow: 0 0 0 2px var(--gold2), 0 4px 16px rgba(251,191,36,0.3);
+}
+
+.mx-team-name {
+  font-family: var(--fd); font-size: 12px; font-weight: 700;
+  color: var(--text2); letter-spacing: .2px; text-align: center;
+  max-width: 76px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mx-team-name.winner-name { color: var(--green2); }
+.mx-team-name.final-winner-name { color: var(--gold2); }
+
+.mx-team-tag {
+  font-size: 8px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+}
+.tag-win   { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: var(--green2); }
+.tag-champ { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: var(--gold2); }
+
+/* Score middle */
+.mx-score-mid {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 72px;
+}
+.mx-score-sets {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--fh); font-size: 32px; letter-spacing: 1px; line-height: 1;
+}
+.mx-ss { color: var(--text3); }
+.mx-ss.win { color: var(--green2); }
+.mx-ss-sep { font-size: 20px; color: var(--text3); }
+
+.mx-vs { font-family: var(--fh); font-size: 22px; color: var(--text3); letter-spacing: 3px; }
+
+.mx-pts-row {
+  display: flex; align-items: center; gap: 4px;
+  font-family: var(--fd); font-size: 12px; font-weight: 600; color: var(--text2);
+}
+.mx-pts-win { color: var(--green2); }
+
+/* Set chips */
+.mx-set-chips {
+  display: flex; flex-direction: column; gap: 3px; margin-top: 3px;
+  align-items: center;
+}
+.mx-set-row { display: flex; align-items: center; gap: 3px; }
+.mx-chip {
+  font-family: var(--fh); font-size: 11px; letter-spacing: .5px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 5px; padding: 2px 6px; color: var(--text2);
+  transition: all .12s;
+}
+.mx-chip.win { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3); color: var(--green2); }
+.mx-chip-sep { font-size: 9px; color: var(--text3); }
+
+/* Card footer — diff chips */
+.mx-card-foot {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 8px 14px 12px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.mx-diff-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px; padding: 4px 10px;
+  font-family: var(--fh); font-size: 11px; letter-spacing: .5px;
+}
+.mx-diff-lbl { font-size: 8px; color: var(--text3); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.mx-diff-val { color: var(--text2); }
+.mx-diff-val.pos { color: var(--green2); }
+.mx-diff-val.neg { color: #f87171; }
+
+/* TBD card */
+.mx-card.tbd .mx-card-body { opacity: .6; }
+
+/* ══════════════════════════
+   EMPTY STATE
+══════════════════════════ */
+.mx-empty {
+  text-align: center; padding: 60px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.mx-empty-icon { font-size: 52px; opacity: .3; }
+.mx-empty-title { font-family: var(--fd); font-size: 20px; color: var(--text2); font-weight: 700; }
+.mx-empty-sub { font-size: 12px; color: var(--text3); max-width: 240px; line-height: 1.5; }
+
+/* ══════════════════════════
+   SEASON SUMMARY CARD (sidebar on desktop)
+══════════════════════════ */
+.mx-season-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 18px; overflow: hidden;
+  margin-bottom: 12px;
+}
+.mx-season-card-head {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.mx-season-card-title {
+  font-family: var(--fh); font-size: 14px; letter-spacing: 1px; color: var(--text2);
+  text-transform: uppercase;
+}
+.mx-season-card-name {
+  font-family: var(--fh); font-size: 24px; color: var(--text); letter-spacing: 1px; line-height: 1; margin-top: 2px;
+}
+.mx-season-card-body { padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+.mx-sc-stat { display: flex; align-items: center; justify-content: space-between; }
+.mx-sc-stat-lbl { font-size: 11px; color: var(--text3); }
+.mx-sc-stat-val { font-family: var(--fd); font-size: 14px; font-weight: 700; color: var(--text2); }
+
+/* Type breakdown */
+.mx-type-breakdown { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.mx-tb-row { display: flex; align-items: center; gap: 8px; }
+.mx-tb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mx-tb-lbl { font-size: 11px; color: var(--text2); flex: 1; }
+.mx-tb-val { font-family: var(--fd); font-size: 13px; font-weight: 700; color: var(--text3); }
+
+/* ══════════════════════════
+   SEASON SWITCHER (mobile bottom sheet feel)
+══════════════════════════ */
+.mx-season-mobile-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  font-family: var(--fd); font-size: 13px; font-weight: 700; color: var(--text2);
+  cursor: pointer; transition: background .12s;
+}
+.mx-season-mobile-btn:hover { background: rgba(255,255,255,0.03); }
+.mx-season-mobile-icon { font-size: 14px; }
+
+/* ══════════════════════════
+   DESKTOP — 768px+
+══════════════════════════ */
+@media (min-width: 768px) {
+  .mx-back-bar { padding: 12px 40px; }
+  .mx-hero { padding: 36px 40px 28px; }
+  .mx-hero-title { font-size: 64px; }
+  .mx-hero-ball  { width: 90px; height: 90px; }
+  .mx-stats-row  { margin-top: 20px; gap: 12px; }
+  .mx-stat-pill  { padding: 11px 20px; min-width: 80px; }
+  .mx-stat-val   { font-size: 28px; }
+
+  .mx-season-wrap { top: 58px; }
+  .mx-season-tabs { padding: 0 32px; }
+  .mx-season-tab  { padding: 12px 20px; font-size: 14px; }
+  .mx-type-row    { padding: 8px 32px; gap: 8px; }
+
+  /* 2-col layout */
+  .mx-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    align-items: start;
+    gap: 0;
+  }
+  .mx-timeline-col {
+    border-right: 1px solid var(--border);
+  }
+  .mx-sidebar-col {
+    position: sticky; top: 136px;
+    padding: 20px 20px 0;
+    max-height: calc(100dvh - 136px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.06) transparent;
+  }
+  .mx-timeline { padding: 16px 32px 32px; }
+  .mx-card-body { padding: 16px 16px 14px; }
+  .mx-team-av   { width: 56px; height: 56px; border-radius: 16px; }
+  .mx-team-name { font-size: 13px; max-width: 90px; }
+  .mx-score-sets { font-size: 38px; }
+}
+
+@media (min-width: 1100px) {
+  .mx-back-bar { padding: 12px 60px; }
+  .mx-hero { padding: 44px 60px 32px; }
+  .mx-hero-title { font-size: 78px; }
+  .mx-season-tabs { padding: 0 52px; }
+  .mx-type-row    { padding: 8px 52px; }
+  .mx-timeline    { padding: 20px 52px 40px; }
+  .mx-layout { grid-template-columns: 1fr 320px; }
+}
+
+/* ══════════════════════════
+   SCROLL PROGRESS
+══════════════════════════ */
+.mx-scroll-progress {
+  position: fixed; top: 0; left: 0; height: 2px; z-index: 200;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  transition: width .1s linear;
+  pointer-events: none;
+}
+
+/* ══════════════════════════
+   FLOATING SEASON PILL (mobile)
+══════════════════════════ */
+.mx-float-pill {
+  display: none;
+  position: fixed; bottom: 20px; right: 16px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 24px; padding: 8px 16px 8px 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  z-index: 80; align-items: center; gap: 8px;
+  font-family: var(--fd); font-size: 13px; font-weight: 700; color: var(--text2);
+  cursor: pointer; transition: all .15s;
+  animation: pillFade .3s ease;
+}
+@keyframes pillFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.mx-float-pill:hover { border-color: var(--blue); color: var(--text); }
+.mx-float-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); animation: mxpulse 1.4s ease-in-out infinite; }
+@media (max-width: 767px) {
+  .mx-float-pill { display: flex; }
+}
+
+/* ══════════════════════════
+   MATCH NUMBER BADGE
+══════════════════════════ */
+.mx-matchnum {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1px; text-transform: uppercase;
+  font-family: var(--fd);
+}
+
+/* ══════════════════════════
+   NO SEASON STATE
+══════════════════════════ */
+.mx-no-season {
+  text-align: center; padding: 80px 24px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+</style>
+
+<!-- Scroll progress bar -->
+<div class="mx-scroll-progress" id="mx-progress"></div>
+
+<!-- ════ BACK BAR ════ -->
+<div class="mx-back-bar">
+  <a href="<%= spl_dashboard_path %>" class="mx-back-btn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+  </a>
+  <div class="mx-back-crumb">SVL <span>›</span> Matches</div>
+  <% if @selected_season %>
+    <div style="font-family:var(--fd);font-size:11px;font-weight:700;color:var(--blue);background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:20px;padding:3px 10px;flex-shrink:0">
+      <%= @selected_season.name %>
+    </div>
+  <% end %>
+</div>
+
+<!-- ════ HERO ════ -->
+<div class="mx-hero">
+  <div class="mx-hero-inner">
+    <div>
+      <div class="mx-hero-eyebrow">
+        <div class="mx-hero-dot"></div>
+        SVL Matchbook
+      </div>
+      <div class="mx-hero-title">ALL<br>MATCHES</div>
+      <div class="mx-hero-sub">Sugam Volleyball League &nbsp;·&nbsp; Full Results Archive</div>
+    </div>
+    <div class="mx-hero-ball"></div>
+  </div>
+
+  <% if @selected_season %>
+  <div class="mx-stats-row">
+    <div class="mx-stat-pill">
+      <div class="mx-stat-val" style="color:var(--blue)"><%= @total_matches %></div>
+      <div class="mx-stat-lbl">Matches</div>
+    </div>
+    <div class="mx-stat-pill">
+      <div class="mx-stat-val" style="color:var(--green2)"><%= @league_matches %></div>
+      <div class="mx-stat-lbl">League</div>
+    </div>
+    <div class="mx-stat-pill">
+      <div class="mx-stat-val" style="color:var(--purple)"><%= @ko_matches %></div>
+      <div class="mx-stat-lbl">Knockout</div>
+    </div>
+    <div class="mx-stat-pill">
+      <div class="mx-stat-val" style="color:var(--gold2)"><%= @total_sets %></div>
+      <div class="mx-stat-lbl">Sets Played</div>
+    </div>
+  </div>
+  <% end %>
+</div>
+
+<!-- ════ SEASON TABS + TYPE FILTER ════ -->
+<% if @seasons.any? %>
+<div class="mx-season-wrap">
+  <div class="mx-season-tabs">
+    <% @seasons.each do |season| %>
+      <%= link_to svl_matches_path(season_id: season.id, match_type: params[:match_type]),
+            class: "mx-season-tab #{@selected_season&.id == season.id ? 'active' : ''}" do %>
+        <%= season.name %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="mx-type-row">
+    <%= link_to svl_matches_path(season_id: @selected_season&.id),
+          class: "mx-type-chip #{params[:match_type].blank? || params[:match_type] == 'all' ? 'active' : ''}" do %>
+      <div class="mx-type-dot" style="background:var(--blue)"></div>
+      All Types
+    <% end %>
+    <%= link_to svl_matches_path(season_id: @selected_season&.id, match_type: 'league'),
+          class: "mx-type-chip league #{params[:match_type] == 'league' ? 'active league' : ''}" do %>
+      <div class="mx-type-dot" style="background:var(--green2)"></div>
+      League
+    <% end %>
+    <%= link_to svl_matches_path(season_id: @selected_season&.id, match_type: 'semi_final'),
+          class: "mx-type-chip semi #{params[:match_type] == 'semi_final' ? 'active semi' : ''}" do %>
+      <div class="mx-type-dot" style="background:var(--purple)"></div>
+      Semi-Final
+    <% end %>
+    <%= link_to svl_matches_path(season_id: @selected_season&.id, match_type: 'final'),
+          class: "mx-type-chip final #{params[:match_type] == 'final' ? 'active final' : ''}" do %>
+      <div class="mx-type-dot" style="background:var(--gold2)"></div>
+      Final
+    <% end %>
+  </div>
+</div>
+<% end %>
+
+<!-- ════ MAIN CONTENT ════ -->
+<% if @selected_season.nil? %>
+  <div class="mx-no-season">
+    <div style="font-size:56px;opacity:.3">🏐</div>
+    <div style="font-family:var(--fd);font-size:22px;font-weight:700;color:var(--text2)">No Seasons Yet</div>
+    <div style="font-size:13px;color:var(--text3)">Seasons will appear here once created.</div>
+  </div>
+<% else %>
+
+<div class="mx-layout">
+
+  <!-- ── TIMELINE COLUMN ── -->
+  <div class="mx-timeline-col">
+    <div class="mx-timeline">
+
+      <% if @matches_by_date.empty? %>
+        <div class="mx-empty">
+          <div class="mx-empty-icon">📋</div>
+          <div class="mx-empty-title">No Matches Found</div>
+          <div class="mx-empty-sub">
+            <% if params[:match_type].present? && params[:match_type] != 'all' %>
+              No <%= params[:match_type].humanize %> matches for <%= @selected_season.name %> yet.
+            <% else %>
+              No matches recorded for <%= @selected_season.name %> yet.
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+
+        <%
+          match_counter = 0
+          sorted_keys = @matches_by_date.keys.sort do |a, b|
+            if a == :tbd then 1
+            elsif b == :tbd then -1
+            else b <=> a
+            end
+          end
+        %>
+
+        <% sorted_keys.each do |date| %>
+          <% group_matches = @matches_by_date[date] %>
+          <div class="mx-date-group">
+            <div class="mx-date-label <%= date == :tbd ? 'tbd' : '' %>">
+              <div class="mx-date-txt">
+                <% if date == :tbd %>
+                  Upcoming / TBD
+                <% else %>
+                  <%= date.strftime('%A, %d %B %Y') %>
+                <% end %>
+              </div>
+              <div class="mx-date-line"></div>
+              <div class="mx-date-count"><%= pluralize(group_matches.size, 'match', 'matches') %></div>
+            </div>
+
+            <% group_matches.each_with_index do |match, mi| %>
+              <%
+                match_counter += 1
+                wt = match.winning_team
+                lt = match.losing_team
+                played = wt.present? && lt.present?
+                sets = match.match_sets.sort_by(&:set_number)
+                is_final = match.final?
+                pts_diff = played ? (match.winning_team_points - match.losing_team_points) : 0
+                set_diff = played ? (match.winning_team_sets - match.losing_team_sets) : 0
+                type_cls = match.match_type.to_s.gsub('_', '-') # semi_final → semi-final but we use match type key
+                type_key = match.match_type.to_s # league, semi_final, final, eliminator
+                card_type_cls = case type_key
+                  when 'league'     then 'league'
+                  when 'semi_final' then 'semi'
+                  when 'final'      then 'final'
+                  when 'eliminator' then 'eliminator'
+                  else 'league'
+                end
+                badge_cls = case type_key
+                  when 'league'     then 'badge-league'
+                  when 'semi_final' then 'badge-semi'
+                  when 'final'      then 'badge-final'
+                  when 'eliminator' then 'badge-eliminator'
+                  else 'badge-league'
+                end
+                badge_label = case type_key
+                  when 'league'     then '🏐 League'
+                  when 'semi_final' then '⚡ Semi-Final'
+                  when 'final'      then '🏆 Final'
+                  when 'eliminator' then '🔥 Eliminator'
+                  else type_key.humanize
+                end
+              %>
+              <div class="mx-card <%= card_type_cls %> <%= played ? '' : 'tbd' %>"
+                   style="animation-delay:<%= mi * 0.06 %>s">
+
+                <!-- Card Header -->
+                <div class="mx-card-head">
+                  <div class="mx-card-badge <%= badge_cls %>"><%= badge_label %></div>
+                  <div class="mx-card-meta">
+                    <% if match.played_on %>
+                      <div class="mx-card-date"><%= match.played_on.strftime('%d %b') %></div>
+                    <% else %>
+                      <div class="mx-card-date" style="color:var(--text3)">TBD</div>
+                    <% end %>
+                    <div class="mx-card-match-no">M<%= match_counter %></div>
+                  </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="mx-card-body">
+
+                  <!-- Winner / Team A -->
+                  <div class="mx-team-side">
+                    <% if wt %>
+                      <div class="mx-team-av <%= is_final && played ? 'final-winner-av' : (played ? 'winner-av' : '') %>"
+                           style="background:<%= team_color_for_name(wt.name) rescue '#1a2035' %>">
+                        <% img = svl_team_image(wt.name, style: "width:100%;height:100%;object-fit:cover;border-radius:14px", alt: wt.name) rescue nil %>
+                        <% if img %><%= img %><% else %><%= team_initials(wt.name) %><% end %>
+                      </div>
+                      <div class="mx-team-name <%= is_final && played ? 'final-winner-name' : (played ? 'winner-name' : '') %>">
+                        <%= wt.name %>
+                      </div>
+                      <% if played %>
+                        <div class="mx-team-tag <%= is_final ? 'tag-champ' : 'tag-win' %>">
+                          <%= is_final ? '🏆 Champion' : 'WIN' %>
+                        </div>
+                      <% end %>
+                    <% else %>
+                      <div class="mx-team-av" style="background:rgba(255,255,255,0.05);border:2px dashed rgba(255,255,255,0.1)">
+                        <span style="font-size:20px;color:var(--text3)">?</span>
+                      </div>
+                      <div class="mx-team-name">TBD</div>
+                    <% end %>
+                  </div>
+
+                  <!-- Score Middle -->
+                  <div class="mx-score-mid">
+                    <% if played %>
+                      <div class="mx-score-sets">
+                        <span class="mx-ss win"><%= match.winning_team_sets %></span>
+                        <span class="mx-ss-sep">–</span>
+                        <span class="mx-ss"><%= match.losing_team_sets %></span>
+                      </div>
+                      <div class="mx-pts-row">
+                        <span class="mx-pts-win"><%= match.winning_team_points %></span>
+                        <span style="color:var(--text3)">·</span>
+                        <span><%= match.losing_team_points %></span>
+                      </div>
+                      <% if sets.any? %>
+                        <div class="mx-set-chips">
+                          <% sets.each do |s| %>
+                            <div class="mx-set-row">
+                              <span class="mx-chip win"><%= s.winning_team_score %></span>
+                              <span class="mx-chip-sep">–</span>
+                              <span class="mx-chip"><%= s.losing_team_score %></span>
+                            </div>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    <% else %>
+                      <div class="mx-vs">VS</div>
+                      <div style="font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-top:4px">Upcoming</div>
+                    <% end %>
+                  </div>
+
+                  <!-- Loser / Team B -->
+                  <div class="mx-team-side <%= played ? 'loser' : '' %>">
+                    <% if lt %>
+                      <div class="mx-team-av" style="background:<%= team_color_for_name(lt.name) rescue '#1a2035' %>">
+                        <% img = svl_team_image(lt.name, style: "width:100%;height:100%;object-fit:cover;border-radius:14px", alt: lt.name) rescue nil %>
+                        <% if img %><%= img %><% else %><%= team_initials(lt.name) %><% end %>
+                      </div>
+                      <div class="mx-team-name"><%= lt.name %></div>
+                      <% if played && is_final %>
+                        <div style="font-size:9px;color:var(--text3);letter-spacing:.5px">Runner-up</div>
+                      <% end %>
+                    <% else %>
+                      <div class="mx-team-av" style="background:rgba(255,255,255,0.05);border:2px dashed rgba(255,255,255,0.1)">
+                        <% if type_key == 'semi_final' || type_key == 'final' %>
+                          <span style="font-size:16px">⚡</span>
+                        <% else %>
+                          <span style="font-size:20px;color:var(--text3)">?</span>
+                        <% end %>
+                      </div>
+                      <div class="mx-team-name" style="color:var(--text3)">TBD</div>
+                    <% end %>
+                  </div>
+
+                </div><!-- /card-body -->
+
+                <!-- Card Footer (diff chips) — only for played matches -->
+                <% if played %>
+                  <div class="mx-card-foot">
+                    <div class="mx-diff-chip">
+                      <span class="mx-diff-lbl">SET D</span>
+                      <span class="mx-diff-val pos">+<%= set_diff %></span>
+                      <span style="color:var(--text3);font-size:9px">/</span>
+                      <span class="mx-diff-val neg">-<%= set_diff %></span>
+                    </div>
+                    <div class="mx-diff-chip">
+                      <span class="mx-diff-lbl">PTS D</span>
+                      <span class="mx-diff-val pos">+<%= pts_diff %></span>
+                      <span style="color:var(--text3);font-size:9px">/</span>
+                      <span class="mx-diff-val neg">-<%= pts_diff %></span>
+                    </div>
+                    <div class="mx-diff-chip" style="margin-left:auto">
+                      <span class="mx-diff-lbl">SETS</span>
+                      <span class="mx-diff-val"><%= match.winning_team_sets %>–<%= match.losing_team_sets %></span>
+                    </div>
+                  </div>
+                <% end %>
+
+              </div><!-- /mx-card -->
+            <% end %>
+          </div><!-- /date-group -->
+        <% end %>
+
+      <% end %><!-- matches_by_date.empty? -->
+    </div><!-- /mx-timeline -->
+  </div><!-- /mx-timeline-col -->
+
+  <!-- ── SIDEBAR COLUMN (desktop only) ── -->
+  <div class="mx-sidebar-col" style="display:none" id="mx-sidebar">
+
+    <!-- Season summary card -->
+    <div class="mx-season-card">
+      <div class="mx-season-card-head">
+        <div class="mx-season-card-title">Current Season</div>
+        <div class="mx-season-card-name"><%= @selected_season.name %></div>
+      </div>
+      <div class="mx-season-card-body">
+        <div class="mx-sc-stat">
+          <span class="mx-sc-stat-lbl">Total Matches</span>
+          <span class="mx-sc-stat-val" style="color:var(--blue)"><%= @total_matches %></span>
+        </div>
+        <div class="mx-sc-stat">
+          <span class="mx-sc-stat-lbl">Sets Played</span>
+          <span class="mx-sc-stat-val" style="color:var(--text)"><%= @total_sets %></span>
+        </div>
+      </div>
+      <div class="mx-type-breakdown">
+        <div class="mx-tb-row">
+          <div class="mx-tb-dot" style="background:var(--green2)"></div>
+          <span class="mx-tb-lbl">League Matches</span>
+          <span class="mx-tb-val" style="color:var(--green2)"><%= @league_matches %></span>
+        </div>
+        <div class="mx-tb-row">
+          <div class="mx-tb-dot" style="background:var(--purple)"></div>
+          <span class="mx-tb-lbl">Knockout Matches</span>
+          <span class="mx-tb-val" style="color:var(--purple)"><%= @ko_matches %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other seasons quick-switch -->
+    <% if @seasons.size > 1 %>
+    <div style="font-size:9px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 4px 8px">Other Seasons</div>
+    <% @seasons.reject { |s| s.id == @selected_season.id }.each do |season| %>
+      <%= link_to svl_matches_path(season_id: season.id), style: "text-decoration:none" do %>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;transition:all .15s;cursor:pointer" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
+          <div style="font-family:var(--fd);font-size:14px;font-weight:700;color:var(--text2);flex:1"><%= season.name %></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+        </div>
+      <% end %>
+    <% end %>
+    <% end %>
+
+    <!-- View Points Table link -->
+    <%= link_to svl_points_table_path, style: "text-decoration:none;display:block;margin-top:16px" do %>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:14px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='rgba(52,211,153,0.14)'" onmouseout="this.style.background='rgba(52,211,153,0.08)'">
+        <span style="font-size:20px">🏆</span>
+        <div>
+          <div style="font-family:var(--fd);font-size:14px;font-weight:700;color:var(--green2)">Points Table</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">View standings</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green2)" stroke-width="2.5" style="margin-left:auto"><polyline points="9,18 15,12 9,6"/></svg>
+      </div>
+    <% end %>
+
+  </div><!-- /mx-sidebar-col -->
+
+</div><!-- /mx-layout -->
+
+<% end %><!-- selected_season -->
+
+<!-- Floating season pill (mobile) -->
+<% if @selected_season %>
+<div class="mx-float-pill" onclick="window.scrollTo({top:document.querySelector('.mx-season-wrap').offsetTop - 60, behavior:'smooth'})">
+  <div class="mx-float-pill-dot"></div>
+  <%= @selected_season.name %>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18,15 12,9 6,15"/></svg>
+</div>
+<% end %>
+
+<script>
+// ── Scroll progress bar ──
+(function() {
+  const bar = document.getElementById('mx-progress');
+  if (!bar) return;
+  function update() {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = Math.min(100, pct) + '%';
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
+// ── Show sidebar on desktop ──
+(function() {
+  const sidebar = document.getElementById('mx-sidebar');
+  if (!sidebar) return;
+  function checkWidth() {
+    sidebar.style.display = window.innerWidth >= 768 ? 'block' : 'none';
+  }
+  checkWidth();
+  window.addEventListener('resize', checkWidth);
+})();
+
+// ── Card stagger animation reset on filter change ──
+document.querySelectorAll('.mx-type-chip, .mx-season-tab').forEach(function(el) {
+  el.addEventListener('click', function() {
+    document.querySelectorAll('.mx-card').forEach(function(card, i) {
+      card.style.animationDelay = (i * 0.05) + 's';
+    });
+  });
+});
+</script>
