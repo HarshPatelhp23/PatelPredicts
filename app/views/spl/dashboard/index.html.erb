@@ -96,121 +96,142 @@
         </div>
       </div>
 
-      <!-- Action cards grid -->
-      <div class="section-label">Quick Actions</div>
-      <div class="action-grid">
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- MOBILE: All sections stacked vertically          -->
+      <!-- DESKTOP: Organized in grid layout               -->
+      <!-- ══════════════════════════════════════════════════ -->
 
-        <div class="action-card primary-action" onclick="openTeamModal()">
-          <div class="action-card-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </div>
-          <div class="action-card-text">
-            <div class="action-card-title">Create Your Team</div>
-            <div class="action-card-sub">Pick your best 11</div>
-          </div>
-          <div class="action-card-arrow">→</div>
-        </div>
+      <!-- LEFT COLUMN CONTENT (mobile: full width, desktop: left column) -->
+      <div class="desktop-left-col">
 
-        <div class="action-card" onclick="openPage('leaderboard')">
-          <div class="action-card-icon lb-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
-          </div>
-          <div class="action-card-text">
-            <div class="action-card-title">Leaderboard</div>
-            <div class="action-card-sub">See the standings</div>
-          </div>
-          <div class="action-card-arrow">→</div>
-        </div>
+        <!-- 1. SVL FEATURES SECTION -->
+        <div class="section-label" style="color: #60a5fa; margin-top: 0;">🏐 SVL Features</div>
+        <div class="feature-list">
 
-      </div>
-
-      <!-- SPL Features section -->
-      <div class="section-label">SPL Features</div>
-      <div class="feature-list">
-
-        <%= link_to spl_insights_path, class: "feature-row", data: { no_loader: true } do %>
-          <div class="feature-icon insights-icon">📊</div>
-          <div class="feature-info">
-            <div class="feature-title">SPL Insights</div>
-            <div class="feature-sub">Stats & analysis</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <%= link_to spl_orange_cap_path, class: "feature-row", data: { no_loader: true } do %>
-          <div class="feature-icon orange-icon">🧢</div>
-          <div class="feature-info">
-            <div class="feature-title">Orange Cap</div>
-            <div class="feature-sub">Top run scorers</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <%= link_to spl_purple_cap_path, class: "feature-row", data: { no_loader: true } do %>
-          <div class="feature-icon purple-icon">🎯</div>
-          <div class="feature-info">
-            <div class="feature-title">Purple Cap</div>
-            <div class="feature-sub">Top wicket takers</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <%= link_to auction_table_path, class: "feature-row", data: { no_loader: true } do %>
-          <div class="feature-icon auction-icon">🔨</div>
-          <div class="feature-info">
-            <div class="feature-title">Auction Room</div>
-            <div class="feature-sub">Player bids & results</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <!-- SVL Scorer - Admin only with mobile-friendly restriction -->
-        <%= link_to svl_score_match_path, class: "feature-row svl-scorer-link", data: { turbo: false, no_loader: true, admin_only: true } do %>
-          <div class="feature-icon" style="background:rgba(255,255,255,0.06);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">🏐</div>
-          <div class="feature-info">
-            <div class="feature-title">SVL Scorer</div>
-            <div class="feature-sub">Score live matches</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <%= link_to svl_points_table_path, class: "feature-row", data: { turbo: false, no_loader: true } do %>
-          <div class="feature-icon" style="background:rgba(255,255,255,0.06);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">🏐</div>
-          <div class="feature-info">
-            <div class="feature-title">SVL Points-Table</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <%= link_to svl_matches_path, class: "feature-row", data: { turbo: false, no_loader: true } do %>
-          <div class="feature-icon" style="background:rgba(96,165,250,0.1);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">📋</div>
-          <div class="feature-info">
-            <div class="feature-title">SVL Matches</div>
-            <div class="feature-sub">Results & season archive</div>
-          </div>
-          <div class="feature-chevron">›</div>
-        <% end %>
-
-        <% if Time.now < Time.new(2026, 5, 14) %>
-          <%= link_to hotpicks_path, class: "feature-row", data: { no_loader: true, turbo: false } do %>
-            <div class="feature-icon hot-icon">🔥</div>
+          <%= link_to svl_score_match_path, class: "feature-row svl-scorer-link", data: { turbo: false, no_loader: true, admin_only: true } do %>
+            <div class="feature-icon" style="background:rgba(96,165,250,0.15);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">🏐</div>
             <div class="feature-info">
-              <div class="feature-title">Auction HotPicks</div>
-              <div class="feature-sub">Must-have players</div>
+              <div class="feature-title">SVL Scorer</div>
+              <div class="feature-sub">Score live matches</div>
             </div>
             <div class="feature-chevron">›</div>
           <% end %>
-        <% else %>
-          <div class="feature-row disabled">
-            <div class="feature-icon hot-icon" style="opacity:0.4">🔥</div>
-            <div class="feature-info">
-              <div class="feature-title" style="opacity:0.5">Auction HotPicks</div>
-              <div class="feature-sub" style="color:#f59e0b">Coming Soon</div>
-            </div>
-            <div class="feature-chevron" style="opacity:0.3">›</div>
-          </div>
-        <% end %>
 
+          <%= link_to svl_matches_path, class: "feature-row", data: { turbo: false, no_loader: true } do %>
+            <div class="feature-icon" style="background:rgba(96,165,250,0.12);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">📋</div>
+            <div class="feature-info">
+              <div class="feature-title">SVL Matches</div>
+              <div class="feature-sub">Results & season archive</div>
+            </div>
+            <div class="feature-chevron">›</div>
+          <% end %>
+
+          <%= link_to svl_points_table_path, class: "feature-row", data: { turbo: false, no_loader: true } do %>
+            <div class="feature-icon" style="background:rgba(96,165,250,0.12);font-size:20px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;">🏆</div>
+            <div class="feature-info">
+              <div class="feature-title">SVL Points Table</div>
+              <div class="feature-sub">Team standings</div>
+            </div>
+            <div class="feature-chevron">›</div>
+          <% end %>
+
+        </div>
+
+        <!-- 2. SPL FEATURES SECTION -->
+        <div class="section-label" style="margin-top: 20px;">🏏 SPL Features</div>
+        <div class="feature-list">
+
+          <%= link_to spl_insights_path, class: "feature-row", data: { no_loader: true } do %>
+            <div class="feature-icon insights-icon">📊</div>
+            <div class="feature-info">
+              <div class="feature-title">SPL Insights</div>
+              <div class="feature-sub">Stats & analysis</div>
+            </div>
+            <div class="feature-chevron">›</div>
+          <% end %>
+
+          <%= link_to spl_orange_cap_path, class: "feature-row", data: { no_loader: true } do %>
+            <div class="feature-icon orange-icon">🧢</div>
+            <div class="feature-info">
+              <div class="feature-title">Orange Cap</div>
+              <div class="feature-sub">Top run scorers</div>
+            </div>
+            <div class="feature-chevron">›</div>
+          <% end %>
+
+          <%= link_to spl_purple_cap_path, class: "feature-row", data: { no_loader: true } do %>
+            <div class="feature-icon purple-icon">🎯</div>
+            <div class="feature-info">
+              <div class="feature-title">Purple Cap</div>
+              <div class="feature-sub">Top wicket takers</div>
+            </div>
+            <div class="feature-chevron">›</div>
+          <% end %>
+
+          <%= link_to auction_table_path, class: "feature-row", data: { no_loader: true } do %>
+            <div class="feature-icon auction-icon">🔨</div>
+            <div class="feature-info">
+              <div class="feature-title">Auction Room</div>
+              <div class="feature-sub">Player bids & results</div>
+            </div>
+            <div class="feature-chevron">›</div>
+          <% end %>
+
+          <% if Time.now < Time.new(2026, 5, 14) %>
+            <%= link_to hotpicks_path, class: "feature-row", data: { no_loader: true, turbo: false } do %>
+              <div class="feature-icon hot-icon">🔥</div>
+              <div class="feature-info">
+                <div class="feature-title">Auction HotPicks</div>
+                <div class="feature-sub">Must-have players</div>
+              </div>
+              <div class="feature-chevron">›</div>
+            <% end %>
+          <% else %>
+            <div class="feature-row disabled">
+              <div class="feature-icon hot-icon" style="opacity:0.4">🔥</div>
+              <div class="feature-info">
+                <div class="feature-title" style="opacity:0.5">Auction HotPicks</div>
+                <div class="feature-sub" style="color:#f59e0b">Coming Soon</div>
+              </div>
+              <div class="feature-chevron" style="opacity:0.3">›</div>
+            </div>
+          <% end %>
+
+        </div>
+
+        <!-- 3. QUICK ACTIONS SECTION -->
+        <div class="section-label" style="margin-top: 20px;">⚡ Quick Actions</div>
+        <div class="action-grid">
+
+          <div class="action-card primary-action" onclick="openTeamModal()">
+            <div class="action-card-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="action-card-text">
+              <div class="action-card-title">Create Your Team</div>
+              <div class="action-card-sub">Pick your best 11</div>
+            </div>
+            <div class="action-card-arrow">→</div>
+          </div>
+
+          <div class="action-card" onclick="openPage('leaderboard')">
+            <div class="action-card-icon lb-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+            </div>
+            <div class="action-card-text">
+              <div class="action-card-title">Leaderboard</div>
+              <div class="action-card-sub">See the standings</div>
+            </div>
+            <div class="action-card-arrow">→</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN CONTENT (desktop only) -->
+      <div class="desktop-right-col">
+        <!-- Quick stats are already in the grid, but we'll duplicate them here for desktop -->
+        <!-- The desktop layout uses the quick-stats from above -->
       </div>
 
       <!-- bottom padding for nav -->
@@ -281,7 +302,27 @@
   <div class="more-overlay" id="more-overlay" onclick="toggleSplMenu()"></div>
   <div class="more-sheet" id="more-sheet">
     <div class="more-handle"></div>
-    <div class="more-title">SPL Features</div>
+    <div class="more-title">🏐 SVL Features</div>
+    <div class="more-grid">
+
+      <%= link_to svl_score_match_path, class: "more-item svl-scorer-more-link", data: { turbo: false, no_loader: true, admin_only: true } do %>
+        <div class="more-item-icon" style="background:rgba(96,165,250,0.15);color:#60a5fa">🏐</div>
+        <div class="more-item-label">SVL Scorer</div>
+      <% end %>
+
+      <%= link_to svl_matches_path, class: "more-item", data: { turbo: false, no_loader: true } do %>
+        <div class="more-item-icon" style="background:rgba(96,165,250,0.12);color:#93c5fd">📋</div>
+        <div class="more-item-label">SVL Matches</div>
+      <% end %>
+
+      <%= link_to svl_points_table_path, class: "more-item", data: { turbo: false, no_loader: true } do %>
+        <div class="more-item-icon" style="background:rgba(96,165,250,0.12);color:#93c5fd">🏆</div>
+        <div class="more-item-label">SVL Table</div>
+      <% end %>
+
+    </div>
+
+    <div class="more-title" style="margin-top: 16px;">🏏 SPL Features</div>
     <div class="more-grid">
 
       <%= link_to spl_insights_path, class: "more-item", data: { no_loader: true } do %>
@@ -303,25 +344,6 @@
         <div class="more-item-icon" style="background:rgba(234,179,8,0.15);color:#facc15">🔨</div>
         <div class="more-item-label">Auction Room</div>
       <% end %>
-
-      <!-- SVL Scorer - Admin only in More sheet -->
-      <%= link_to svl_score_match_path, class: "more-item svl-scorer-more-link", data: { turbo: false, no_loader: true, admin_only: true } do %>
-        <div class="more-item-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa">🏐</div>
-        <div class="more-item-label">SVL Scorer</div>
-      <% end %>
-
-      <!-- SVL Points Table - properly formatted for more-grid -->
-      <%= link_to svl_points_table_path, class: "more-item", data: { turbo: false, no_loader: true } do %>
-        <div class="more-item-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa">🏆</div>
-        <div class="more-item-label">SVL Table</div>
-      <% end %>
-
-      <!-- SVL Matches -->
-      <%= link_to svl_matches_path, class: "more-item", data: { turbo: false, no_loader: true } do %>
-        <div class="more-item-icon" style="background:rgba(96,165,250,0.12);color:#93c5fd">📋</div>
-        <div class="more-item-label">SVL Matches</div>
-      <% end %>
-
 
       <% if Time.now < Time.new(2025, 6, 1) %>
         <%= link_to hotpicks_path, class: "more-item", data: { no_loader: true } do %>
@@ -1139,30 +1161,19 @@ body { background: var(--bg); font-family: var(--fb); color: var(--text); overfl
 .vt-leg-item { display: flex; align-items: center; gap: 4px; }
 .vt-leg-dot  { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; }
 .vt-leg-lbl  { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.38); letter-spacing: 0.8px; text-transform: uppercase; }
-    
 
-
-
-
- /*
-  ══════════════════════════════════════════════════════════════════
-  SPL FANTASY — DESKTOP RESPONSIVE STYLES (v2 — MOBILE FIXED)
-  Replace your previous desktop styles block with this entire file.
-
-  HOW IT WORKS:
-  1. The top section hides all desktop-only elements globally (mobile guard).
-  2. @media (min-width: 768px) un-hides them and applies desktop layout.
-  3. Nothing outside a media query touches any existing mobile class.
-  ══════════════════════════════════════════════════════════════════
-*/
 
 /* ══════════════════════════════════════════════════════════════════
-   MOBILE GUARD
-   These are desktop-only elements that must be invisible on mobile.
-   They are only "turned on" inside the 768px media query below.
+   SPL FANTASY — DESKTOP RESPONSIVE STYLES
+   Mobile-first: all styles above work on mobile.
+   Below: desktop enhancements without breaking mobile.
 ══════════════════════════════════════════════════════════════════ */
+
+/* ── Desktop-only elements hidden on mobile ── */
 .spl-sidebar         { display: none; }
 .desktop-team-cta    { display: none; }
+.desktop-left-col    { display: block; }
+.desktop-right-col   { display: none; }
 
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1213,7 +1224,7 @@ body { background: var(--bg); font-family: var(--fb); color: var(--text); overfl
      SIDEBAR
   ════════════════════════════════ */
   .spl-sidebar {
-    display: flex;                  /* un-hide from mobile guard */
+    display: flex;
     grid-area: sidebar;
     flex-direction: column;
     background: var(--bg);
@@ -1353,38 +1364,81 @@ body { background: var(--bg); font-family: var(--fb); color: var(--text); overfl
   /* ════════════════════════════════
      HOME PAGE — 2-col grid
   ════════════════════════════════ */
-  .app-page { padding: 28px 32px 32px; max-width: 1200px; width: 100%; margin: 0 auto; }
+  .app-page {
+    padding: 28px 32px 32px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
 
-  #page-home        { display: none; }
+  #page-home {
+    display: none;
+  }
   #page-home.active {
     display: grid;
-    grid-template-columns: 1fr 320px;
-    grid-template-rows: auto auto auto auto 1fr;
-    gap: 0 24px;
-    grid-template-areas:
-      "hero     stats"
-      "hero     team-cta"
-      "actions  features"
-      "actions  features"
-      ".        features";
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
     padding: 28px 32px 40px;
     max-width: 1200px;
     margin: 0 auto;
   }
 
-  .hero-card          { grid-area: hero; align-self: start; padding: 36px 32px; margin-bottom: 0; min-height: 200px; border-radius: 20px; }
-  .hero-name          { font-size: 38px; }
-  .hero-ball          { width: 160px; height: 160px; right: -30px; top: -30px; }
+  /* ── Left Column ── */
+  .desktop-left-col {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
 
-  .quick-stats        { grid-area: stats; display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-  .qs-card            { display: flex; align-items: center; gap: 14px; text-align: left; padding: 14px 16px; }
-  .qs-icon            { margin: 0; flex-shrink: 0; }
-  .qs-value           { font-size: 26px; }
+  .desktop-left-col .section-label:first-child {
+    margin-top: 0 !important;
+  }
 
-  /* Team CTA — un-hide and place in grid */
+  /* ── Right Column ── */
+  .desktop-right-col {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Hero Card on Desktop ── */
+  .hero-card {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 32px 28px;
+    min-height: 180px;
+    margin-bottom: 0;
+    border-radius: 20px;
+  }
+  .hero-name { font-size: 36px; }
+  .hero-ball { width: 140px; height: 140px; right: -20px; top: -20px; }
+
+  /* ── Quick Stats on Desktop ── */
+  .quick-stats {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+  .qs-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    padding: 14px 16px;
+  }
+  .qs-icon { margin: 0; flex-shrink: 0; }
+  .qs-value { font-size: 24px; }
+
+  /* ── Team CTA on Desktop ── */
   .desktop-team-cta {
     display: flex;
-    grid-area: team-cta;
+    grid-column: 2;
+    grid-row: 2;
     background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.08) 100%);
     border: 1px solid rgba(16,185,129,0.25);
     border-radius: 14px;
@@ -1402,54 +1456,97 @@ body { background: var(--bg); font-family: var(--fb); color: var(--text); overfl
     display: flex; align-items: center; justify-content: center;
     color: #34d399; flex-shrink: 0;
   }
-  .dtc-text  { flex: 1; }
+  .dtc-text { flex: 1; }
   .dtc-title { font-weight: 700; font-size: 14px; color: var(--text); }
-  .dtc-sub   { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .dtc-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
 
-  .action-grid        { grid-area: actions; align-self: start; margin-top: 20px; gap: 10px; }
-  .action-card        { padding: 18px 20px; border-radius: 16px; }
-  .action-card-icon   { width: 50px; height: 50px; border-radius: 15px; }
+  /* ── Feature Lists on Desktop ── */
+  .desktop-left-col .feature-list {
+    margin-bottom: 0;
+    border-radius: 16px;
+  }
 
-  .feature-list       { grid-area: features; align-self: start; margin-top: 0; margin-bottom: 0; border-radius: 16px; }
-  .feature-row        { padding: 16px 18px; }
-  .feature-icon       { width: 40px; height: 40px; font-size: 20px; }
-  .feature-title      { font-size: 14px; }
-  .feature-sub        { font-size: 11px; }
-  .section-label      { font-size: 10px; margin-top: 8px; margin-bottom: 8px; }
+  .desktop-left-col .feature-list + .feature-list {
+    margin-top: 16px;
+  }
 
-  /* ════════════════════════════════
-     LEADERBOARD — desktop
-  ════════════════════════════════ */
-  #page-leaderboard   { max-width: 900px; margin: 0 auto; padding: 32px; }
-  .lb-podium-wrap     { border-radius: 20px; padding: 24px 20px 0; margin-bottom: 16px; }
-  .lb-list            { border-radius: 20px; }
-  .lb-row             { padding: 14px 20px; cursor: pointer; transition: background 0.1s; }
-  .lb-row:hover       { background: rgba(255,255,255,0.03); }
-  .lb-row.me:hover    { background: rgba(245,158,11,0.1); }
-  .lb-av              { width: 44px; height: 44px; font-size: 14px; }
-  .lb-uname           { font-size: 15px; }
-  .lb-pts             { font-size: 22px; }
-  .inner-page-header  { margin-bottom: 24px; padding-top: 0; }
-  .inner-page-title   { font-size: 24px; }
+  .desktop-left-col .feature-list + .section-label {
+    margin-top: 16px !important;
+  }
+
+  /* ── Action Grid on Desktop ── */
+  .desktop-left-col .action-grid {
+    margin-bottom: 0;
+    margin-top: 4px;
+  }
+
+  .action-card {
+    padding: 16px 18px;
+    border-radius: 14px;
+  }
+  .action-card-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  /* ── LEADERBOARD — desktop ── */
+  #page-leaderboard {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+  .lb-podium-wrap {
+    border-radius: 20px;
+    padding: 24px 20px 0;
+    margin-bottom: 16px;
+  }
+  .lb-list { border-radius: 20px; }
+  .lb-row {
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .lb-row:hover { background: rgba(255,255,255,0.03); }
+  .lb-row.me:hover { background: rgba(245,158,11,0.1); }
+  .lb-av { width: 44px; height: 44px; font-size: 14px; }
+  .lb-uname { font-size: 15px; }
+  .lb-pts { font-size: 22px; }
+  .inner-page-header { margin-bottom: 24px; padding-top: 0; }
+  .inner-page-title { font-size: 24px; }
 
   /* ════════════════════════════════
      MODALS — centered popup
   ════════════════════════════════ */
-  .spl-modal-overlay  { align-items: center; justify-content: center; }
+  .spl-modal-overlay {
+    align-items: center;
+    justify-content: center;
+  }
   .spl-modal-sheet {
-    width: 580px; max-width: 94vw; height: 88dvh;
+    width: 580px;
+    max-width: 94vw;
+    height: 88dvh;
     border-radius: 24px !important;
     transform: translateY(40px) scale(0.96);
     transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease;
     opacity: 0;
   }
-  .spl-modal-overlay.open .spl-modal-sheet { transform: translateY(0) scale(1); opacity: 1; }
-  .vt-sheet           { width: 640px; max-width: 94vw; }
-  .confirm-sheet      { width: 480px; max-width: 94vw; border-radius: 20px !important; margin: 0 auto; padding: 28px 28px 32px; }
-  .spl-toast          { bottom: 32px; }
-  .vt-av              { width: 52px; height: 52px; font-size: 15px; }
-  .vt-pname           { font-size: 11px; max-width: 88px; }
-  .vt-token           { margin: 0 8px; }
+  .spl-modal-overlay.open .spl-modal-sheet {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  .vt-sheet { width: 640px; max-width: 94vw; }
+  .confirm-sheet {
+    width: 480px;
+    max-width: 94vw;
+    border-radius: 20px !important;
+    margin: 0 auto;
+    padding: 28px 28px 32px;
+  }
+  .spl-toast { bottom: 32px; }
+  .vt-av { width: 52px; height: 52px; font-size: 15px; }
+  .vt-pname { font-size: 11px; max-width: 88px; }
+  .vt-token { margin: 0 8px; }
 
 }/* end @media 768px */
 
@@ -1459,10 +1556,14 @@ body { background: var(--bg); font-family: var(--fb); color: var(--text); overfl
 ══════════════════════════════════════════════════════════════════ */
 @media (min-width: 1200px) {
   .spl-app-shell { grid-template-columns: 280px 1fr; }
-  #page-home.active { grid-template-columns: 1fr 340px; padding: 36px 44px 48px; gap: 0 28px; }
-  .hero-name  { font-size: 44px; }
-  .hero-card  { padding: 44px 40px; min-height: 220px; }
-  .hero-ball  { width: 200px; height: 200px; }
+  #page-home.active {
+    grid-template-columns: 1fr 320px;
+    padding: 36px 44px 48px;
+    gap: 28px;
+  }
+  .hero-name { font-size: 42px; }
+  .hero-card { padding: 40px 36px; min-height: 200px; }
+  .hero-ball { width: 180px; height: 180px; }
 }
 
 

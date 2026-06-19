@@ -10,7 +10,6 @@ class Svl::PointsTableController < ApplicationController
 
     # League matches only for the points table section
     @league_matches = @all_matches.league
-
     # Knockout bracket matches
     @knockout_matches = @all_matches.where(match_type: [:semi_final, :eliminator, :final])
                                     .order(match_type: :asc, played_on: :asc)
